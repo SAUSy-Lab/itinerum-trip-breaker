@@ -255,8 +255,8 @@ class trace(object):
 
 import csv, math
 
-input_coordinates_file = '/home/nate/forlaur/coordinates_input.csv'
-output_coordinates_file = '/home/nate/forlaur/coordinates_output.csv'
+input_coordinates_file = 'inputs/coordinates.csv'
+output_coordinates_file = 'outputs/cleaned_coordinates.csv'
 
 user_ids = []
 
