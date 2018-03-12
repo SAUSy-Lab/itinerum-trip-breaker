@@ -90,13 +90,13 @@ class point_obj(object):
 	def geom(self):
 		"""used basically to check location uniqueness"""
 		return (self.latitude,self.longitude)
+
+	def far_from(self, other):
+		# other must be a Point
+		return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
         
-        def make_timezone():
-                pass
-        
-        def far_from(self, other):
-                # other must be a Point
-                return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
+	def __repr__(self):
+		return self.time.__repr__()
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -135,18 +135,20 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-        def make_subsets():
-                ss = []
-                cur = [self.points[0]]
-                for i in range(1, len(self.points)):
-                        if self.points[i-1].far_from(self.points[i]): # big time-space gap between i-1, i
-                                ss.append(cur)
-                                cur = [self.points[i]]
-                        else:
-                                cur.append(self.points[i])
-                ss.append(cur)
-                self.subsets = ss
-        
+	def make_subsets(self):
+		ss = []
+		cur = [self.points[0]]
+		for i in range(1, len(self.points)):
+			if self.points[i-1].far_from(self.points[i]): # big time-space gap between i-1, i
+				ss.append(cur)
+				cur = [self.points[i]]
+			else:
+				cur.append(self.points[i])
+		ss.append(cur)
+		for megatrip in ss:
+			td = megatrip[0].time - megatrip[-1].time 
+			if len(megatrip) > 1: # still need to exclude short trip
+				self.subsets.append(megatrip)
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -315,8 +317,8 @@ with open(output_coordinates_file, 'w', newline='') as csvfile:
 		user.remove_positional_error()
 		# this is actually necessary again after positional cleaning
 		# ( some angles == 0 )
-		user.remove_sequential_duplicates() 
-		
+		user.remove_sequential_duplicates()
+		user.make_subsets()
 #		# now store all the points for this user
 #		for point in user.points:			
 #			writer.writerow(
