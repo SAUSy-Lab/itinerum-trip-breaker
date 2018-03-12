@@ -150,6 +150,10 @@ class trace(object):
 			if len(megatrip) > 1 and td.seconds > 1800:
 				self.subsets.append(megatrip)
 
+        def PLACEHOLDER(self):
+                for know_subset in self.subsets:
+                        pass
+
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -287,38 +291,43 @@ def parse_ts(timestamp):
 
 import csv, math
 
-input_coordinates_file = 'inputs/coordinates.csv'
-output_coordinates_file = 'outputs/cleaned_coordinates.csv'
+# Standard format so we can import this module elsewhere.
+if __name__ == "__main__":
 
-user_ids = []
+	input_coordinates_file = 'inputs/coordinates.csv'
+	output_coordinates_file = 'outputs/cleaned_coordinates.csv'
 
-# get a list of unique user_ids to iterate over
-with open(input_coordinates_file, newline='') as f:
-	reader = csv.DictReader(f)
-	for row in reader:
-		user_ids.append( row['uuid'] )
+	user_ids = []
 
-user_ids = list(set(user_ids))
-print( len(user_ids),'user(s) to clean' )
+	# get a list of unique user_ids to iterate over
+	with open(input_coordinates_file, newline='') as f:
+		reader = csv.DictReader(f)
+		for row in reader:
+			user_ids.append( row['uuid'] )
+
+	user_ids = list(set(user_ids)) # why? user_ids is already a list
+	print( len(user_ids),'user(s) to clean' )
 
 
-# open a file for results
-with open(output_coordinates_file, 'w', newline='') as csvfile:
-	fieldnames = ['user_id','latitude','longitude','h_accuracy','timestamp','use']
-	fieldnames += ['v_accuracy','id','speed','point_type']
-	writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-	writer.writeheader()
-	# loop over users calling all the functions for each
-	for user_id in user_ids:
-		user = trace(user_id)
-		print( len(user.points),'points at start for',user_id )
-		user.remove_known_error(100)
-		user.remove_sequential_duplicates()
-		user.remove_positional_error()
-		# this is actually necessary again after positional cleaning
-		# ( some angles == 0 )
-		user.remove_sequential_duplicates()
-		user.make_subsets()
+        # open a file for results
+	with open(output_coordinates_file, 'w', newline='') as csvfile:
+		fieldnames = ['user_id','latitude','longitude','h_accuracy','timestamp','use']
+		fieldnames += ['v_accuracy','id','speed','point_type']
+		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+		writer.writeheader()
+		# loop over users calling all the functions for each
+		for user_id in user_ids:
+			user = trace(user_id)
+			print( len(user.points),'points at start for',user_id )
+			user.remove_known_error(100)
+			user.remove_sequential_duplicates()
+			user.remove_positional_error()
+			# this is actually necessary again after positional cleaning
+			# ( some angles == 0 )
+			user.remove_sequential_duplicates()
+			user.make_subsets()
+                        user.PLACEHOLDER() 
+
 #		# now store all the points for this user
 #		for point in user.points:			
 #			writer.writerow(
