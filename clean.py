@@ -23,6 +23,7 @@
 # The algorithm iterates over users and advances iteratively over each 
 # user's data.  
 
+import datetime
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -75,7 +76,7 @@ class point_obj(object):
 		self.longitude = longitude
 		# TODO need to parse to seconds since the epoch
 		# it's just being stored as text right now and is not used
-		self.time = timestamp	
+		self.time = datetime.datetime()	
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
 		# these  get set later... just defining them here
