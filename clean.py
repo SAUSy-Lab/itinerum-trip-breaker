@@ -103,7 +103,10 @@ class trace(object):
 		self.id = user_id		# 
 		self.points = []		# time-ordered list of points
 		self.discarded_points = [] # list of points removed
-
+		# ordered list of ordered lists of points separated by unknown times
+		# this will be the basic object of any trip-breaking analysis
+		self.subsets = []
+		
 		other_keys = ['id','speed','v_accuracy','point_type'] # The keys you want
 
 		# read in all time and location data for points
@@ -287,35 +290,36 @@ with open(output_coordinates_file, 'w', newline='') as csvfile:
 		# this is actually necessary again after positional cleaning
 		# ( some angles == 0 )
 		user.remove_sequential_duplicates() 
-		# now store all the points for this user
-		for point in user.points:			
-			writer.writerow(
-				{
-					**{
-						'user_id': user_id, 
-						'latitude': point.latitude,
-						'longitude': point.longitude,
-						'h_accuracy': point.accuracy,
-						'timestamp': point.time,
-						'use': True
-					},
-					**point.other_fields
-				}
-			)
-		for point in user.discarded_points:			
-			writer.writerow(
-				{
-					**{
-						'user_id': user_id, 
-						'latitude': point.latitude,
-						'longitude': point.longitude,
-						'h_accuracy': point.accuracy,
-						'timestamp': point.time,
-						'use': False
-					},
-					**point.other_fields
-				}
-			)
+		
+#		# now store all the points for this user
+#		for point in user.points:			
+#			writer.writerow(
+#				{
+#					**{
+#						'user_id': user_id, 
+#						'latitude': point.latitude,
+#						'longitude': point.longitude,
+#						'h_accuracy': point.accuracy,
+#						'timestamp': point.time,
+#						'use': True
+#					},
+#					**point.other_fields
+#				}
+#			)
+#		for point in user.discarded_points:			
+#			writer.writerow(
+#				{
+#					**{
+#						'user_id': user_id, 
+#						'latitude': point.latitude,
+#						'longitude': point.longitude,
+#						'h_accuracy': point.accuracy,
+#						'timestamp': point.time,
+#						'use': False
+#					},
+#					**point.other_fields
+#				}
+#			)
 
 	
 
