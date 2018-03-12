@@ -150,10 +150,9 @@ class trace(object):
 			if len(megatrip) > 1 and td.seconds > 1800:
 				self.subsets.append(megatrip)
 
-        def PLACEHOLDER(self):
-                for know_subset in self.subsets:
-                        pass
-
+	def PLACEHOLDER(self):
+		for known_subset in self.subsets:
+			pass
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -326,7 +325,7 @@ if __name__ == "__main__":
 			# ( some angles == 0 )
 			user.remove_sequential_duplicates()
 			user.make_subsets()
-                        user.PLACEHOLDER() 
+			user.PLACEHOLDER() 
 
 #		# now store all the points for this user
 #		for point in user.points:			
