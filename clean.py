@@ -76,7 +76,7 @@ class point_obj(object):
 		self.longitude = longitude
 		# TODO need to parse to seconds since the epoch
 		# it's just being stored as text right now and is not used
-		self.time = datetime.datetime()	
+		self.time, self.tz = parse_ts(timestamp), none#datetime.tzinfo(tz)
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
 		# these  get set later... just defining them here
@@ -255,7 +255,16 @@ class trace(object):
 				return errors[max(errors.keys())]
 		return False
 
-
+def parse_ts(timestamp):
+        # ts = 'YYYY-MM-DDThh:mm:ss-00:00'
+        year = int(timestamp[:4])
+        month = int(timestamp[5:7])
+        day = int(timestamp[8:10])
+        hour = int(timestamp[11:13])
+        minutes = int(timestamp[14:16])
+        second = int(timestamp[17:19])
+        tz = timestamp[20:]
+        return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 import csv, math
 
