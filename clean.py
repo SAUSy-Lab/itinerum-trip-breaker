@@ -96,7 +96,7 @@ class point_obj(object):
 		return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
         
 	def __repr__(self):
-		return self.time.__repr__()
+		return self.time.__str__()
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -139,15 +139,15 @@ class trace(object):
 		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
-			if self.points[i-1].far_from(self.points[i]): # big time-space gap between i-1, i
+			if self.points[i-1].far_from(self.points[i]):
 				ss.append(cur)
 				cur = [self.points[i]]
 			else:
 				cur.append(self.points[i])
 		ss.append(cur)
 		for megatrip in ss:
-			td = megatrip[0].time - megatrip[-1].time 
-			if len(megatrip) > 1: # still need to exclude short trip
+			td = megatrip[-1].time - megatrip[0].time 
+			if len(megatrip) > 1 and td.seconds > 1800:
 				self.subsets.append(megatrip)
 
 	def pop_point(self, key):
