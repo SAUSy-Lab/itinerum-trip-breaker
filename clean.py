@@ -76,7 +76,7 @@ class point_obj(object):
 		self.longitude = longitude
 		# TODO need to parse to seconds since the epoch
 		# it's just being stored as text right now and is not used
-		self.time, self.tz = parse_ts(timestamp), none#datetime.tzinfo(tz)
+		self.time, self.tz = parse_ts(timestamp)
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
 		# these  get set later... just defining them here
@@ -90,8 +90,13 @@ class point_obj(object):
 	def geom(self):
 		"""used basically to check location uniqueness"""
 		return (self.latitude,self.longitude)
-
-
+        
+        def make_timezone():
+                pass
+        
+        def far_from(self, other):
+                # other must be a Point
+                return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -130,6 +135,18 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
+        def make_subsets():
+                ss = []
+                cur = [self.points[0]]
+                for i in range(1, len(self.points)):
+                        if self.points[i-1].far_from(self.points[i]): # big time-space gap between i-1, i
+                                ss.append(cur)
+                                cur = [self.points[i]]
+                        else:
+                                cur.append(self.points[i])
+                ss.append(cur)
+                self.subsets = ss
+        
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
