@@ -65,7 +65,6 @@ def distance(point1,point2):
 	return great_circle( p1, p2 ).meters
 
 
-
 class point_obj(object):
 	"""a location/time point"""
 
@@ -74,8 +73,6 @@ class point_obj(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
-		# TODO need to parse to seconds since the epoch
-		# it's just being stored as text right now and is not used
 		self.time, self.tz = parse_ts(timestamp)
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
@@ -97,6 +94,7 @@ class point_obj(object):
         
 	def __repr__(self):
 		return self.time.__str__()
+
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -135,6 +133,7 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
+
 	def make_subsets(self):
 		ss = []
 		cur = [self.points[0]]
@@ -150,9 +149,12 @@ class trace(object):
 			if len(megatrip) > 1 and td.seconds > 1800:
 				self.subsets.append(megatrip)
 
+
 	def PLACEHOLDER(self):
 		for known_subset in self.subsets:
 			pass
+
+
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -277,6 +279,7 @@ class trace(object):
 				return errors[max(errors.keys())]
 		return False
 
+
 def parse_ts(timestamp):
         # ts = 'YYYY-MM-DDThh:mm:ss-00:00'
         year = int(timestamp[:4])
@@ -287,6 +290,7 @@ def parse_ts(timestamp):
         second = int(timestamp[17:19])
         tz = timestamp[20:]
         return datetime.datetime(year, month, day, hour, minutes, second), tz
+
 
 import csv, math
 
