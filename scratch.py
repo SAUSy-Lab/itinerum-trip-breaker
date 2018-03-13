@@ -6,5 +6,3 @@ def project(longitude,latitude,projection_string='epsg:3347'):
 	outProj = Proj( init = projection_string )
 	x,y = transform( inProj, outProj, longitude, latitude )
 	return x,y
-
-def 
