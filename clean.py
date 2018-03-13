@@ -73,6 +73,7 @@ class point_obj(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
+		self.ts = timestamp
 		self.time, self.tz = parse_ts(timestamp)
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
@@ -95,6 +96,8 @@ class point_obj(object):
 	def __repr__(self):
 		return self.time.__str__()
 
+	def copy(self):
+		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy_meters, self.other_fields)
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -133,6 +136,18 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
+	def interpolate(self, segment, sample=30, cutoff=60):
+                new_points = []
+		for i in range(len(segment)-1):
+			if (segment[i+1].time - segment[i].time).seconds > cutoff:
+				pass # interpolate points
+			new_points.append(segment[i].copy()) 
+		new_points.append(segment[-1].copy())
+
+		# we now have a list of points, give them a weight attribute
+		for point in new_points[1:-1]:
+			pass
+		return new_points # list of weighted points
 
 	def make_subsets(self):
 		ss = []
@@ -151,8 +166,8 @@ class trace(object):
 
 
 	def PLACEHOLDER(self):
-		for known_subset in self.subsets:
-			pass
+		for known_segment in self.subsets:
+			weighted_points = self.interpolate(know_segment, 30, 60)
 
 
 	def pop_point(self, key):
