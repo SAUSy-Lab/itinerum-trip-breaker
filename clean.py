@@ -23,7 +23,7 @@
 # The algorithm iterates over users and advances iteratively over each 
 # user's data.  
 
-import datetime
+import datetime, csv, math
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -136,17 +136,33 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def interpolate(self, segment, sample=30, cutoff=60):
+	def interpolate(self, segment, sample=30):
                 new_points = []
 		for i in range(len(segment)-1):
-			if (segment[i+1].time - segment[i].time).seconds > cutoff:
-				pass # interpolate points
-			new_points.append(segment[i].copy()) 
+                        new_points.append(segment[i].copy())
+                        d = distance(segment[i], segment[i+1])
+			tds = (segment[i] - segment[i+1]).seconds
+			speed = d / tds
+			if d > cutoff:
+				n_segs = math.ceil(d / sample)
+                                seg_len = d // n_segs
+				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
+				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
+				for np in range(n_segs):
+					delta_t = np * (d / speed)
+					tstamp = segment[i] + datetime.timedelta(seconds=delta_t)
+                                        # "YYYY-MM-DDThh:mm:ss-04:00"
+                                        ts = ts_str(tstamp, segment[i].ts[-5:])
+                                        
+                                        acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
+					new_point = point_obj(ts, lng, lat, acc, None)
+                                        new_points.append(new_point)
 		new_points.append(segment[-1].copy())
 
 		# we now have a list of points, give them a weight attribute
 		for point in new_points[1:-1]:
 			pass
+		
 		return new_points # list of weighted points
 
 	def make_subsets(self):
@@ -167,7 +183,7 @@ class trace(object):
 
 	def PLACEHOLDER(self):
 		for known_segment in self.subsets:
-			weighted_points = self.interpolate(know_segment, 30, 60)
+			weighted_points = self.interpolate(know_segment, 30)# no intervals greater than 30 meters
 
 
 	def pop_point(self, key):
@@ -294,6 +310,9 @@ class trace(object):
 				return errors[max(errors.keys())]
 		return False
 
+def ts_str(ts, tz):
+	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, tz)
+
 
 def parse_ts(timestamp):
         # ts = 'YYYY-MM-DDThh:mm:ss-00:00'
@@ -305,9 +324,6 @@ def parse_ts(timestamp):
         second = int(timestamp[17:19])
         tz = timestamp[20:]
         return datetime.datetime(year, month, day, hour, minutes, second), tz
-
-
-import csv, math
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
