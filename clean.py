@@ -148,12 +148,16 @@ class trace(object):
                                 seg_len = d // n_segs
 				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
 				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
+				m = (y2 - y1) / (x2 - x1)
+				b = y1 - (m * x1)
 				for np in range(n_segs):
 					delta_t = np * (d / speed)
 					tstamp = segment[i] + datetime.timedelta(seconds=delta_t)
                                         # "YYYY-MM-DDThh:mm:ss-04:00"
                                         ts = ts_str(tstamp, segment[i].ts[-5:])
-                                        
+
+                                        lng, lat = scratch.unproject(x0, y0)
+
                                         acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
 					new_point = point_obj(ts, lng, lat, acc, None)
                                         new_points.append(new_point)
@@ -183,7 +187,7 @@ class trace(object):
 
 	def PLACEHOLDER(self):
 		for known_segment in self.subsets:
-			weighted_points = self.interpolate(know_segment, 30)# no intervals greater than 30 meters
+			weighted_points = self.interpolate(known_segment, 30)# no intervals greater than 30 meters
 
 
 	def pop_point(self, key):
