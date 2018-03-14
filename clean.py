@@ -146,12 +146,12 @@ class trace(object):
 			if d > sample:
 				n_segs = math.ceil(d / sample)
 				seg_len = d // n_segs
-				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
-				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
+				x1, y1 = 0,0 #scratch.project(segment[i].longitude, segment[i].latitude)
+				x2, y2 = 0,0 #scratch.project(segment[i+1].longitude, segment[i+1].latitude)
 				dy = (y2 - y1)
 				dx = (x2 - x1)
 				for np in range(1, n_segs):
-					delta_t = np * (d / speed)
+					delta_t = np * (d / speed) # risk for div 0 error
 					tstamp = segment[i].time + datetime.timedelta(seconds=delta_t)
                                         # "YYYY-MM-DDThh:mm:ss-04:00"
 					ts = ts_str(tstamp, segment[i].ts[-5:])
@@ -159,7 +159,7 @@ class trace(object):
 
 					x0 = x1 + np*dx
 					y0 = y1 + np*dy
-					lng, lat = scratch.unproject(x0, y0)
+					lng, lat = 0,0 #scratch.unproject(x0, y0)
 
 					acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
 					new_point = point_obj(ts, lng, lat, acc, None)
@@ -167,9 +167,10 @@ class trace(object):
 		new_points.append(segment[-1].copy())
 
 		# we now have a list of points, give them a weight attribute
-		for point in new_points[1:-1]:
-			pass
-		
+		for i in range(len(new_points[1:-1])):
+			w1 = (new_points[i-1].time - new_points[i].time).seconds / 2
+			w2 = (new_points[i].time - new_pointsp[i+1].time).seconds / 2
+			new_points[i].weigt = w1 + w2
 		return new_points # list of weighted points
 
 	def make_subsets(self):
@@ -318,19 +319,20 @@ class trace(object):
 		return False
 
 def ts_str(ts, tz):
-	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, tz)
+	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, tz)
 
 
-def parse_ts(timestamp):
-        # ts = 'YYYY-MM-DDThh:mm:ss-00:00'
-        year = int(timestamp[:4])
-        month = int(timestamp[5:7])
-        day = int(timestamp[8:10])
-        hour = int(timestamp[11:13])
-        minutes = int(timestamp[14:16])
-        second = int(timestamp[17:19])
-        tz = timestamp[20:]
-        return datetime.datetime(year, month, day, hour, minutes, second), tz
+def parse_ts(timestamp): # I need to fix this
+	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
+	year = int(timestamp[:4])
+	print("problem: ", timestamp, timestamp[5:7])
+	month = int(timestamp[5:7])
+	day = int(timestamp[8:10])
+	hour = int(timestamp[11:13])
+	minutes = int(timestamp[14:16])
+	second = int(timestamp[17:19])
+	tz = timestamp[20:]
+	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
