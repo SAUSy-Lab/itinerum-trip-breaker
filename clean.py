@@ -83,6 +83,7 @@ class point_obj(object):
 		self.angle = None			# angle between this and adjacent points
 		self.inter = False		# point shares location with both neighbors?
 		self.error_index = 0 
+		self.weight = 0
 		
 	@property
 	def geom(self):
@@ -169,8 +170,10 @@ class trace(object):
 		# we now have a list of points, give them a weight attribute
 		for i in range(len(new_points[1:-1])):
 			w1 = (new_points[i-1].time - new_points[i].time).seconds / 2
-			w2 = (new_points[i].time - new_pointsp[i+1].time).seconds / 2
+			w2 = (new_points[i].time - new_points[i+1].time).seconds / 2
 			new_points[i].weigt = w1 + w2
+		new_points[0].weight = (new_points[1].time - new_points[0].time).seconds / 2
+		new_points[-1].weight =  (new_points[-1].time - new_points[-2].time).seconds / 2
 		return new_points # list of weighted points
 
 	def make_subsets(self):
@@ -192,7 +195,8 @@ class trace(object):
 	def PLACEHOLDER(self):
 		for known_segment in self.subsets:
 			weighted_points = self.interpolate(known_segment, 30)# no intervals greater than 30 meters
-
+			for p in weighted_points:
+				print(p.weight)
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -319,13 +323,17 @@ class trace(object):
 		return False
 
 def ts_str(ts, tz):
-	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, tz)
+	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
+	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
+	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
+	mi = str(ts.minute) if ts.minute > 9  else "0"+str(ts.minute)
+	s = str(ts.second) if ts.second > 9 else "0"+str(ts.second)
+	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
 
 
 def parse_ts(timestamp): # I need to fix this
 	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
 	year = int(timestamp[:4])
-	print("problem: ", timestamp, timestamp[5:7])
 	month = int(timestamp[5:7])
 	day = int(timestamp[8:10])
 	hour = int(timestamp[11:13])
