@@ -23,7 +23,7 @@
 # The algorithm iterates over users and advances iteratively over each 
 # user's data.  
 
-import datetime, csv, math
+import datetime, csv, math, scratch
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -97,7 +97,7 @@ class point_obj(object):
 		return self.time.__str__()
 
 	def copy(self):
-		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy_meters, self.other_fields)
+		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy, self.other_fields)
 
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -137,30 +137,33 @@ class trace(object):
 		self.observe_neighbors( all_indices )
 
 	def interpolate(self, segment, sample=30):
-                new_points = []
+		new_points = []
 		for i in range(len(segment)-1):
-                        new_points.append(segment[i].copy())
-                        d = distance(segment[i], segment[i+1])
-			tds = (segment[i] - segment[i+1]).seconds
+			new_points.append(segment[i].copy())
+			d = distance(segment[i], segment[i+1])
+			tds = (segment[i].time - segment[i+1].time).seconds
 			speed = d / tds
-			if d > cutoff:
+			if d > sample:
 				n_segs = math.ceil(d / sample)
-                                seg_len = d // n_segs
+				seg_len = d // n_segs
 				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
 				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
-				m = (y2 - y1) / (x2 - x1)
-				b = y1 - (m * x1)
-				for np in range(n_segs):
+				dy = (y2 - y1)
+				dx = (x2 - x1)
+				for np in range(1, n_segs):
 					delta_t = np * (d / speed)
-					tstamp = segment[i] + datetime.timedelta(seconds=delta_t)
+					tstamp = segment[i].time + datetime.timedelta(seconds=delta_t)
                                         # "YYYY-MM-DDThh:mm:ss-04:00"
-                                        ts = ts_str(tstamp, segment[i].ts[-5:])
+					ts = ts_str(tstamp, segment[i].ts[-5:])
+					# All interpolated points assumed to be in the starting timezone
 
-                                        lng, lat = scratch.unproject(x0, y0)
+					x0 = x1 + np*dx
+					y0 = y1 + np*dy
+					lng, lat = scratch.unproject(x0, y0)
 
-                                        acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
+					acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
 					new_point = point_obj(ts, lng, lat, acc, None)
-                                        new_points.append(new_point)
+					new_points.append(new_point)
 		new_points.append(segment[-1].copy())
 
 		# we now have a list of points, give them a weight attribute
