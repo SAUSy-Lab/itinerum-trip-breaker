@@ -95,7 +95,7 @@ class point_obj(object):
 		return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
         
 	def __repr__(self):
-		return self.time.__str__()
+		return str(scratch.project(self.longitude, self.latitude))
 
 	def copy(self):
 		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy, self.other_fields)
@@ -142,25 +142,26 @@ class trace(object):
 		for i in range(len(segment)-1):
 			new_points.append(segment[i].copy())
 			d = distance(segment[i], segment[i+1])
-			tds = (segment[i].time - segment[i+1].time).seconds
+			tds = (segment[i+1].time - segment[i].time).seconds
 			speed = d / tds
 			if d > sample:
 				n_segs = math.ceil(d / sample)
 				seg_len = d // n_segs
-				x1, y1 = 0,0 #scratch.project(segment[i].longitude, segment[i].latitude)
-				x2, y2 = 0,0 #scratch.project(segment[i+1].longitude, segment[i+1].latitude)
+				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
+				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
 				dy = (y2 - y1)
 				dx = (x2 - x1)
 				for np in range(1, n_segs):
 					delta_t = np * (d / speed) # risk for div 0 error
-					tstamp = segment[i].time + datetime.timedelta(seconds=delta_t)
+					print(delta_t)
+					tstamp = segment[i].time + datetime.timedelta(seconds=(delta_t * np))
                                         # "YYYY-MM-DDThh:mm:ss-04:00"
 					ts = ts_str(tstamp, segment[i].ts[-5:])
 					# All interpolated points assumed to be in the starting timezone
 
 					x0 = x1 + np*dx
 					y0 = y1 + np*dy
-					lng, lat = 0,0 #scratch.unproject(x0, y0)
+					lng, lat = scratch.unproject(x0, y0)
 
 					acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
 					new_point = point_obj(ts, lng, lat, acc, None)
@@ -193,10 +194,10 @@ class trace(object):
 
 
 	def PLACEHOLDER(self):
-		for known_segment in self.subsets:
-			weighted_points = self.interpolate(known_segment, 30)# no intervals greater than 30 meters
-			for p in weighted_points:
-				print(p.weight)
+		known_segment  = self.subsets[-1]
+		weighted_points = self.interpolate(known_segment, 30)# no intervals greater than 30 meters
+		for p in weighted_points:
+			print(p)
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
