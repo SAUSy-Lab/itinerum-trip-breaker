@@ -26,7 +26,7 @@ The plan (not yet implemented) is to:
 1. Scale the area under the probability surface to equal the time in the user's known segments. 
 2. Set a threshold value based on cell-size to determine where sufficient time has been spent to suggest an activity.
 3. Cells meeting the threshold will be clustered into contiguous groups.
-4. The maximum of these groups (peaks) will be taken as a possible activity location.
+4. The maximum of these groups (peaks) will be taken as a possible activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point.)
 
 ### Activity/Trip sequencing
 This phase is a bit hazier as it's still two steps away from implementation, but the idea is as follows:
