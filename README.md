@@ -17,16 +17,17 @@ The basic idea in the cleaning phase to remove points not based on decent GPS da
 Data is segmented into lists of points where we feel confident that we haven't lost track of the user, e.g. through a powered-off phone. We refer to these as *known segments* and let the surrounding time be considered *unknown*. For the moment, this consists only of:
 
 1. Consider as unknown any time where the user moves more than 1 kilometer and two hours without reporting a location. 
-2. More to come...
+
+This is obviously not sufficient, and there is much more to come here. 
 
 ### Location detection
-This phase largely follows the [method described by Thierry Chaix and Kestens](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3637118/). We essentially do a time-weighted KDE on the user's points, spatio-temporally linear-interpolated where necessary. 
+This phase largely follows the [method described by Thierry Chaix and Kestens](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3637118/). We essentially do a time-weighted KDE on the user's points, spatio-temporally linear-interpolated where necessary. The kernel density estimation will be done in R (for lack of a decent Python package) and then brought back into Python. 
 
 The plan (not yet implemented) is to:
 1. Scale the area under the probability surface to equal the time in the user's known segments. 
 2. Set a threshold value based on cell-size to determine where sufficient time has been spent to suggest an activity.
 3. Cells meeting the threshold will be clustered into contiguous groups.
-4. The maximum of these groups (peaks) will be taken as a possible activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point.)
+4. The maximum of these groups (peaks) will be taken as a possible activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point from the peak.)
 
 ### Activity/Trip sequencing
 This phase is a bit hazier as it's still two steps away from implementation, but the idea is as follows:
