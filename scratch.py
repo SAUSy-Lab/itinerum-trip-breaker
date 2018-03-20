@@ -1,6 +1,8 @@
 def min_peak(GPS_error_sd,kernel_sd,total_time,threshold_time)
 	"""Estimate minimum peak height given time threshold and variance parameters.
-		We assume that the volume under the total KDE PDF = 1"""
+		We assume that the volume under the total KDE PDF ~= 1. 
+		-	total_time is the sum of the time weights used in the KDE.
+		-	threshold_time is the minimum activity time."""
 	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + kernel_sd**2
 	peak_height = multivariate_normal.pdf(
