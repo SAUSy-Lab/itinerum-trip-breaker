@@ -100,6 +100,25 @@ class point_obj(object):
 	def copy(self):
 		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy, self.other_fields)
 
+	def pair_interpolation(self, other, sample):
+		new_points = [self.copy()]
+		dist = distance(self, other)
+		if dist > sample:
+			time_dif = (other.time - self.time).seconds
+			n_segs = math.ceil(dist / sample)
+			seg_len = dist // n_segs
+			x1, y1 = scratch.project(self.longitude, self.latitude)
+			x2, y2 = scratch.project(other.longitude, other.latitude)
+			dx, dy = (x2 - x1)/n_segs, (y2 - y1)/n_segs
+			dt = time_dif / n_segs
+			for np in range(1, n_segs):
+				x0, y0 = x1 + np*dx, y1 + np*dy
+				lng, lat = scratch.unproject(x0, y0)
+				tstamp = self.time + datetime.timedelta(seconds=dt*np)
+				ts = ts_str(tstamp, self.ts[-5:])
+				new_points.append(point_obj(ts, lng, lat, self.accuracy, None))
+		return new_points
+
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
@@ -137,45 +156,13 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def interpolate(self, segment, sample=30):
+	def interpolate_segment(self, segment, sample=30):
 		new_points = []
 		for i in range(len(segment)-1):
-			new_points.append(segment[i].copy())
-			d = distance(segment[i], segment[i+1])
-			tds = (segment[i+1].time - segment[i].time).seconds
-			speed = d / tds
-			if d > sample:
-				n_segs = math.ceil(d / sample)
-				seg_len = d // n_segs
-				x1, y1 = scratch.project(segment[i].longitude, segment[i].latitude)
-				x2, y2 = scratch.project(segment[i+1].longitude, segment[i+1].latitude)
-				dy = (y2 - y1)
-				dx = (x2 - x1)
-				for np in range(1, n_segs):
-					delta_t = np * (d / speed) # risk for div 0 error
-					print(delta_t)
-					tstamp = segment[i].time + datetime.timedelta(seconds=(delta_t * np))
-                                        # "YYYY-MM-DDThh:mm:ss-04:00"
-					ts = ts_str(tstamp, segment[i].ts[-5:])
-					# All interpolated points assumed to be in the starting timezone
-
-					x0 = x1 + np*dx
-					y0 = y1 + np*dy
-					lng, lat = scratch.unproject(x0, y0)
-
-					acc = (segment[i].accuracy - segment[i+1].accuracy) / 2
-					new_point = point_obj(ts, lng, lat, acc, None)
-					new_points.append(new_point)
-		new_points.append(segment[-1].copy())
-
-		# we now have a list of points, give them a weight attribute
-		for i in range(len(new_points[1:-1])):
-			w1 = (new_points[i-1].time - new_points[i].time).seconds / 2
-			w2 = (new_points[i].time - new_points[i+1].time).seconds / 2
-			new_points[i].weigt = w1 + w2
-		new_points[0].weight = (new_points[1].time - new_points[0].time).seconds / 2
-		new_points[-1].weight =  (new_points[-1].time - new_points[-2].time).seconds / 2
-		return new_points # list of weighted points
+			pair_int = segment[i].pair_interpolation(segment[i+1], sample)
+			new_points.extend(pair_int)
+		new_points.append(segment[-1])
+		return new_points
 
 	def make_subsets(self):
 		ss = []
@@ -194,10 +181,10 @@ class trace(object):
 
 
 	def PLACEHOLDER(self):
-		known_segment  = self.subsets[-1]
-		weighted_points = self.interpolate(known_segment, 30)# no intervals greater than 30 meters
-		for p in weighted_points:
-			print(p)
+		for known_segment in self.subsets:
+			interpolated = self.interpolate_segment(known_segment, 30)# no intervals greater than 30 meters
+			weighted = weight_points(interpolated)
+			print(weighted_points)
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -342,6 +329,9 @@ def parse_ts(timestamp): # I need to fix this
 	second = int(timestamp[17:19])
 	tz = timestamp[20:]
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
+
+def weight_points(segment):
+	pass
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
