@@ -198,11 +198,16 @@ class trace(object):
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
+<<<<<<< HEAD
 		# run the KDE
 		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH,100)
 		# estimate peak threshold value
 		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
 		print( threshold )
+=======
+		est, est_locs = scratch.kde(xs, ys, ws, 100, 20)
+		print("est :", est, "\nest_locs :", est_locs)
+>>>>>>> e941292ca52beff459394b563d3aeb4d84bb7b4e
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
