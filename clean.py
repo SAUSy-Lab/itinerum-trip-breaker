@@ -192,6 +192,8 @@ class trace(object):
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
+		est, est_locs = scratch.kde(xs, ys, ws, 100, 20)
+		print("est :", est, "\nest_locs :", est_locs)
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
