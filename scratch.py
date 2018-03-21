@@ -1,4 +1,4 @@
-def min_peak(GPS_error_sd,kernel_sd,total_time,threshold_time)
+def min_peak(GPS_error_sd,kernel_sd,total_time,threshold_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
 		We assume that the volume under the total KDE PDF ~= 1. 
 		-	total_time is the sum of the time weights used in the KDE.

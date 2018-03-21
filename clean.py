@@ -24,7 +24,7 @@
 # user's data.  
 
 import datetime, csv, math, scratch
-import rpy2
+#import rpy2
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -120,6 +120,9 @@ class point_obj(object):
 				new_points.append(point_obj(ts, lng, lat, self.accuracy, None))
 		return new_points
 
+	def add_weight(self, w):
+		self.weight = w
+
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
@@ -182,10 +185,13 @@ class trace(object):
 
 
 	def PLACEHOLDER(self):
-		for known_segment in self.subsets:
-			interpolated = self.interpolate_segment(known_segment, 30)# no intervals greater than 30 meters
-			weighted = weight_points(interpolated)
-			print(weighted_points)
+		ml = []
+		for sl in self.subsets:
+			ml.extend(sl)
+		weight_points(ml)
+		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
+		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
+		ws = [p.weight for p in ml]
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -332,7 +338,12 @@ def parse_ts(timestamp): # I need to fix this
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 def weight_points(segment):
-	pass
+	for i in range(1, len(segment)-1):
+		w1 = (segment[i].time - segment[i-1].time).seconds / 2
+		w2 = (segment[i+1].time - segment[i].time).seconds / 2
+		segment[i].add_weight(w1 + w2)
+	segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
+	segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
