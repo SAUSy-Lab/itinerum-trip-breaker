@@ -24,7 +24,12 @@
 # user's data.  
 
 import datetime, csv, math, scratch
-#import rpy2
+import rpy2
+
+# minimum time in minutes at a location for location detection
+MIN_TIME_AT_LOC = 10
+# kernel bandwidth in meters
+BANDWIDTH = 100
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -189,9 +194,15 @@ class trace(object):
 		for sl in self.subsets:
 			ml.extend(sl)
 		weight_points(ml)
+		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
+		# run the KDE
+		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH,100)
+		# estimate peak threshold value
+		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
+		print( threshold )
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.

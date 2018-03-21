@@ -34,19 +34,15 @@ def unproject(x,y,from_projection_string='epsg:3347'):
 	longitude,latitude = transform( inProj, outProj, x, y )
 	return longitude,latitude
 
-def find_peaks(grid,threshold):
-	"""this is sort of a placeholder function which will need to be written in 
-		an implementation specific way once we have KDEs calculated. 
-		Input here is a 2D spatial grid where cells are indexed by consecutive 
-		integers e.g. grid[row][column].
+def find_peaks(estimates,locations,threshold):
+	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
+		integers e.g. grid[column][row].
+		Estimates gives the estimated probability at a point
+		Locations gives a geographic location for that estimate
 		Threshold is a minimum height that a peak must reach."""
-	# create a copy with binary threshold values
-	from copy import copy
-	bin_grid = copy(grid)
-	# compare to threshold
-	for row_id, column in enumerate( bin_grid ):
-		for column_id, cell_value in enumerate(bin_grid[row_id]):
-			cell_value = 1 if cell_value >= threshold else 0
+	# create an array of the same dimensions to keep track of visited cells
+	visited = [ [ False for row in estimates[0] ] for column in estimates ]
+	
 	# now detect clusters of True cells
 	# while there are still true cells unvisited
 	clusters = []
@@ -123,8 +119,8 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size=1):
 	# these are now 2d arrays (python lists) giving estimated probabilities
 	# and locations as x,y tuples
 	# both lists are indexed as list[x][y]
-	assert len(est) == len(num_cells_x)
-	assert len(est[1]) == len(num_cells_y)
+	assert len(est) == num_cells_x
+	assert len(est[1]) == num_cells_y
 	return est, eva
 	
 
