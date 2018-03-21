@@ -36,3 +36,13 @@ This phase is a bit hazier as it's still two steps away from implementation, but
 * Look for activity/travel times that are implausibly long/short and reallocate time if necessary.
 * Potential activity locations that never get visited or get visited for many brief periods only will be ignored and time reallocated to trips, etc.
 
+
+## Dependencies
+Python 3
+
+Rpy2 (python module)
+pyproj (python module)
+scipy (python module)
+
+R 3.3+
+ks (R package)
