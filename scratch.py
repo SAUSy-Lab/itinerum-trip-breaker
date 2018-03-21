@@ -34,40 +34,84 @@ def unproject(x,y,from_projection_string='epsg:3347'):
 	longitude,latitude = transform( inProj, outProj, x, y )
 	return longitude,latitude
 
+
 def find_peaks(estimates,locations,threshold):
 	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
 		integers e.g. grid[column][row].
 		Estimates gives the estimated probability at a point
 		Locations gives a geographic location for that estimate
-		Threshold is a minimum height that a peak must reach."""
-	# create an array of the same dimensions to keep track of visited cells
-	visited = [ [ False for row in estimates[0] ] for column in estimates ]
-	
-	# now detect clusters of True cells
+		Threshold is a minimum height that a peak must reach.
+		Return a list of lon,lat tuples for potential activity locations"""
+	print( '\tFinding peaks in PDF surface' )
+	def get_starting_cell():
+		"""get the indices of a cell with a value of one"""
+		for x, column in enumerate(to_visit):
+			for y, value in enumerate(column):
+				if value == 1:
+					return (x,y)
+		assert False # should never be here
+	def span_cluster(x,y):
+		"""Breadth-first search function. Visit all contiguous cells with a 
+			value of one (from an initial point) and return a list of their 
+			x,y indices."""
+		queue = [(x,y)]
+		discovered = []
+		# set limits for later
+		max_x = len(to_visit)-1
+		max_y = len(to_visit[0])-1
+		# while there is stuff in the queue
+		while len(queue) > 0:
+			# visit the first thing in
+			x,y = queue.pop(0)
+			# mark it discovered
+			discovered.append((x,y))
+			# check all possible neighbor locations (rook contiguity)
+			for delta_x,delta_y in [(0,-1),(-1,0),(+1,0),(0,+1)]:
+				new_x = x + delta_x
+				new_y = y + delta_y
+				# check for any reason not to visit this cell
+				if (new_x,new_y) in discovered: continue 
+				if (new_x,new_y) in queue: continue
+				if new_x < 0 or new_y < 0: continue
+				if new_x > max_x or new_y > max_y: continue
+				if to_visit[new_x][new_y] != 1: continue
+				# everything checked out and this cell is part of the cluster
+				queue.append((new_x,new_y))
+		# update the matrix that this cluster has all beeen visited
+		for x,y in discovered:
+			to_visit[x][y] = 0
+		return discovered
+	# Create an array of the same dimensions to keep track of cells we need to 
+	# visit. 1 for a yet unvisited cells, 0 otherwise. We make the simplifying 
+	# assumption that we don't need to visit cells under the threshold.
+	to_visit = [ [ 1 if value > threshold else 0 for value in column ] for column in estimates ]
+	# now detect clusters of cells
 	# while there are still true cells unvisited
 	clusters = []
-	while sum(bin_grid) > 0:
-		# recursively visit neighboring cells and add their locations to a list 
-		# if they are past the threshold. Once visited, set value to zero.
-		pass
+	# cells are set = to 0 once visited
+	while sum([sum(row) for row in to_visit]) > 0:
+		# get an arbitrary starting point
+		x,y = get_starting_cell()
+		print(x,y, sum([sum(row) for row in to_visit]))
+		# call a recursive function to visit all neighbors
+		clusters.append( span_cluster(x,y) )
+	print( '\t',len(clusters),'clusters found' )
 	peaks = []
 	# each 'cluster' is a list of cells in a cluster
 	for cluster in clusters:
 		# find the peak as the maximum value of cells in the cluster
-		values = [ grid[row][column] for row,column in cluster ]
+		values = [ estimates[column][row] for column,row in cluster ]
 		cluster_max = max(values)
-		# now find the lcation of the peak
-		for row, column in cluster:
-			if grid[row][column] == cluster_max:
-				peaks.append(row,column)
+		# now find the location of the peak
+		for column,row in cluster:
+			if estimates[column][row] == cluster_max:
+				peaks.append(locations[column][row])
 				break
-		# peaks should now be the cell locations (row,column) of the maxima of 
-		# each cluster. These will need to be mapped back to geographical space.
-		# we will know the cell size and the origin of the grid, so this should 
-		# be pretty easy. These points are our activity locations.
+		for x,y in peaks:
+			print(unproject(x,y))
 
 
-def kde(x_vector,y_vector,weights,bandwidth,cell_size=1):
+def kde(x_vector,y_vector,weights,bandwidth,cell_size):
 	"""Do weighted 2d KDE in R KS package, returning python results.
 		Returns two 2d arrays: estimates and estimate locations."""
 	# check the inputs
@@ -87,13 +131,14 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size=1):
 	# R data type conversion
 	from rpy2.robjects import FloatVector, IntVector
 	# set the range to the bounding box plus some
-	x_min = min(x_vector) - bandwidth * 2
-	x_max = max(x_vector) + bandwidth * 2
-	y_min = min(y_vector) - bandwidth * 2
-	y_max = max(y_vector) + bandwidth * 2
-	# set the cell size to roughly 1 meter 
+	x_min = min(x_vector) - bandwidth
+	x_max = max(x_vector) + bandwidth
+	y_min = min(y_vector) - bandwidth
+	y_max = max(y_vector) + bandwidth
+	# set the approximate cell size by determining the number of cells from it
 	num_cells_x = int( (x_max-x_min)/cell_size )
 	num_cells_y = int( (y_max-y_min)/cell_size )
+	print( '\tRunning KDE on',num_cells_x,'x',num_cells_y,'grid with',len(x_vector),'points' )
 	# do the KDE
 	surface = ks.kde(
 		x = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
@@ -122,18 +167,4 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size=1):
 	assert len(est) == num_cells_x
 	assert len(est[1]) == num_cells_y
 	return est, eva
-	
-
-## testing
-#x = [1,2,3,4.5,5]
-#y = [1,2,3.5,4,6]
-#w = [1,2,1,2,2]
-#b = 5
-#estimates, eval_points = kde(x,y,w,b)
-
-#print 'top left cell estimate', estimates.rx(1,1)[0]
-#print 'top left cell location', eval_points.rx(1)[0][0],',',eval_points.rx(2)[0][0]
-#print 'row_length',len(estimates.rx(1,True))
-##print eval_points
-##print sum(estimates)
 
