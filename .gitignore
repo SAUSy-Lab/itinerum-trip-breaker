@@ -1,2 +1,3 @@
 outputs/*.csv
 __pycache__
+*.pyc
