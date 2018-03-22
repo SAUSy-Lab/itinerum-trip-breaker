@@ -100,7 +100,7 @@ class point_obj(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > 1000 and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > 1000 #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
@@ -176,26 +176,26 @@ class trace(object):
 		return new_points
 
 	def make_subsets(self):
-		subsets = []
+		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				subsets.append[cur[:]]
+				ss.append(cur[:])
 				cur = []
 
-		for known_segment in subsets:
+		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
 
 
-	def PLACEHOLDER(self):
+	def break_trips(self):
 		ml = []
 		for sl in self.subsets:
+			print("AAAAAAAAAAAAAAAAAAAAAA")
 			interpolated = self.interpolate_segment(sl, 30)
 			weight_points(interpolated)
-                        ml.extend(interpolated)
-
+			ml.extend(interpolated)
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
@@ -206,7 +206,6 @@ class trace(object):
 		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
 		# currently testing this function
 		scratch.find_peaks(estimates,locations,threshold)
-
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -403,7 +402,7 @@ if __name__ == "__main__":
 					writer.writerow([point.latitude,point.longitude,point.time])
 
 			user.make_subsets()
-			user.PLACEHOLDER() 
+			user.break_trips() 
 
 #		# now store all the points for this user
 #		for point in user.points:			
