@@ -26,10 +26,10 @@
 import datetime, csv, math, scratch
 import rpy2
 
-# minimum time in minutes at a location for location detection
-MIN_TIME_AT_LOC = 10
+# minimum time in seconds at a location for location detection
+MIN_SECS_AT_LOC = 10*60
 # kernel bandwidth in meters
-BANDWIDTH = 100
+BANDWIDTH = 25
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -200,9 +200,13 @@ class trace(object):
 		ws = [p.weight for p in ml]
 		# run the KDE
 		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH)
+		# get the average GPS accuracy value
+		accuracy = sum([p.accuracy for p in self.points])/len(self.points)
+		print('acc:',accuracy)
 		# estimate peak threshold value
-		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
-		# currently testing this function
+		threshold = scratch.min_peak(accuracy,BANDWIDTH,sum(ws),MIN_SECS_AT_LOC)
+		# Find peaks in the density surface
+		# currently only testing this function
 		scratch.find_peaks(estimates,locations,threshold)
 
 	def pop_point(self, key):
