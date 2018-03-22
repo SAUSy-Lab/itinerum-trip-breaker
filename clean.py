@@ -30,8 +30,6 @@ import rpy2
 MIN_TIME_AT_LOC = 10
 # kernel bandwidth in meters
 BANDWIDTH = 100
-# cell size in meters
-CELL_SIZE = 25
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -181,7 +179,7 @@ class trace(object):
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur[:])
+				ss.append(cur[:])i
 				cur = []
 
 		for known_segment in ss:
@@ -192,20 +190,20 @@ class trace(object):
 	def break_trips(self):
 		ml = []
 		for sl in self.subsets:
-			print("AAAAAAAAAAAAAAAAAAAAAA")
 			interpolated = self.interpolate_segment(sl, 30)
-			weight_points(interpolated)
-			ml.extend(interpolated)
+			weight_points(interpolated])
+
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
 		# run the KDE
-		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH,CELL_SIZE)
+		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH)
 		# estimate peak threshold value
 		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
 		# currently testing this function
 		scratch.find_peaks(estimates,locations,threshold)
+
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
