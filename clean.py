@@ -179,7 +179,7 @@ class trace(object):
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				subsets.append[cur[:]]
+				subsets.append(cur[:])
 				cur = []
 
 		for known_segment in subsets:
