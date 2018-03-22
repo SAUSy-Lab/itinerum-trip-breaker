@@ -195,7 +195,7 @@ class trace(object):
 		all_points = []
 		for sl in self.subsets:
 			all_points.extend(sl)
-		ml = interpolate_segment(all_points)
+		ml = self.interpolate_segment(all_points, 30)
 		weight_points(ml)
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
