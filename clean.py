@@ -98,7 +98,7 @@ class point_obj(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > 1000 and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > 1000 #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
@@ -174,25 +174,24 @@ class trace(object):
 		return new_points
 
 	def make_subsets(self):
-		subsets = []
+		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				subsets.append(cur[:])
+				ss.append(cur[:])i
 				cur = []
 
-		for known_segment in subsets:
+		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
 
 
-	def PLACEHOLDER(self):
+	def break_trips(self):
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)
-			weight_points(interpolated)
-			ml.extend(interpolated)
+			weight_points(interpolated])
 
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
@@ -405,7 +404,7 @@ if __name__ == "__main__":
 					writer.writerow([point.latitude,point.longitude,point.time])
 
 			user.make_subsets()
-			user.PLACEHOLDER() 
+			user.break_trips() 
 
 #		# now store all the points for this user
 #		for point in user.points:			
