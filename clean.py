@@ -192,9 +192,10 @@ class trace(object):
 
 
 	def PLACEHOLDER(self):
-		ml = []
+		all_points = []
 		for sl in self.subsets:
-			ml.extend(sl)
+			all_points.extend(sl)
+		ml = interpolate_segment(all_points)
 		weight_points(ml)
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
