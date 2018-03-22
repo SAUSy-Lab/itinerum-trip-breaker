@@ -36,6 +36,21 @@ def unproject(x,y,from_projection_string='epsg:3347'):
 
 
 def find_peaks(estimates,locations,threshold):
+	"""PDF was estimated at a selection of points, which are here given as a list
+		of P values (estimates) and a list of (x,y) locations. The idea is to toss 
+		out any values below the threshold and identify spatial clusters among 
+		those that remain. In each such cluster, the highest value is the activity 
+		location."""
+	assert len(estimates) == len(locations)
+	print(len(estimates),'originally')
+	# drop values below the threshold
+	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
+	estimates = [ est for est in estimates if est >= threshold ]
+	assert len(estimates) == len(locations)
+	print(len(estimates),'post-threshing')
+
+
+def find_peaks_breadth_first(estimates,locations,threshold):
 	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
 		integers e.g. grid[column][row].
 		Estimates gives the estimated probability at a point
@@ -120,9 +135,9 @@ def find_peaks(estimates,locations,threshold):
 
 
 
-def kde(x_vector,y_vector,weights,bandwidth,cell_size):
+def kde(x_vector,y_vector,weights,bandwidth):
 	"""Do weighted 2d KDE in R KS package, returning python results.
-		Returns two 2d arrays: estimates and estimate locations."""
+		Returns two lists: P estimates and estimate locations as x,y tuples."""
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
@@ -148,42 +163,25 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size):
 	diag = r['diag']
 	# R data type conversion
 	from rpy2.robjects import FloatVector, IntVector
-	# set the range to the bounding box plus some
-	x_min = min(x_vector) - bandwidth
-	x_max = max(x_vector) + bandwidth
-	y_min = min(y_vector) - bandwidth
-	y_max = max(y_vector) + bandwidth
-	# set the approximate cell size by determining the number of cells from it
-	num_cells_x = int( (x_max-x_min)/cell_size )
-	num_cells_y = int( (y_max-y_min)/cell_size )
-	print( '\tRunning KDE on',num_cells_x,'x',num_cells_y,'grid with',len(x_vector),'points' )
 	# do the KDE
+	print( '\tRunning KDE on',len(x_vector),'points' )
 	surface = ks.kde(
 		x = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
-		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) ),
-		xmin = FloatVector( [x_min,y_min] ),
-		xmax = FloatVector( [x_max,y_max] ),
-		gridsize = IntVector( [num_cells_x,num_cells_y] )
+		eval_points = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
+		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
 	)
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't 
 	# have to leave this function
 	eva, est = [], []
-	for x in range(1,num_cells_x+1):
-		est.append([])
-		eva.append([])
-		for y in range(1,num_cells_y+1):
-			# insert estimate values
-			est[x-1].append(estimates.rx(x,y)[0])
-			# insert location tuples
-			easting, northing = eval_points.rx(1)[0][x-1], eval_points.rx(2)[0][y-1]
-			eva[x-1].append( (easting, northing) )
-	# these are now 2d arrays (python lists) giving estimated probabilities
+	for i in range(1,len(weights)+1):
+		# insert estimate values
+		est.append(estimates.rx(i)[0])
+		# insert location tuples
+		eva.append( ( eval_points.rx(i,True)[0], eval_points.rx(i,True)[1] ) )
+	# these are now vectors (python lists) giving estimated probabilities
 	# and locations as x,y tuples
-	# both lists are indexed as list[x][y]
-	assert len(est) == num_cells_x
-	assert len(est[1]) == num_cells_y
 
 	# GEOTESTING: checking sampling geometry
 	import csv

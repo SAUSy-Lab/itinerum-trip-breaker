@@ -30,8 +30,6 @@ import rpy2
 MIN_TIME_AT_LOC = 10
 # kernel bandwidth in meters
 BANDWIDTH = 100
-# cell size in meters
-CELL_SIZE = 25
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -205,7 +203,7 @@ class trace(object):
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
 		# run the KDE
-		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH,CELL_SIZE)
+		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH)
 		# estimate peak threshold value
 		threshold = scratch.min_peak(10,BANDWIDTH,sum(ws),MIN_TIME_AT_LOC)
 		# currently testing this function
