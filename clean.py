@@ -98,7 +98,7 @@ class point_obj(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > 1000 #and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > 100 #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
@@ -179,7 +179,7 @@ class trace(object):
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur[:])i
+				ss.append(cur[:])
 				cur = []
 
 		for known_segment in ss:
