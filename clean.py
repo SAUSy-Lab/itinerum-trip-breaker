@@ -98,9 +98,9 @@ class point_obj(object):
 		"""used basically to check location uniqueness"""
 		return (self.latitude,self.longitude)
 
-	def far_from(self, other):
-		# other must be a Point
-		return distance(self, other) > 1000 and (self.time - other.time).seconds > 7200 
+	def far_from(self, next):
+		# next must be a Point
+		return distance(self, next) > 1000 and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
@@ -176,30 +176,26 @@ class trace(object):
 		return new_points
 
 	def make_subsets(self):
-		self.subsets = [self.points]
-
-		"""
-		ss = []
+		subsets = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
+			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur)
-				cur = [self.points[i]]
-			else:
-				cur.append(self.points[i])
-		ss.append(cur)
-		for megatrip in ss:
-			td = megatrip[-1].time - megatrip[0].time 
-			if len(megatrip) > 1 and td.seconds > 1800:
-				self.subsets.append(megatrip)
-		"""
+				subsets.append[cur[:]]
+				cur = []
+
+		for known_segment in subsets:
+			if len(known_segment) > 1: # mininum time length of segment?
+				self.subsets.append(known_segment)
+
 
 	def PLACEHOLDER(self):
-		all_points = []
+		ml = []
 		for sl in self.subsets:
-			all_points.extend(sl)
-		ml = self.interpolate_segment(all_points, 30)
-		weight_points(ml)
+			interpolated = self.interpolate_segment(sl, 30)
+			weight_points(interpolated)
+                        ml.extend(interpolated)
+
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
 		ys = [ scratch.project(p.longitude, p.latitude)[1] for p in ml]
