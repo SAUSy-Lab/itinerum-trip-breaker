@@ -393,6 +393,15 @@ if __name__ == "__main__":
 			# this is actually necessary again after positional cleaning
 			# ( some angles == 0 )
 			user.remove_sequential_duplicates()
+
+			# GEOTESTING: checking post-cleaning geometry
+			import csv
+			with open('outputs/TESTING_post-cleaning-points.csv', 'w+') as csvfile:
+				writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+				writer.writerow(['latitude','longitude','timestamp'])
+				for point in user.points:
+					writer.writerow([point.latitude,point.longitude,point.time])
+
 			user.make_subsets()
 			user.PLACEHOLDER() 
 

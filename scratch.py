@@ -107,8 +107,17 @@ def find_peaks(estimates,locations,threshold):
 			if estimates[column][row] == cluster_max:
 				peaks.append(locations[column][row])
 				break
+
+	# GEOTESTING: checking sampling geometry
+	import csv
+	with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+		writer.writerow(['longitude','latitude'])
 		for x,y in peaks:
-			print(unproject(x,y))
+			lon,lat = unproject(x,y))
+			writer.writerow([lon,lat])
+
+
 
 
 def kde(x_vector,y_vector,weights,bandwidth,cell_size):
@@ -117,6 +126,15 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size):
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
+
+	# GEOTESTING: checking input geometry
+	import csv
+	with open('outputs/TESTING_kde_inputs.csv', 'w+') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+		writer.writerow(['x','y','w'])
+		for x,y,w in zip(x_vector,y_vector,weights):
+			writer.writerow([x,y,w])
+
 	# normalize the weights to the sample size
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
@@ -166,5 +184,15 @@ def kde(x_vector,y_vector,weights,bandwidth,cell_size):
 	# both lists are indexed as list[x][y]
 	assert len(est) == num_cells_x
 	assert len(est[1]) == num_cells_y
+
+	# GEOTESTING: checking sampling geometry
+	import csv
+	with open('outputs/TESTING_kde-eval-points.csv', 'w+') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+		writer.writerow(['x','y','estimate'])
+		for x, column in enumerate(eva):
+			for y, (east,north) in enumerate(column):
+				writer.writerow([east,north,est[x][y]])
+
 	return est, eva
 
