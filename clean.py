@@ -176,6 +176,9 @@ class trace(object):
 		return new_points
 
 	def make_subsets(self):
+		self.subsets = [self.points]
+
+		"""
 		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
@@ -189,7 +192,7 @@ class trace(object):
 			td = megatrip[-1].time - megatrip[0].time 
 			if len(megatrip) > 1 and td.seconds > 1800:
 				self.subsets.append(megatrip)
-
+		"""
 
 	def PLACEHOLDER(self):
 		all_points = []
