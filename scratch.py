@@ -114,7 +114,7 @@ def find_peaks(estimates,locations,threshold):
 		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
 		writer.writerow(['longitude','latitude'])
 		for x,y in peaks:
-			lon,lat = unproject(x,y))
+			lon,lat = unproject(x,y)
 			writer.writerow([lon,lat])
 
 
