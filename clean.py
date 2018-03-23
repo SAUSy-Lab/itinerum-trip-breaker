@@ -200,12 +200,15 @@ class trace(object):
 		ws = [p.weight for p in ml]
 		# run the KDE
 		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH)
-		# get the average GPS accuracy value
-		# TODO I'm averaging standard deviations here... should I instead be
-		# addign variances?
-		mean_accuracy = sum([p.accuracy for p in self.points])/len(self.points)
+		# determine average GPS accuracy value for this user
+		# (sqrt of the mean variance)
+		mean_accuracy = math.sqrt(
+			sum( [p.accuracy**2 for p in self.points] ) 
+			/ 
+			len(self.points)
+		)
 		# estimate peak threshold value
-		threshold = scratch.min_peak(accuracy,BANDWIDTH,sum(ws),MIN_SECS_AT_LOC)
+		threshold = scratch.min_peak(mean_accuracy,BANDWIDTH,sum(ws),MIN_SECS_AT_LOC)
 		# Find peaks in the density surface
 		# currently only testing this function
 		scratch.find_peaks(estimates,locations,threshold)
