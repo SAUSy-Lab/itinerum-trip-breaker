@@ -208,7 +208,12 @@ class trace(object):
 			len(self.points)
 		)
 		# estimate peak threshold value
-		threshold = scratch.min_peak(mean_accuracy,BANDWIDTH,sum(ws),MIN_SECS_AT_LOC)
+		threshold = scratch.min_peak(
+			mean_accuracy,		# mean sd of GPS accuracy for user
+			BANDWIDTH,			# sd of kernel bandwidth
+			sum(ws),				# total seconds entering KDE
+			MIN_SECS_AT_LOC	# seconds spentat locations to be found
+		)
 		# Find peaks in the density surface
 		# currently only testing this function
 		scratch.find_peaks(estimates,locations,threshold)
