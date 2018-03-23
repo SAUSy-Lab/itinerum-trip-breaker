@@ -128,6 +128,9 @@ class point_obj(object):
 	def add_weight(self, w):
 		self.weight = w
 
+	def close_to(self, location):
+		pass
+
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
@@ -164,6 +167,26 @@ class trace(object):
 		# measure to and from neighbors
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
+
+	def compute_sequence(self, locations, granularity=60):
+		start_time = self.points[0].time
+		end_time = self.points[-1].time
+		table_len = math.ceil((end.time - start_time).seconds / granularity)
+		table = []
+
+		cur_point = 0
+		for i in range(table_len):
+			time = start_time + datetime.timedelta(second = granularity * i)
+			cur_point = self.closest_point(cur_point)
+			location = self.closest_location(self.points[cur_point], locations)
+			table.append((location, time))
+ 
+	def closest_point(self, current):
+		pass
+
+	def closest_location(self, point, locations):
+		# None if there are no locations nearby
+		pass	
 
 	def interpolate_segment(self, segment, sample=30):
 		new_points = []
