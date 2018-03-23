@@ -214,7 +214,8 @@ class trace(object):
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)
-			weight_points(interpolated])
+			weight_points(interpolated)
+			ml.extend(interpolated)
 
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
@@ -222,11 +223,20 @@ class trace(object):
 		ws = [p.weight for p in ml]
 		# run the KDE
 		estimates, locations = scratch.kde(xs,ys,ws,BANDWIDTH)
-		# get the average GPS accuracy value
-		accuracy = sum([p.accuracy for p in self.points])/len(self.points)
-		print('acc:',accuracy)
+		# determine average GPS accuracy value for this user
+		# (sqrt of the mean variance)
+		mean_accuracy = math.sqrt(
+			sum( [p.accuracy**2 for p in self.points] ) 
+			/ 
+			len(self.points)
+		)
 		# estimate peak threshold value
-		threshold = scratch.min_peak(accuracy,BANDWIDTH,sum(ws),MIN_SECS_AT_LOC)
+		threshold = scratch.min_peak(
+			mean_accuracy,		# mean sd of GPS accuracy for user
+			BANDWIDTH,			# sd of kernel bandwidth
+			sum(ws),				# total seconds entering KDE
+			MIN_SECS_AT_LOC	# seconds spentat locations to be found
+		)
 		# Find peaks in the density surface
 		# currently only testing this function
 		scratch.find_peaks(estimates,locations,threshold)

@@ -43,14 +43,60 @@ def find_peaks(estimates,locations,threshold):
 		those that remain. In each such cluster, the highest value is the activity 
 		location."""
 	assert len(estimates) == len(locations)
-	print(len(estimates),'originally')
+	CLUSTER_DISTANCE = 50 # meters
+	from math import sqrt
 	# drop values below the threshold
 	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 	estimates = [ est for est in estimates if est >= threshold ]
 	assert len(estimates) == len(locations)
-	print('threshold:',threshold)
-	print(len(estimates),'post-threshing')
+	print('\tclustering',len(estimates),'points above',threshold,'threshold')
+	# now calculate a connectivity matrix between all these points
+	# based on distance
+	neighbs = []
+	for i,(x1,y1) in enumerate(locations):
+		neighbs.append([])
+		for j,(x2,y2) in enumerate(locations):
+			# use euclidian distance since this is already projected
+			connection = sqrt((x1-x2)**2 + (y1-y2)**2) < CLUSTER_DISTANCE
+			neighbs[i].append( connection )
+	print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
+	# clusters will be a list of disjoint sets
+	clusters = []
+	# for each point
+	for i in range(0,len(neighbs)):
+		# get a set of neighbor indices within distance, 
+		# including this point itself ( dist = 0 )
+		neighbors = set( [ j for j,n in enumerate(neighbs[i]) if n ] )
+		found_cluster = False
+		for cluster in clusters:
+			# check each cluster for overlap with this set
+			# if overlap, mush them together
+			if not cluster.isdisjoint(neighbors):
+				cluster = cluster | neighbors
+				found_cluster = True
+				break 
+		if not found_cluster:
+			# else we have no overlap, so create a new cluster
+			clusters.append(neighbors)
+	print( '\tfound',len(clusters),'clusters' )
+	potential_activity_locations = []
+	# find the maximum estimate and a location with that value
+	for cluster in clusters:
+		peak_height = max( [estimates[i] for i in cluster] )
+		for i in cluster:
+			if estimates[i] == peak_height:
+				potential_activity_locations.append( locations[i] )
+				break
 
+	# GEOTESTING: checking post-cleaning geometry
+	import csv
+	with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+		writer.writerow(['x','y'])
+		for x,y in potential_activity_locations:
+			writer.writerow([x,y])
+
+	return potential_activity_locations
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
 #	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
@@ -163,12 +209,17 @@ def kde(x_vector,y_vector,weights,bandwidth):
 	cbind = r['cbind']
 	diag = r['diag']
 	# R data type conversion
-	from rpy2.robjects import FloatVector, IntVector
+	from rpy2.robjects import FloatVector
 	# do the KDE
 	print( '\tRunning KDE on',len(x_vector),'points' )
+	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
 	surface = ks.kde(
-		x = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
-		eval_points = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
+		# points and evaluation points are the same
+		x = point_matrix,
+		eval_points = point_matrix,
+		# weights
+		w = FloatVector( weights ),
+		# bandwidth / covariance matrix
 		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
 	)
 	eval_points = surface.rx2('eval.points')
