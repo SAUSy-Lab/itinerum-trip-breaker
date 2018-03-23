@@ -98,7 +98,7 @@ class point_obj(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > 1000 #and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > 100 #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
