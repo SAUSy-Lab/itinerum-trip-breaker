@@ -43,7 +43,7 @@ def find_peaks(estimates,locations,threshold):
 		those that remain. In each such cluster, the highest value is the activity 
 		location."""
 	assert len(estimates) == len(locations)
-	CLUSTER_DISTANCE = 45 # meters
+	CLUSTER_DISTANCE = 50 # meters
 	from math import sqrt
 	# drop values below the threshold
 	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
@@ -88,6 +88,15 @@ def find_peaks(estimates,locations,threshold):
 				potential_activity_locations.append( locations[i] )
 				break
 
+	# GEOTESTING: checking post-cleaning geometry
+	import csv
+	with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
+		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
+		writer.writerow(['x','y'])
+		for x,y in potential_activity_locations:
+			writer.writerow([x,y])
+
+	return potential_activity_locations
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
 #	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
