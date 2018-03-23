@@ -25,9 +25,9 @@ This phase largely follows the [method described by Thierry Chaix and Kestens](h
 
 1. Calculate a KDE based on time weighted GPS points, interpolated as appropriate. GPS points are also used as points where the PDF is estimated. This saves the cost of estimating a grid of points over sparse GPS data. 
 2. Estimate an "activity threshold" for that surface. Id est, how high would a peak in the KDE be if someone spent X seconds at a given location, given the known parameters of 
-	a) total time under the surface (sum of time weights)
-	b) average GPS error for the user
-	c) kernel bandwidth
+    - total time under the surface (sum of time weights)
+    - average GPS error for the user
+    - kernel bandwidth
 3. Points with a PDF estimate above the threshold are clustered into contiguous groups.
 4. The maximum PDF estimate from each group (the peak) will be taken as a possible activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point from the peak. This is not implemented yet.)
 
@@ -40,11 +40,9 @@ This phase is a bit hazier as it's still two steps away from implementation, but
 
 
 ## Dependencies
-Python 3
-
-Rpy2 (python module)
-pyproj (python module)
-scipy (python module)
-
-R 3.3+
-ks (R package)
+* Python 3
+    - Rpy2 (python module)
+    - pyproj (python module)
+    - scipy (python module)
+* R 3.3+
+    - ks (R package)
