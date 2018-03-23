@@ -47,7 +47,7 @@ def find_peaks(estimates,locations,threshold):
 	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 	estimates = [ est for est in estimates if est >= threshold ]
 	assert len(estimates) == len(locations)
-	print('\tclustering',len(estimates),'points above threshold')
+	print('\tclustering',len(estimates),'points above',threshold,'threshold')
 
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
