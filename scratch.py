@@ -43,13 +43,11 @@ def find_peaks(estimates,locations,threshold):
 		those that remain. In each such cluster, the highest value is the activity 
 		location."""
 	assert len(estimates) == len(locations)
-	print(len(estimates),'originally')
 	# drop values below the threshold
 	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 	estimates = [ est for est in estimates if est >= threshold ]
 	assert len(estimates) == len(locations)
-	print('threshold:',threshold)
-	print(len(estimates),'post-threshing')
+	print('\tclustering',len(estimates),'points above threshold')
 
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
