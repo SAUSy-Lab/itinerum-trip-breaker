@@ -1,5 +1,5 @@
 ## Introduction
-This is an application for parsing Itinerum travel survey data into a more standard travel survey format, showing trips, activity locations, modes of travel and times of arrival/departure, etc. 
+This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itinerum-android) travel survey data into a more standard travel survey format, showing trips, activity locations, modes of travel and times of arrival/departure, etc. 
 
 ## Algorithm
 For each user:
