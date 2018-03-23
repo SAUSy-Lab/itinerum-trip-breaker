@@ -43,11 +43,50 @@ def find_peaks(estimates,locations,threshold):
 		those that remain. In each such cluster, the highest value is the activity 
 		location."""
 	assert len(estimates) == len(locations)
+	CLUSTER_DISTANCE = 45 # meters
+	from math import sqrt
 	# drop values below the threshold
 	locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 	estimates = [ est for est in estimates if est >= threshold ]
 	assert len(estimates) == len(locations)
 	print('\tclustering',len(estimates),'points above',threshold,'threshold')
+	# now calculate a connectivity matrix between all these points
+	# based on distance
+	neighbs = []
+	for i,(x1,y1) in enumerate(locations):
+		neighbs.append([])
+		for j,(x2,y2) in enumerate(locations):
+			# use euclidian distance since this is already projected
+			connection = sqrt((x1-x2)**2 + (y1-y2)**2) < CLUSTER_DISTANCE
+			neighbs[i].append( connection )
+	print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
+	# clusters will be a list of disjoint sets
+	clusters = []
+	# for each point
+	for i in range(0,len(neighbs)):
+		# get a set of neighbor indices within distance, 
+		# including this point itself ( dist = 0 )
+		neighbors = set( [ j for j,n in enumerate(neighbs[i]) if n ] )
+		found_cluster = False
+		for cluster in clusters:
+			# check each cluster for overlap with this set
+			# if overlap, mush them together
+			if not cluster.isdisjoint(neighbors):
+				cluster = cluster | neighbors
+				found_cluster = True
+				break 
+		if not found_cluster:
+			# else we have no overlap, so create a new cluster
+			clusters.append(neighbors)
+	print( '\tfound',len(clusters),'clusters' )
+	potential_activity_locations = []
+	# find the maximum estimate and a location with that value
+	for cluster in clusters:
+		peak_height = max( [estimates[i] for i in cluster] )
+		for i in cluster:
+			if estimates[i] == peak_height:
+				potential_activity_locations.append( locations[i] )
+				break
 
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
