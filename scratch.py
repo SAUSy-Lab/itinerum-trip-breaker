@@ -163,12 +163,17 @@ def kde(x_vector,y_vector,weights,bandwidth):
 	cbind = r['cbind']
 	diag = r['diag']
 	# R data type conversion
-	from rpy2.robjects import FloatVector, IntVector
+	from rpy2.robjects import FloatVector
 	# do the KDE
 	print( '\tRunning KDE on',len(x_vector),'points' )
+	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
 	surface = ks.kde(
-		x = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
-		eval_points = cbind( FloatVector(x_vector), FloatVector(y_vector) ),
+		# points and evaluation points are the same
+		x = point_matrix,
+		eval_points = point_matrix,
+		# weights
+		w = FloatVector( weights ),
+		# bandwidth / covariance matrix
 		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
 	)
 	eval_points = surface.rx2('eval.points')

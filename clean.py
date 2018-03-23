@@ -179,7 +179,7 @@ class trace(object):
 		for i in range(1, len(self.points)):
 			cur.append(self.points[i])
 			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur[:])i
+				ss.append(cur[:])
 				cur = []
 
 		for known_segment in ss:
@@ -191,7 +191,8 @@ class trace(object):
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)
-			weight_points(interpolated])
+			weight_points(interpolated)
+			ml.extend(interpolated)
 
 		# format as vectors for KDE function
 		xs = [ scratch.project(p.longitude, p.latitude)[0] for p in ml]
