@@ -41,8 +41,8 @@ This phase is a bit hazier as it's still two steps away from implementation, but
 
 ## Dependencies
 * Python 3
-    - Rpy2 (python module)
-    - pyproj (python module)
-    - scipy (python module)
+    - Rpy2 
+    - pyproj
+    - scipy
 * R 3.3+
-    - ks (R package)
+    - ks package
