@@ -50,8 +50,7 @@ def find_peaks(estimates,locations,threshold):
 	estimates = [ est for est in estimates if est >= threshold ]
 	assert len(estimates) == len(locations)
 	print('\tclustering',len(estimates),'points above',threshold,'threshold')
-	# now calculate a connectivity matrix between all these points
-	# based on distance
+	# now calculate a distance-based connectivity matrix between all these points
 	neighbs = []
 	for i,(x1,y1) in enumerate(locations):
 		neighbs.append([])
@@ -62,23 +61,30 @@ def find_peaks(estimates,locations,threshold):
 	print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
 	# clusters will be a list of disjoint sets
 	clusters = []
-	# for each point
+	# now for each point, check for cluster membership and add and merge clusters
 	for i in range(0,len(neighbs)):
 		# get a set of neighbor indices within distance, 
 		# including this point itself ( dist = 0 )
 		neighbors = set( [ j for j,n in enumerate(neighbs[i]) if n ] )
-		found_cluster = False
-		for cluster in clusters:
+		# create list to keep track of clusters this set belongs to
+		member_cluster_indices = []
+		for i,cluster in enumerate(clusters):
 			# check each cluster for overlap with this set
-			# if overlap, mush them together
-			if not cluster.isdisjoint(neighbors):
-				cluster = cluster | neighbors
-				found_cluster = True
-				break 
-		if not found_cluster:
-			# else we have no overlap, so create a new cluster
+			if not cluster.isdisjoint( neighbors ):
+				member_cluster_indices.append(i)
+		if len(member_cluster_indices) == 0:
+			#  we have no overlap, so this becomes a new cluster
 			clusters.append(neighbors)
-	print( '\tfound',len(clusters),'clusters' )
+		elif len(member_cluster_indices) > 0:
+			# we have one or more matching clusters
+			for i in reversed(member_cluster_indices):
+				# add everyhting together in a new cluster and
+				# drop off the old clusters which are now merged in the new one
+				neighbors = neighbors | clusters.pop(i)
+				# add the new cluster
+			clusters.append(neighbors)
+
+	print( '\tfound',len(clusters),'clusters with',sum([len(c) for c in clusters]),'total points' )
 	potential_activity_locations = []
 	# find the maximum estimate and a location with that value
 	for cluster in clusters:
@@ -97,6 +103,7 @@ def find_peaks(estimates,locations,threshold):
 			writer.writerow([x,y])
 
 	return potential_activity_locations
+
 
 #def find_peaks_breadth_first(estimates,locations,threshold):
 #	"""Inputs are 2D spatial grids where cells are indexed by consecutive 
