@@ -1,10 +1,21 @@
+#
+# Configuration parameters 
+#
 
+# coordinates.csv file as from Itinerum
 input_coordinates_file = 'inputs/coordinates.csv'
 
-# minimum time in seconds at a location for location detection
+# How much time must be spent in one spot for it to be detected as a potential  
+# activity location? In seconds.
 MIN_SECS_AT_LOC = 10*60
-# kernel bandwidth in meters
+
+# Spatial kernel bandwidth in meters (standard deviation of gaussian kernel)
 BANDWIDTH = 25
+
+# minimum distance between separate clusters 
+# (parameter for activity location detection)
 CLUSTER_DISTANCE = 50
+
+# TODO DOCUMENT THIS
 FILENAME = "./outputs/activities_testing.csv"
 FILENAME_L = "./outputs/locations_testing.csv"
