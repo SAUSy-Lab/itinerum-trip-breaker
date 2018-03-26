@@ -78,7 +78,7 @@ class Trace(object):
 			time = event[0].ts
 			location_id = ""
 			if time in point_to_lid:
-				loction_id = l_to_uid[point_to_lid[time]]
+				location_id = l_to_uid[point_to_lid[time]]
 			line = "{},{},{},{},{},{}\n".format(
 			        self.id, str(s_no), location_id, mode, unknown, time)
 			fd.write(line)
@@ -93,7 +93,7 @@ class Trace(object):
 		uid = 1
 		for location in point_to_l.values():
 			description = ""
-			line = "".format(self.id, str(uid), str(location.logitude), str(location.latitude), description)
+			line = "".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
 			fd.write(line)
 			if (location.longitude, location.latitude) not in d:
 				d[(location.longitude, location.latitude)] = uid
@@ -166,7 +166,7 @@ class Trace(object):
 		d = {}
 		for p in self.points:
 			for l in locations:
-				if distance(p, l) < config.CLUSTER_DISTANCE / 2:
+				if distance(p, l) < config.cluster_distance / 2:
 					d[p.ts] = l
 		return d
 
