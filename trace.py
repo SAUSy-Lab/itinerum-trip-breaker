@@ -157,8 +157,8 @@ class Trace(object):
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(ptl, config.output_activities_file)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.output_locations_file)
+		l_to_uid = self.write_l_csv(ptl, config.output_locations_file)
+		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 
 	def make_ptl(self, locations):
