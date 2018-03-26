@@ -93,7 +93,7 @@ class Trace(object):
 		uid = 1
 		for location in point_to_l.values():
 			description = ""
-			line = "".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
+			line = "{},{},{},{},{}\n".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
 			fd.write(line)
 			if (location.longitude, location.latitude) not in d:
 				d[(location.longitude, location.latitude)] = uid
