@@ -147,9 +147,7 @@ class Trace(object):
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			config.kernel_bandwidth,			# sd of kernel bandwidth
 			sum(ws),				# total seconds entering KDE
-			config.minimum_activity_time	# seconds spent at locations to be found
 		)
 		# Find peaks in the density surface
 		# currently only testing this function
