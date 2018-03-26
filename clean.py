@@ -32,10 +32,12 @@ import config
 
 
 def clean_sequence(sequence):
+	"""DOCUMENTATION NEEDED"""
 	pass
 
 
 def init_file(filename, t):
+	"""DOCUMENTATION NEEDED"""
 	fd = open(filename, "w")
 	header = ""
 	if t == "activities":
@@ -45,30 +47,17 @@ def init_file(filename, t):
 	fd.write(header)
 
 
-def weight_points(segment):
-	for i in range(1, len(segment)-1):
-		w1 = (segment[i].time - segment[i-1].time).seconds / 2
-		w2 = (segment[i+1].time - segment[i].time).seconds / 2
-		segment[i].add_weight(w1 + w2)
-	segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
-	segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
-
-
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
-
 	user_ids = []
-
-	# get a list of unique user_ids to iterate over
+	# get a list of all user_ids in the coordinates file
 	with open(config.input_coordinates_file, newline='') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
 			user_ids.append( row['uuid'] )
-
-	user_ids = list(set(user_ids)) # why? user_ids is already a list
+	# Keep only unique user_id's
+	user_ids = list(set(user_ids)) 
 	print( len(user_ids),'user(s) to clean' )
-
-
 	# loop over users calling all the functions for each
 	init_file(config.FILENAME, "activities")
 	for user_id in user_ids:

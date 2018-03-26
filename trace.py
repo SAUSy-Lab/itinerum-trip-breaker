@@ -50,7 +50,7 @@ class Trace(object):
 			found = False
 			for pl in locations:
 				l = unproject(pl[0], pl[1])
-				if distance(p, l) < CLUSTER_DISTANCE / 2: #unique location
+				if distance(p, l) < config.CLUSTER_DISTANCE / 2: #unique location
 					p_loc = loc
 					loc = l
 					found = True
@@ -110,7 +110,6 @@ class Trace(object):
 			if self.points[i-1].far_from(self.points[i]):
 				ss.append(cur[:])
 				cur = []
-
 		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
@@ -160,7 +159,7 @@ class Trace(object):
 		for p in self.points:
 			for pl in locations:
 				l = unproject(pl[0], pl[1])
-				if distance(p, l) < CLUSTER_DISTANCE / 2:
+				if distance(p, l) < config.CLUSTER_DISTANCE / 2:
 					d[p.ts] = l	
 
 
@@ -171,7 +170,6 @@ class Trace(object):
 			those that remain. In each such cluster, the highest value is the activity 
 			location."""
 		assert len(estimates) == len(locations)
-		CLUSTER_DISTANCE = 50 # meters
 		from math import sqrt
 		from location import ActivityLocation
 		from misc_funcs import unproject
@@ -186,7 +184,7 @@ class Trace(object):
 			neighbs.append([])
 			for j,(x2,y2) in enumerate(locations):
 				# use euclidian distance since this is already projected
-				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < CLUSTER_DISTANCE
+				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.CLUSTER_DISTANCE
 				neighbs[i].append( connection )
 		print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
 		# clusters will be a list of disjoint sets
