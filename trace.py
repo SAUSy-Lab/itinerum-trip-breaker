@@ -167,7 +167,8 @@ class Trace(object):
 		for p in self.points:
 			for l in locations:
 				if distance(p, l) < config.CLUSTER_DISTANCE / 2:
-					d[p.ts] = l	
+					d[p.ts] = l
+		return d
 
 
 	def find_peaks(self,estimates,locations,threshold):
