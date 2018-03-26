@@ -85,22 +85,28 @@ def find_peaks(estimates,locations,threshold):
 			clusters.append(neighbors)
 
 	print( '\tfound',len(clusters),'clusters with',sum([len(c) for c in clusters]),'total points' )
+	from location import ActivityLocation
 	potential_activity_locations = []
 	# find the maximum estimate and a location with that value
 	for cluster in clusters:
 		peak_height = max( [estimates[i] for i in cluster] )
 		for i in cluster:
+			# if this is the highest point
 			if estimates[i] == peak_height:
-				potential_activity_locations.append( locations[i] )
+				x,y = locations[i]
+				lon,lat = unproject(x,y)
+				# create a location and append to the list
+				location = ActivityLocation(lon,lat)
+				potential_activity_locations.append( location )
 				break
 
 	# GEOTESTING: checking post-cleaning geometry
 	import csv
 	with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-		writer.writerow(['x','y'])
-		for x,y in potential_activity_locations:
-			writer.writerow([x,y])
+		writer.writerow(['longitude','latitude'])
+		for location in potential_activity_locations:
+			writer.writerow([location.longitude,location.latitude])
 
 	return potential_activity_locations
 

@@ -32,7 +32,7 @@ MIN_SECS_AT_LOC = 10*60
 BANDWIDTH = 25
 CLUSTER_DISTANCE = 50
 FILENAME = "./outputs/activities_testing.csv"
-FILENAME_L = "./outputs/locations_testint.csv"
+FILENAME_L = "./outputs/locations_testing.csv"
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -137,6 +137,7 @@ class point_obj(object):
 	def close_to(self, location):
 		pass
 
+
 class trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
@@ -183,7 +184,7 @@ class trace(object):
 			cur.append(p)
 			found = False
 			for pl in locations:
-                                l = scratch.unproject(pl[0], pl[1])
+				l = scratch.unproject(pl[0], pl[1])
 				if distance(p, l) < CLUSTER_DISTANCE / 2: #unique location
 					p_loc = loc
 					loc = l
@@ -215,7 +216,7 @@ class trace(object):
 	def write_l_csv(self, point_to_l, filename):
 		fd = open(filename, "a")
 		d = {}
-                uid = 1
+		uid = 1
 		for location in point_to_l.values():
 			description = ""
 			line = "".format(self.id, str(uid), str(location.logitude), str(location.latitude), description)
@@ -275,15 +276,13 @@ class trace(object):
 		)
 		# Find peaks in the density surface
 		# currently only testing this function
-		scratch.find_peaks(estimates,locations,threshold)
-		"""
-		locations = 
-                sequence = self.compute_sequence(locations)
+		locations = scratch.find_peaks(estimates,locations,threshold)
+		sequence = self.compute_sequence(locations)
 		clean_sequence(sequence)
 		ptl = make_ptl(locations)
 		l_to_uid = self.write_l_csv(ptl, FILENAME_L)
 		self.write_a_csv(sequence, ptl, l_to_uid, FILENAME)
-		"""
+
 
 	def make_ptl(self, locations):
 		d = {}
@@ -292,6 +291,7 @@ class trace(object):
 				l = scratch.unproject(pl[0], pl[1])
 				if distance(p, l) < CLUSTER_DISTANCE / 2:
 					d[p.ts] = l	
+
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -420,14 +420,16 @@ class trace(object):
 def clean_sequence(sequence):
 	pass
 
+
 def init_file(filename, t):
 	fd = open(filename, "w")
 	header = ""
 	if t == "activities":
 		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
-	elife t == "locations":
+	elif t == "locations":
 		header = "user_id,uid,lon,lat,description\n"
 	fd.write(header)
+
 
 def ts_str(ts, tz):
 	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
@@ -449,6 +451,7 @@ def parse_ts(timestamp): # I need to fix this
 	tz = timestamp[20:]
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
+
 def weight_points(segment):
 	for i in range(1, len(segment)-1):
 		w1 = (segment[i].time - segment[i-1].time).seconds / 2
@@ -456,6 +459,7 @@ def weight_points(segment):
 		segment[i].add_weight(w1 + w2)
 	segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 	segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
+
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
