@@ -43,6 +43,7 @@ def init_file(filename, t):
 	elif t == "locations":
 		header = "user_id,uid,lon,lat,description\n"
 	fd.write(header)
+	fd.close()
 
 
 def weight_points(segment):

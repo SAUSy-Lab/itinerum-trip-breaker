@@ -48,8 +48,7 @@ class Trace(object):
 		for p in self.points:
 			cur.append(p)
 			found = False
-			for pl in locations:
-				l = unproject(pl[0], pl[1])
+			for l in locations:
 				if distance(p, l) < CLUSTER_DISTANCE / 2: #unique location
 					p_loc = loc
 					loc = l
@@ -78,6 +77,7 @@ class Trace(object):
 			        self.id, str(s_no), location_id, mode, unknown, time)
 			fd.write(line)
 			s_no += 1
+		fd.close()
 
 	def write_l_csv(self, point_to_l, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -88,8 +88,10 @@ class Trace(object):
 			description = ""
 			line = "".format(self.id, str(uid), str(location.logitude), str(location.latitude), description)
 			fd.write(line)
-			d[(location.longitude, location.latitude)] = uid
+			if (location.longitude, location.latitude) not in d:
+				d[(location.longitude, location.latitude)] = uid
 			uid += 1
+		fd.close()
 		return d
 
 	def interpolate_segment(self, segment, sample=30):
@@ -147,19 +149,18 @@ class Trace(object):
 		# Find peaks in the density surface
 		# currently only testing this function
 		locations = self.find_peaks(estimates,locations,threshold)
-#		sequence = self.compute_sequence(locations)
-#		clean_sequence(sequence)
-#		ptl = make_ptl(locations)
-#		l_to_uid = self.write_l_csv(ptl, FILENAME_L)
-#		self.write_a_csv(sequence, ptl, l_to_uid, FILENAME)
+		sequence = self.compute_sequence(locations)
+		clean_sequence(sequence)
+		ptl = self.make_ptl(locations)
+		l_to_uid = self.write_l_csv(ptl, FILENAME_L)
+		self.write_a_csv(sequence, ptl, l_to_uid, FILENAME)
 
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
 		d = {}
 		for p in self.points:
-			for pl in locations:
-				l = unproject(pl[0], pl[1])
+			for l in locations:
 				if distance(p, l) < CLUSTER_DISTANCE / 2:
 					d[p.ts] = l	
 
