@@ -78,7 +78,7 @@ class Trace(object):
 			time = event[0].ts
 			location_id = ""
 			if time in point_to_lid:
-				location_id = l_to_uid[point_to_lid[time]]
+				location_id = l_to_uid[(point_to_lid[time].longitude, point_to_lid[time].latitude)]
 			line = "{},{},{},{},{},{}\n".format(
 			        self.id, str(s_no), location_id, mode, unknown, time)
 			fd.write(line)
