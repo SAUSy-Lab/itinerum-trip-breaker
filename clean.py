@@ -30,6 +30,8 @@ import rpy2
 MIN_SECS_AT_LOC = 10*60
 # kernel bandwidth in meters
 BANDWIDTH = 25
+CLUSTER_DISTANCE = 50
+FILENAME = "./outputs/activities_testing.csv"
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -103,6 +105,9 @@ class point_obj(object):
 	def __repr__(self):
 		return str(scratch.project(self.longitude, self.latitude))
 
+	def __eq__(self, other):
+		return self.latitude == other.latitude and self.longitude == other.longitude
+
 	def copy(self):
 		return point_obj(self.ts, self.longitude, self.latitude, self.accuracy, self.other_fields)
 
@@ -168,25 +173,43 @@ class trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def compute_sequence(self, locations, granularity=60):
-		start_time = self.points[0].time
-		end_time = self.points[-1].time
-		table_len = math.ceil((end.time - start_time).seconds / granularity)
-		table = []
+	def compute_sequence(self, locations):
+		sequence = []
+		cur = []
+		p_loc = None #previous location
+		loc = None #current location
+		for p in self.points:
+			cur.append(p)
+			found = False
+			for pl in locations:
+                                l = scratch.unproject(pl[0], pl[1])
+				if distance(p, l) < CLUSTER_DISTANCE / 2: #unique location
+					p_loc = loc
+					loc = l
+					found = True
+			if not found:
+				p_loc = loc
+				loc = None
 
-		cur_point = 0
-		for i in range(table_len):
-			time = start_time + datetime.timedelta(second = granularity * i)
-			cur_point = self.closest_point(cur_point)
-			location = self.closest_location(self.points[cur_point], locations)
-			table.append((location, time))
- 
-	def closest_point(self, current):
-		pass
+			if not loc == p_loc:
+				sequence.append(cur)
+				cur = []
+		return sequence
 
-	def closest_location(self, point, locations):
-		# None if there are no locations nearby
-		pass	
+	def write_a_csv(self, sequence, point_to_lid, filename):
+		fd = open(filename, "a") #append to the file
+		s_no = 1
+		for event in sequence:
+			mode = ""
+			unknown = ""
+			time = event[0].ts
+			location_id = ""
+			if time in point_to_lid:
+				loction_id = point_to_lid[time]
+			line = "{},{},{},{},{},{}\n".format(
+			        self.id, s_no, location_id, mode, unknown, time)
+			fd.write(line)
+			s_no += 1
 
 	def interpolate_segment(self, segment, sample=30):
 		new_points = []
@@ -240,6 +263,18 @@ class trace(object):
 		# Find peaks in the density surface
 		# currently only testing this function
 		scratch.find_peaks(estimates,locations,threshold)
+		"""
+		locations = 
+                sequence = self.compute_sequence(locations)
+		clean_sequence(sequence)
+		self.write_a_csv(sequence, make_ptl(locations), FILENAME)
+		"""
+
+	def make_ptl(self, locations):
+		d = {}
+		for p in self.points:
+			for pl in locations:
+				l = scratch.unproject(pl[0], pl[1])	
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -365,6 +400,16 @@ class trace(object):
 				return errors[max(errors.keys())]
 		return False
 
+def clean_sequence(sequence):
+	pass
+
+def init_file(filename, type):
+	fd = open(filename, "w")
+	header = ""
+	if type == "activities":
+		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
+	fd.write(header)
+
 def ts_str(ts, tz):
 	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
 	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
@@ -418,6 +463,7 @@ if __name__ == "__main__":
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		writer.writeheader()
 		# loop over users calling all the functions for each
+		init_file(FILENAME, "activities")
 		for user_id in user_ids:
 			user = trace(user_id)
 			print( len(user.points),'points at start for',user_id )
