@@ -31,11 +31,6 @@ from trace import Trace
 import config
 
 
-def clean_sequence(sequence):
-	"""DOCUMENTATION NEEDED"""
-	pass
-
-
 def init_file(filename, t):
 	"""DOCUMENTATION NEEDED"""
 	fd = open(filename, "w")

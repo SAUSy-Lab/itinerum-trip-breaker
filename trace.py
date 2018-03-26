@@ -49,7 +49,7 @@ class Trace(object):
 			cur.append(p)
 			found = False
 			for l in locations:
-				if distance(p, l) < CLUSTER_DISTANCE / 2: #unique location
+				if distance(p, l) < config.CLUSTER_DISTANCE / 2: #unique location
 					p_loc = loc
 					loc = l
 					found = True
@@ -61,6 +61,12 @@ class Trace(object):
 				sequence.append(cur)
 				cur = []
 		return sequence
+
+
+	def clean_sequence(self,sequence):
+		"""DOCUMENTATION NEEDED"""
+		pass
+
 
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -149,10 +155,10 @@ class Trace(object):
 		# currently only testing this function
 		locations = self.find_peaks(estimates,locations,threshold)
 		sequence = self.compute_sequence(locations)
-		clean_sequence(sequence)
+		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(ptl, FILENAME_L)
-		self.write_a_csv(sequence, ptl, l_to_uid, FILENAME)
+		l_to_uid = self.write_l_csv(ptl, config.FILENAME_L)
+		self.write_a_csv(sequence, ptl, l_to_uid, config.FILENAME)
 
 
 	def make_ptl(self, locations):
@@ -160,7 +166,7 @@ class Trace(object):
 		d = {}
 		for p in self.points:
 			for l in locations:
-				if distance(p, l) < CLUSTER_DISTANCE / 2:
+				if distance(p, l) < config.CLUSTER_DISTANCE / 2:
 					d[p.ts] = l	
 
 
