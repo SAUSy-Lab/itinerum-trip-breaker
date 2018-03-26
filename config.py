@@ -19,3 +19,7 @@ kernel_bandwidth = 25
 # minimum distance between separate clusters 
 # (parameter for activity location detection)
 cluster_distance = 50
+
+# what is the limit of stated h_accuracy which will be acceptable?
+# (standard deviation in meters of a normal distribution?)
+min_accuracy = 100

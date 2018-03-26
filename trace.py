@@ -1,6 +1,6 @@
 import config, csv, math
 from point import Point
-from misc_funcs import distance, inner_angle_sphere, project
+from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -85,6 +85,7 @@ class Trace(object):
 			s_no += 1
 		fd.close()
 
+
 	def write_l_csv(self, point_to_l, filename):
 		"""DOCUMENTATION NEEDED"""
 		fd = open(filename, "a")
@@ -100,6 +101,7 @@ class Trace(object):
 		fd.close()
 		return d
 
+
 	def interpolate_segment(self, segment, sample=30):
 		"""DOCUMENTATION NEEDED"""
 		new_points = []
@@ -108,6 +110,7 @@ class Trace(object):
 			new_points.extend(pair_int)
 		new_points.append(segment[-1])
 		return new_points
+
 
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
@@ -125,7 +128,6 @@ class Trace(object):
 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
-		from misc_funcs import kde, min_peak
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)

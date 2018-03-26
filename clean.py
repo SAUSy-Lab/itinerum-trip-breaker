@@ -59,7 +59,7 @@ if __name__ == "__main__":
 	for user_id in user_ids:
 		user = Trace(user_id)
 		print( len(user.points),'points at start for',user_id )
-		user.remove_known_error(100)
+		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()
 		# this is actually necessary again after positional cleaning
