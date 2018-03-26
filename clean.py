@@ -32,6 +32,7 @@ MIN_SECS_AT_LOC = 10*60
 BANDWIDTH = 25
 CLUSTER_DISTANCE = 50
 FILENAME = "./outputs/activities_testing.csv"
+FILENAME_L = "./outputs/locations_testint.csv"
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1
@@ -196,7 +197,7 @@ class trace(object):
 				cur = []
 		return sequence
 
-	def write_a_csv(self, sequence, point_to_lid, filename):
+	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		fd = open(filename, "a") #append to the file
 		s_no = 1
 		for event in sequence:
@@ -205,11 +206,23 @@ class trace(object):
 			time = event[0].ts
 			location_id = ""
 			if time in point_to_lid:
-				loction_id = point_to_lid[time]
+				loction_id = l_to_uid[point_to_lid[time]]
 			line = "{},{},{},{},{},{}\n".format(
-			        self.id, s_no, location_id, mode, unknown, time)
+			        self.id, str(s_no), location_id, mode, unknown, time)
 			fd.write(line)
 			s_no += 1
+
+	def write_l_csv(self, point_to_l, filename):
+		fd = open(filename, "a")
+		d = {}
+                uid = 1
+		for location in point_to_l.values():
+			description = ""
+			line = "".format(self.id, str(uid), str(location.logitude), str(location.latitude), description)
+			fd.write(line)
+			d[(location.longitude, location.latitude)] = uid
+			uid += 1
+		return d
 
 	def interpolate_segment(self, segment, sample=30):
 		new_points = []
@@ -267,14 +280,18 @@ class trace(object):
 		locations = 
                 sequence = self.compute_sequence(locations)
 		clean_sequence(sequence)
-		self.write_a_csv(sequence, make_ptl(locations), FILENAME)
+		ptl = make_ptl(locations)
+		l_to_uid = self.write_l_csv(ptl, FILENAME_L)
+		self.write_a_csv(sequence, ptl, l_to_uid, FILENAME)
 		"""
 
 	def make_ptl(self, locations):
 		d = {}
 		for p in self.points:
 			for pl in locations:
-				l = scratch.unproject(pl[0], pl[1])	
+				l = scratch.unproject(pl[0], pl[1])
+				if distance(p, l) < CLUSTER_DISTANCE / 2:
+					d[p.ts] = l	
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
@@ -403,11 +420,13 @@ class trace(object):
 def clean_sequence(sequence):
 	pass
 
-def init_file(filename, type):
+def init_file(filename, t):
 	fd = open(filename, "w")
 	header = ""
-	if type == "activities":
+	if t == "activities":
 		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
+	elife t == "locations":
+		header = "user_id,uid,lon,lat,description\n"
 	fd.write(header)
 
 def ts_str(ts, tz):
