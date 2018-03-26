@@ -55,11 +55,11 @@ if __name__ == "__main__":
 	user_ids = list(set(user_ids)) 
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each
-	init_file(config.FILENAME, "activities")
+	init_file(config.output_activities_file, "activities")
 	for user_id in user_ids:
 		user = Trace(user_id)
 		print( len(user.points),'points at start for',user_id )
-		user.remove_known_error(100)
+		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()
 		# this is actually necessary again after positional cleaning

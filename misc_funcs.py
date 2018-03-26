@@ -2,16 +2,16 @@
 # This file defines functions not associated with object classes
 #
 
-import math
+import math, config
 
-def min_peak(GPS_error_sd,kernel_sd,total_time,threshold_time):
+def min_peak(GPS_error_sd,total_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
 		We assume that the volume under the total KDE PDF ~= 1. 
 		-	total_time is the sum of the time weights used in the KDE.
 		-	threshold_time is the minimum activity time.
 		Times are given in seconds"""
 	from scipy.stats import multivariate_normal
-	total_variance = GPS_error_sd**2 + kernel_sd**2
+	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
 	peak_height = multivariate_normal.pdf(
 		[0.5,0.5],	# quantiles (center)
 		[0,0],		# center 
@@ -19,8 +19,8 @@ def min_peak(GPS_error_sd,kernel_sd,total_time,threshold_time):
 	)
 	# this is the peak height if we have no movement and 
 	# total_time == threshold_time
-	assert total_time > threshold_time
-	return peak_height * (float(threshold_time) / total_time)
+	assert total_time > config.minimum_activity_time
+	return peak_height * (float(config.minimum_activity_time) / total_time)
 
 
 def kde(x_vector,y_vector,weights,bandwidth):

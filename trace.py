@@ -1,6 +1,6 @@
 import config, csv, math
 from point import Point
-from misc_funcs import distance, inner_angle_sphere, project
+from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -49,7 +49,7 @@ class Trace(object):
 			cur.append(p)
 			found = False
 			for l in locations:
-				if distance(p, l) < config.CLUSTER_DISTANCE / 2: #unique location
+				if distance(p, l) < config.cluster_distance / 2: #unique location
 					p_loc = loc
 					loc = l
 					found = True
@@ -85,6 +85,7 @@ class Trace(object):
 			s_no += 1
 		fd.close()
 
+
 	def write_l_csv(self, point_to_l, filename):
 		"""DOCUMENTATION NEEDED"""
 		fd = open(filename, "a")
@@ -100,6 +101,7 @@ class Trace(object):
 		fd.close()
 		return d
 
+
 	def interpolate_segment(self, segment, sample=30):
 		"""DOCUMENTATION NEEDED"""
 		new_points = []
@@ -108,6 +110,7 @@ class Trace(object):
 			new_points.extend(pair_int)
 		new_points.append(segment[-1])
 		return new_points
+
 
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
@@ -125,7 +128,6 @@ class Trace(object):
 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
-		from misc_funcs import kde, min_peak
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)
@@ -136,7 +138,7 @@ class Trace(object):
 		ys = [ project(p.longitude, p.latitude)[1] for p in ml]
 		ws = [p.weight for p in ml]
 		# run the KDE
-		estimates, locations = kde(xs,ys,ws,config.BANDWIDTH)
+		estimates, locations = kde(xs,ys,ws,config.kernel_bandwidth)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = math.sqrt(
@@ -147,9 +149,7 @@ class Trace(object):
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			config.BANDWIDTH,			# sd of kernel bandwidth
 			sum(ws),				# total seconds entering KDE
-			config.MIN_SECS_AT_LOC	# seconds spentat locations to be found
 		)
 		# Find peaks in the density surface
 		# currently only testing this function
@@ -157,8 +157,8 @@ class Trace(object):
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(ptl, config.FILENAME_L)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.FILENAME)
+		l_to_uid = self.write_l_csv(ptl, config.output_activities_file)
+		self.write_a_csv(sequence, ptl, l_to_uid, config.output_locations_file)
 
 
 	def make_ptl(self, locations):
@@ -169,7 +169,6 @@ class Trace(object):
 				if distance(p, l) < config.CLUSTER_DISTANCE / 2:
 					d[p.ts] = l
 		return d
-
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a list
@@ -192,7 +191,7 @@ class Trace(object):
 			neighbs.append([])
 			for j,(x2,y2) in enumerate(locations):
 				# use euclidian distance since this is already projected
-				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.CLUSTER_DISTANCE
+				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.cluster_distance
 				neighbs[i].append( connection )
 		print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
 		# clusters will be a list of disjoint sets
