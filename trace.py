@@ -62,11 +62,9 @@ class Trace(object):
 				cur = []
 		return sequence
 
-
 	def clean_sequence(self,sequence):
 		"""DOCUMENTATION NEEDED"""
 		pass
-
 
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -85,13 +83,12 @@ class Trace(object):
 			s_no += 1
 		fd.close()
 
-
-	def write_l_csv(self, point_to_l, filename):
+	def write_l_csv(self, locations, filename):
 		"""DOCUMENTATION NEEDED"""
 		fd = open(filename, "a")
 		d = {}
 		uid = 1
-		for location in point_to_l.values():
+		for location in locations:
 			description = ""
 			line = "{},{},{},{},{}\n".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
 			fd.write(line)
@@ -101,7 +98,6 @@ class Trace(object):
 		fd.close()
 		return d
 
-
 	def interpolate_segment(self, segment, sample=30):
 		"""DOCUMENTATION NEEDED"""
 		new_points = []
@@ -110,7 +106,6 @@ class Trace(object):
 			new_points.extend(pair_int)
 		new_points.append(segment[-1])
 		return new_points
-
 
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
@@ -124,7 +119,6 @@ class Trace(object):
 		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
-
 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
@@ -157,9 +151,8 @@ class Trace(object):
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(ptl, config.output_locations_file)
+		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
 		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
-
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -244,7 +237,6 @@ class Trace(object):
 
 		return potential_activity_locations
 
-
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -255,7 +247,6 @@ class Trace(object):
 		i_ante = key-1
 		i_post = key # has already shifted over
 		self.observe_neighbors( [i_ante,i_post] )
-
 
 	def find_duplicates(self):
 		"""find any repeated point locations"""
@@ -271,7 +262,6 @@ class Trace(object):
 		for k in locations.keys():
 			if len(locations[k]) > 1:
 				print( k,locations[k] )
-
 		
 	def observe_neighbors(self,indices=[]):
 		"""Get angle and distance measurements to and from adjacent points.
@@ -311,7 +301,6 @@ class Trace(object):
 			): 
 				point.inter = True
 
-
 	def remove_sequential_duplicates(self):
 		"""remove points where both neighbors have identical locations"""
 		to_remove = []
@@ -324,7 +313,6 @@ class Trace(object):
 			self.pop_point(i)
 		print( '\t',len(to_remove),'points removed as duplicate' )
 
-
 	def remove_known_error(self,error_limit):
 		"""remove points reporting positional error beyond a given limit (meters)"""
 		to_remove = []
@@ -336,7 +324,6 @@ class Trace(object):
 			self.pop_point(i)
 		print( '\t',len(to_remove),'points removed as high stated error' )
 
-
 	def remove_positional_error(self):
 		"""use angle/distance based cleaning rules"""
 		i = self.find_error_index()
@@ -346,7 +333,6 @@ class Trace(object):
 			i = self.find_error_index()
 			count += 1
 		print( '\t',count, 'points removed by positional cleaning' )
-
 
 	def find_error_index(self):
 		"""returns the index of the craziest point"""
@@ -369,7 +355,6 @@ class Trace(object):
 				return errors[max(errors.keys())]
 		return False
 
-
 	def weight_points(self,segment):
 		"""DOCUMENTATION NEEDED"""
 		for i in range(1, len(segment)-1):
@@ -378,4 +363,3 @@ class Trace(object):
 			segment[i].add_weight(w1 + w2)
 		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
-
