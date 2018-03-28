@@ -38,7 +38,7 @@ def init_file(filename, t):
 	if t == "activities":
 		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
 	elif t == "locations":
-		header = "user_id,uid,lon,lat,description\n"
+		header = "user_id,uid,lon,lat,description,time_at\n"
 	fd.write(header)
 	fd.close()
 

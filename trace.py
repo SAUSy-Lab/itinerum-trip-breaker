@@ -91,7 +91,7 @@ class Trace(object):
 		uid = 1
 		for location in locations:
 			description = ""
-			line = "{},{},{},{},{}\n".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
+			line = "{},{},{},{},{},{}\n".format(self.id, str(uid), str(location.longitude), str(location.latitude), description, str(location.time_at))
 			fd.write(line)
 			if (location.longitude, location.latitude) not in d:
 				d[(location.longitude, location.latitude)] = uid
@@ -110,6 +110,8 @@ class Trace(object):
 
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
+		self.subsets = [self.points]
+		'''
 		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
@@ -120,7 +122,8 @@ class Trace(object):
 		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
-
+		'''
+                
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
 		ml = []
@@ -152,8 +155,9 @@ class Trace(object):
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
+		#self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+		self.time_at_loc(locations, interpolated, config.output_locations_file)
 		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -364,3 +368,9 @@ class Trace(object):
 			segment[i].add_weight(w1 + w2)
 		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
+
+	def time_at_loc(self, locations, inted, output):
+		for p in inted:
+			for l in locations:
+				if not p.far_from(l):
+					l.time_at += p.weight
