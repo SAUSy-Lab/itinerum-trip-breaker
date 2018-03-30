@@ -142,7 +142,8 @@ class Trace(object):
 				self.known_subsets.append(segment)
 
 	def get_activity_locations(self):
-		"""Get activity locations for this trace."""
+		"""Get activity locations for this trace. ( Create inputs for a KDE
+			function and find peaks in the surface. )"""
 		kde_input_points = []
 		for subset in self.known_subsets:
 			interpolated_points = self.interpolate_segment(subset, 30)
@@ -172,8 +173,8 @@ class Trace(object):
 		self.locations.extend( locations )
 
 	def break_trips(self):
-		"""DOCUMENTATION NEEDED"""
-
+		"""Allocate time to activity locations and the trips between them.
+			TODO: clean this function out"""
 		sequence = self.compute_sequence(self.locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(self.locations)
