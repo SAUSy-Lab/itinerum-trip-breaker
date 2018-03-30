@@ -43,7 +43,7 @@ class Trace(object):
 		self.observe_neighbors( all_indices )
 
 	def compute_sequence(self, locations):
-		"""DOCUMENTATION NEEDED"""
+		"""SO MUCH DOCUMENTATION NEEDED"""
 		sequence = []
 		cur = []
 		p_loc = None #previous location
@@ -64,10 +64,6 @@ class Trace(object):
 				sequence.append(cur)
 				cur = []
 		return sequence
-
-	def clean_sequence(self,sequence):
-		"""DOCUMENTATION NEEDED"""
-		pass
 
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -176,7 +172,6 @@ class Trace(object):
 		"""Allocate time to activity locations and the trips between them.
 			TODO: clean this function out"""
 		sequence = self.compute_sequence(self.locations)
-		self.clean_sequence(sequence)
 		ptl = self.make_ptl(self.locations)
 		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
 		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
