@@ -57,9 +57,11 @@ if __name__ == "__main__":
 	# loop over users calling all the functions for each
 	init_file(config.output_activities_file, "activities")
 	init_file(config.output_locations_file, "locations")
+	u = 1
 	for user_id in user_ids:
 		user = Trace(user_id)
-		print( len(user.points),'points at start for',user_id )
+		print("User : :|, u", len(user.points),'points at start for',user_id )
+		u += 1
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()
