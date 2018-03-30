@@ -16,6 +16,8 @@ class Trace(object):
 		# ordered list of ordered lists of points separated by unknown times
 		# this will be the basic object of any trip-breaking analysis
 		self.known_subsets = []
+		# list of potential activity locations
+		self.locations = []
 		
 		other_keys = ['id','speed','v_accuracy','point_type'] # The keys you want
 
@@ -139,38 +141,43 @@ class Trace(object):
 			): # mininum time length of segment?
 				self.known_subsets.append(segment)
 
-	def break_trips(self):
-		"""DOCUMENTATION NEEDED"""
-		ml = []
-		for sl in self.known_subsets:
-			interpolated = self.interpolate_segment(sl, 30)
-			self.weight_points(interpolated)
-			ml.extend(interpolated)
+	def get_activity_locations(self):
+		"""Get activity locations for this trace."""
+		kde_input_points = []
+		for subset in self.known_subsets:
+			interpolated_points = self.interpolate_segment(subset, 30)
+			self.weight_points( interpolated_points )
+			kde_input_points.extend( interpolated_points )
 		# format as vectors for KDE function
-		xs = [ project(p.longitude, p.latitude)[0] for p in ml]
-		ys = [ project(p.longitude, p.latitude)[1] for p in ml]
-		ws = [p.weight for p in ml]
+		# TODO don't need to call project twice, ideally
+		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
+		Yvector = [ project(p.longitude, p.latitude)[1] for p in kde_input_points ]
+		Wvector = [ p.weight for p in kde_input_points ]
 		# run the KDE
-		estimates, locations = kde(xs,ys,ws,config.kernel_bandwidth)
+		estimates, locations = kde(Xvector,Yvector,Wvector)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = math.sqrt(
 			sum( [p.accuracy**2 for p in self.points] ) 
-			/ 
-			len(self.points)
+			/ len(self.points)
 		)
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			sum(ws),				# total seconds entering KDE
+			sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
-		# currently only testing this function
 		locations = self.find_peaks(estimates,locations,threshold)
-		sequence = self.compute_sequence(locations)
+		# store the result
+		self.locations.extend( locations )
+
+	def break_trips(self):
+		"""DOCUMENTATION NEEDED"""
+
+		sequence = self.compute_sequence(self.locations)
 		self.clean_sequence(sequence)
-		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
+		ptl = self.make_ptl(self.locations)
+		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
 		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):

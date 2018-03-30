@@ -77,9 +77,9 @@ if __name__ == "__main__":
 			for point in user.points:
 				writer.writerow([point.latitude,point.longitude,point.time])
 
-#		user.get_activity_locations()
-
 		user.make_known_subsets()
+		user.get_activity_locations()
+
 		user.break_trips() 
 
 
