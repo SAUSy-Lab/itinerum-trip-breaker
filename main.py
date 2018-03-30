@@ -58,8 +58,10 @@ if __name__ == "__main__":
 	init_file(config.output_activities_file, "activities")
 	init_file(config.output_locations_file, "locations")
 	for user_id in user_ids:
+		# create trace object for this user
 		user = Trace(user_id)
 		print( len(user.points),'points at start for',user_id )
+		# remove GPS points believed to be in error
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()
@@ -75,7 +77,9 @@ if __name__ == "__main__":
 			for point in user.points:
 				writer.writerow([point.latitude,point.longitude,point.time])
 
-		user.make_subsets()
+#		user.get_activity_locations()
+
+		user.make_known_subsets()
 		user.break_trips() 
 
 

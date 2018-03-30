@@ -15,7 +15,7 @@ class Trace(object):
 		self.discarded_points = [] # list of points removed
 		# ordered list of ordered lists of points separated by unknown times
 		# this will be the basic object of any trip-breaking analysis
-		self.subsets = []
+		self.known_subsets = []
 		
 		other_keys = ['id','speed','v_accuracy','point_type'] # The keys you want
 
@@ -108,23 +108,41 @@ class Trace(object):
 		new_points.append(segment[-1])
 		return new_points
 
-	def make_subsets(self):
-		"""DOCUMENTATION NEEDED"""
-		ss = []
-		cur = [self.points[0]]
-		for i in range(1, len(self.points)):
-			cur.append(self.points[i])
-			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur[:])
-				cur = []
-		for known_segment in ss:
-			if len(known_segment) > 1: # mininum time length of segment?
-				self.subsets.append(known_segment)
+	def make_known_subsets(self):
+		"""Partition the trace points into sets for which we're confident 
+			we don't have substantial missing data. That is, exclude segments 
+			where it seems like we have no data, but substantial movement; for 
+			which trip and activity reconstruction would be impossible."""
+		known_segments = []
+		segment = [ self.points[0] ]
+		# iterate over all points (except the first). Test each point to see 
+		# whether we add it to the current segment or the one after.
+		for i in range(1,len(self.points)):
+			if ( 
+				# distance over 2 km?
+				distance( self.points[i], self.points[i-1] ) > 2000 and
+				# time gap > 2 hours?
+				self.points[i].epoch - self.points[i-1].epoch > 2*3600
+			):
+				# append point to next segment
+				known_segments.append( segment )
+				segment = [ self.points[i] ]
+			else:
+				segment.append( self.points[i] )
+		# check these segments for plausibility and append to the global property
+		for segment in known_segments:
+			if (
+				# at least one point
+				len(segment) > 1 and
+				# sufficient time between last and first points
+				segment[-1].epoch - segment[0].epoch > 3600
+			): # mininum time length of segment?
+				self.known_subsets.append(segment)
 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
 		ml = []
-		for sl in self.subsets:
+		for sl in self.known_subsets:
 			interpolated = self.interpolate_segment(sl, 30)
 			self.weight_points(interpolated)
 			ml.extend(interpolated)
@@ -165,11 +183,11 @@ class Trace(object):
 		return d
 
 	def find_peaks(self,estimates,locations,threshold):
-		"""PDF was estimated at a selection of points, which are here given as a list
-			of P values (estimates) and a list of (x,y) locations. The idea is to toss 
-			out any values below the threshold and identify spatial clusters among 
-			those that remain. In each such cluster, the highest value is the activity 
-			location."""
+		"""PDF was estimated at a selection of points, which are here given as a 
+			list of P values (estimates) and a list of (x,y) locations. The idea 
+			is to toss out any values below the threshold and identify spatial 
+			clusters among those that remain. In each such cluster, the highest 
+			value is the activity location."""
 		assert len(estimates) == len(locations)
 		from math import sqrt
 		from location import ActivityLocation

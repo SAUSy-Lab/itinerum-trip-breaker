@@ -9,7 +9,9 @@ class Point(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
+		# a string representation of a timestampt
 		self.ts = timestamp
+		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
 		# dictionary storing other fields that will just pass through
 		self.other_fields = other_fields
@@ -18,18 +20,19 @@ class Point(object):
 		self.d_post = None		# distance to next point
 		self.angle = None			# angle between this and adjacent points
 		self.inter = False		# point shares location with both neighbors?
-		self.error_index = 0 
-		self.weight = 0
+		self.error_index = 0		# ????
+		self.weight = 0			# time-based weight for KDE function
 		
 	@property
 	def geom(self):
-		"""used basically to check location uniqueness"""
+		"""Used basically to check location uniqueness."""
 		return (self.latitude,self.longitude)
 
-	def far_from(self, next):
-		# next must be a Point
-		return distance(self, next) > 100 #and (next.time - self.time).seconds > 7200 
-        
+	@property
+	def epoch(self):
+		"""Return the time in seconds since the epoch."""
+		return self.time.timestamp()
+
 	def __repr__(self):
 		return str(project(self.longitude, self.latitude))
 
