@@ -42,28 +42,28 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def compute_sequence(self, locations):
-		"""SO MUCH DOCUMENTATION NEEDED"""
-		sequence = []
-		cur = []
-		p_loc = None #previous location
-		loc = None #current location
-		for p in self.points:
-			cur.append(p)
-			found = False
-			for l in locations:
-				if distance(p, l) < config.cluster_distance / 2: #unique location
-					p_loc = loc
-					loc = l
-					found = True
-			if not found:
-				p_loc = loc
-				loc = None
-
-			if not loc == p_loc:
-				sequence.append(cur)
-				cur = []
-		return sequence
+#	def compute_sequence(self, locations):
+#		"""???"""
+#		sequence = []
+#		cur = []
+#		prior_loc = None #previous location
+#		loc = None #current location
+#		# for each point
+#		for p in self.points:
+#			cur.append(p)
+#			found = False
+#			for l in locations:
+#				if distance(p, l) < config.cluster_distance / 2: #unique location
+#					prior_loc = loc
+#					loc = l
+#					found = True
+#			if not found:
+#				prior_loc = loc
+#				loc = None
+#			if not loc == prior_loc:
+#				sequence.append(cur)
+#				cur = []
+#		return sequence
 
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -105,10 +105,6 @@ class Trace(object):
 			new_points.extend(pair_int)
 		new_points.append(segment[-1])
 		return new_points
-
-	def make_subsets(self):
-		"""DOCUMENTATION NEEDED"""
-		self.subsets = [self.points]
                 
 	def make_known_subsets(self):
 		"""Partition the trace points into sets for which we're confident 
@@ -130,6 +126,7 @@ class Trace(object):
 				known_segments.append( segment )
 				segment = [ self.points[i] ]
 			else:
+				# add this point to the current segment
 				segment.append( self.points[i] )
 		# check these segments for plausibility and append to the global property
 		for segment in known_segments:
@@ -169,24 +166,29 @@ class Trace(object):
 		)
 		# Find peaks in the density surface
 		locations = self.find_peaks(estimates,locations,threshold)
-
-		sequence = self.compute_sequence(locations)
-		self.clean_sequence(sequence)
-		ptl = self.make_ptl(locations)
-		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
-		self.add_times(inted, locations, config.output_file)
-		#self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
-
 		# store the result
 		self.locations.extend( locations )
+		return self.locations
 
 	def break_trips(self):
-		"""Allocate time to activity locations and the trips between them.
-			TODO: clean this function out"""
-		sequence = self.compute_sequence(self.locations)
-		ptl = self.make_ptl(self.locations)
-		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+		"""Allocate time to activity locations and the trips between them."""
+		# measure distances between points and locations
+		for point in self.points:
+			# distances to all locations
+			distances = [ distance(loc,point) for loc in self.locations ]
+			# get a list of locations sorted by distance to the point
+			sorted_locs = [ loc for d,loc in sorted(zip(distances,self.locations))]
+			# store it with the point
+			point.potential_locations = sorted_locs
+
+		raise SystemExit
+#		# What does this do? 
+#		ptl = self.make_ptl(self.locations)
+#		# write output? 
+#		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
+#		# What does this do?
+#		self.add_times(inted, locations, config.output_file)
+#		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -400,3 +402,4 @@ class Trace(object):
 
 	def add_times(self, inted, locations):
 		for line in input_file:
+			pass

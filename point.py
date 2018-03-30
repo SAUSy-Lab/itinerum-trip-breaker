@@ -23,15 +23,13 @@ class Point(object):
 		self.inter = False		# point shares location with both neighbors?
 		self.error_index = 0		# ????
 		self.weight = 0			# time-based weight for KDE function
+		# list of location references ordered by distance from this point
+		self.potential_locations = []
 		
 	@property
 	def geom(self):
 		"""Used basically to check location uniqueness."""
 		return (self.latitude,self.longitude)
-
-	def far_from(self, next):
-		# next must be a Point
-		return distance(self, next) > cluster_distance #and (next.time - self.time).seconds > 7200 
         
 	@property
 	def epoch(self):
