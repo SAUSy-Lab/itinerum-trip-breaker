@@ -7,3 +7,4 @@ class ActivityLocation(object):
 		self.longitude = longitude
 		self.x = None
 		self.y = None
+		self.time = 0

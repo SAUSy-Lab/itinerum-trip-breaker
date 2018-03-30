@@ -1,5 +1,6 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
 import datetime, math
+from config import cluster_distance
 
 class Point(object):
 	"""A location/time point ie GPS point."""
@@ -28,7 +29,7 @@ class Point(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > 100 #and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > cluster_distance #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(project(self.longitude, self.latitude))

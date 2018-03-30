@@ -109,6 +109,8 @@ class Trace(object):
 
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
+		self.subsets = [self.points]
+		'''
 		ss = []
 		cur = [self.points[0]]
 		for i in range(1, len(self.points)):
@@ -119,6 +121,7 @@ class Trace(object):
 		for known_segment in ss:
 			if len(known_segment) > 1: # mininum time length of segment?
 				self.subsets.append(known_segment)
+		'''
 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
@@ -152,7 +155,8 @@ class Trace(object):
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
 		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+		self.add_times(inted, locations, config.output_file)
+		#self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -363,3 +367,6 @@ class Trace(object):
 			segment[i].add_weight(w1 + w2)
 		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
+
+	def add_times(self, inted, locations):
+		for line in input_file:
