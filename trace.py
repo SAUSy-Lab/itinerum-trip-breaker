@@ -110,15 +110,17 @@ class Trace(object):
 		"""Partition the trace points into sets for which we're confident 
 			we don't have substantial missing data. That is, exclude segments 
 			where it seems like we have no data, but substantial movement; for 
-			which trip and activity reconstruction would be impossible."""
+			which trip and activity reconstruction would be impossible.
+			TODO: Eventually we will need some much stricter checking here 
+			and eventually an explicit check foro subway trips."""
 		known_segments = []
 		segment = [ self.points[0] ]
 		# iterate over all points (except the first). Test each point to see 
 		# whether we add it to the current segment or the one after.
 		for i in range(1,len(self.points)):
 			if ( 
-				# distance over 2 km?
-				distance( self.points[i], self.points[i-1] ) > 2000 and
+				# distance over 1 km?
+				distance( self.points[i], self.points[i-1] ) > 1000 and
 				# time gap > 2 hours?
 				self.points[i].epoch - self.points[i-1].epoch > 2*3600
 			):
@@ -128,6 +130,8 @@ class Trace(object):
 			else:
 				# add this point to the current segment
 				segment.append( self.points[i] )
+		if len(segment) > 1:
+			known_segments.append( segment )
 		# check these segments for plausibility and append to the global property
 		for segment in known_segments:
 			if (
@@ -172,14 +176,19 @@ class Trace(object):
 
 	def break_trips(self):
 		"""Allocate time to activity locations and the trips between them."""
-		# measure distances between points and locations
+		# measure distances between points and locations, giving each point a 
+		# distance-sorted list of location rferences
 		for point in self.points:
 			# distances to all locations
-			distances = [ distance(loc,point) for loc in self.locations ]
+			dists = [ distance(loc,point) for loc in self.locations ]
 			# get a list of locations sorted by distance to the point
-			sorted_locs = [ loc for d,loc in sorted(zip(distances,self.locations))]
+			# but only if within 1 km
+			sorted_locs = [ loc for d,loc in sorted(zip(dists,self.locations)) if d < 1000 ]
 			# store it with the point
 			point.potential_locations = sorted_locs
+		# now develop moving averages of probability associated with each potential location
+		print('num points',len(self.points))
+		print('sum_segs',sum([len(seg) for seg in self.known_subsets]))		
 
 		raise SystemExit
 #		# What does this do? 
