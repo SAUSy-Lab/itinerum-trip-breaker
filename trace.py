@@ -1,3 +1,4 @@
+#Meaningless change
 import config, csv, math
 from point import Point
 from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak
@@ -14,7 +15,9 @@ class Trace(object):
 		self.discarded_points = [] # list of points removed
 		# ordered list of ordered lists of points separated by unknown times
 		# this will be the basic object of any trip-breaking analysis
-		self.subsets = []
+		self.known_subsets = []
+		# list of potential activity locations
+		self.locations = []
 		
 		other_keys = ['id','speed','v_accuracy','point_type'] # The keys you want
 
@@ -40,7 +43,7 @@ class Trace(object):
 		self.observe_neighbors( all_indices )
 
 	def compute_sequence(self, locations):
-		"""DOCUMENTATION NEEDED"""
+		"""SO MUCH DOCUMENTATION NEEDED"""
 		sequence = []
 		cur = []
 		p_loc = None #previous location
@@ -61,10 +64,6 @@ class Trace(object):
 				sequence.append(cur)
 				cur = []
 		return sequence
-
-	def clean_sequence(self,sequence):
-		"""DOCUMENTATION NEEDED"""
-		pass
 
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -110,53 +109,84 @@ class Trace(object):
 	def make_subsets(self):
 		"""DOCUMENTATION NEEDED"""
 		self.subsets = [self.points]
-		'''
-		ss = []
-		cur = [self.points[0]]
-		for i in range(1, len(self.points)):
-			cur.append(self.points[i])
-			if self.points[i-1].far_from(self.points[i]):
-				ss.append(cur[:])
-				cur = []
-		for known_segment in ss:
-			if len(known_segment) > 1: # mininum time length of segment?
-				self.subsets.append(known_segment)
-		'''
+                
+	def make_known_subsets(self):
+		"""Partition the trace points into sets for which we're confident 
+			we don't have substantial missing data. That is, exclude segments 
+			where it seems like we have no data, but substantial movement; for 
+			which trip and activity reconstruction would be impossible."""
+		known_segments = []
+		segment = [ self.points[0] ]
+		# iterate over all points (except the first). Test each point to see 
+		# whether we add it to the current segment or the one after.
+		for i in range(1,len(self.points)):
+			if ( 
+				# distance over 2 km?
+				distance( self.points[i], self.points[i-1] ) > 2000 and
+				# time gap > 2 hours?
+				self.points[i].epoch - self.points[i-1].epoch > 2*3600
+			):
+				# append point to next segment
+				known_segments.append( segment )
+				segment = [ self.points[i] ]
+			else:
+				segment.append( self.points[i] )
+		# check these segments for plausibility and append to the global property
+		for segment in known_segments:
+			if (
+				# at least one point
+				len(segment) > 1 and
+				# sufficient time between last and first points
+				segment[-1].epoch - segment[0].epoch > 3600
+			): # mininum time length of segment?
+				self.known_subsets.append(segment)
 
-	def break_trips(self):
-		"""DOCUMENTATION NEEDED"""
-		ml = []
-		for sl in self.subsets:
-			interpolated = self.interpolate_segment(sl, 30)
-			self.weight_points(interpolated)
-			ml.extend(interpolated)
+	def get_activity_locations(self):
+		"""Get activity locations for this trace. ( Create inputs for a KDE
+			function and find peaks in the surface. )"""
+		kde_input_points = []
+		for subset in self.known_subsets:
+			interpolated_points = self.interpolate_segment(subset, 30)
+			self.weight_points( interpolated_points )
+			kde_input_points.extend( interpolated_points )
 		# format as vectors for KDE function
-		xs = [ project(p.longitude, p.latitude)[0] for p in ml]
-		ys = [ project(p.longitude, p.latitude)[1] for p in ml]
-		ws = [p.weight for p in ml]
+		# TODO don't need to call project twice, ideally
+		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
+		Yvector = [ project(p.longitude, p.latitude)[1] for p in kde_input_points ]
+		Wvector = [ p.weight for p in kde_input_points ]
 		# run the KDE
-		estimates, locations = kde(xs,ys,ws,config.kernel_bandwidth)
+		estimates, locations = kde(Xvector,Yvector,Wvector)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = math.sqrt(
 			sum( [p.accuracy**2 for p in self.points] ) 
-			/ 
-			len(self.points)
+			/ len(self.points)
 		)
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			sum(ws),				# total seconds entering KDE
+			sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
-		# currently only testing this function
 		locations = self.find_peaks(estimates,locations,threshold)
+
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
 		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
 		self.add_times(inted, locations, config.output_file)
 		#self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+
+		# store the result
+		self.locations.extend( locations )
+
+	def break_trips(self):
+		"""Allocate time to activity locations and the trips between them.
+			TODO: clean this function out"""
+		sequence = self.compute_sequence(self.locations)
+		ptl = self.make_ptl(self.locations)
+		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
+		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -168,11 +198,11 @@ class Trace(object):
 		return d
 
 	def find_peaks(self,estimates,locations,threshold):
-		"""PDF was estimated at a selection of points, which are here given as a list
-			of P values (estimates) and a list of (x,y) locations. The idea is to toss 
-			out any values below the threshold and identify spatial clusters among 
-			those that remain. In each such cluster, the highest value is the activity 
-			location."""
+		"""PDF was estimated at a selection of points, which are here given as a 
+			list of P values (estimates) and a list of (x,y) locations. The idea 
+			is to toss out any values below the threshold and identify spatial 
+			clusters among those that remain. In each such cluster, the highest 
+			value is the activity location."""
 		assert len(estimates) == len(locations)
 		from math import sqrt
 		from location import ActivityLocation

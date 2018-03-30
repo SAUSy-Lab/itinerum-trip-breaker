@@ -23,7 +23,7 @@ def min_peak(GPS_error_sd,total_time):
 	return peak_height * (float(config.minimum_activity_time) / total_time)
 
 
-def kde(x_vector,y_vector,weights,bandwidth):
+def kde(x_vector,y_vector,weights):
 	"""Do weighted 2d KDE in R KS package, returning python results.
 		Returns two lists: P estimates and estimate locations as x,y tuples."""
 	# check the inputs
@@ -54,6 +54,7 @@ def kde(x_vector,y_vector,weights,bandwidth):
 	# do the KDE
 	print( '\tRunning KDE on',len(x_vector),'points' )
 	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
+	bandwidth = config.kernel_bandwidth
 	surface = ks.kde(
 		# points and evaluation points are the same
 		x = point_matrix,
