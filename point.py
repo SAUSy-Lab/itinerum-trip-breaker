@@ -28,7 +28,7 @@ class Point(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > (config.cluster_distance / 2) #and (next.time - self.time).seconds > 7200 
+		return distance(self, next) > (config.cluster_distance * 2) #and (next.time - self.time).seconds > 7200 
         
 	def __repr__(self):
 		return str(project(self.longitude, self.latitude))

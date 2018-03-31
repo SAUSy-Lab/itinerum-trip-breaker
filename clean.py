@@ -60,7 +60,7 @@ if __name__ == "__main__":
 	u = 1
 	for user_id in user_ids:
 		user = Trace(user_id)
-		print("User : :|, u", len(user.points),'points at start for',user_id )
+		print("User : ", u, len(user.points),'points at start for',user_id )
 		u += 1
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
