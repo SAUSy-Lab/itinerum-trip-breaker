@@ -38,7 +38,7 @@ def init_file(filename, t):
 	if t == "activities":
 		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
 	elif t == "locations":
-		header = "user_id,uid,lon,lat,description\n"
+		header = "user_id,uid,lon,lat,description,time_at\n"
 	fd.write(header)
 	fd.close()
 
@@ -57,11 +57,13 @@ if __name__ == "__main__":
 	# loop over users calling all the functions for each
 	init_file(config.output_activities_file, "activities")
 	init_file(config.output_locations_file, "locations")
+	u = 1
 	for user_id in user_ids:
 		# create trace object for this user
 		user = Trace(user_id)
-		print( len(user.points),'points at start for',user_id )
 		# remove GPS points believed to be in error
+		print("User :", u, len(user.points),'points at start for',user_id )
+		u += 1
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()

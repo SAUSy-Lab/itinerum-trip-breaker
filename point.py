@@ -1,5 +1,5 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
-import datetime, math
+import datetime, math, config
 from config import cluster_distance
 
 class Point(object):
