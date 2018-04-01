@@ -114,6 +114,7 @@ class Trace(object):
 			which trip and activity reconstruction would be impossible.
 			TODO: Eventually we will need some much stricter checking here 
 			and eventually an explicit check foro subway trips."""
+		print( '\tidentifying known subsets...' )
 		known_segments = []
 		segment = [ self.points[0] ]
 		# iterate over all points (except the first). Test each point to see 
@@ -151,36 +152,31 @@ class Trace(object):
 			interpolated_points = self.interpolate_segment(subset, 30)
 			self.weight_points( interpolated_points )
 			kde_input_points.extend( interpolated_points )
+		# format as vectors for KDE function
+		# TODO don't need to call project twice, ideally
+		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
+		Yvector = [ project(p.longitude, p.latitude)[1] for p in kde_input_points ]
+		Wvector = [ p.weight for p in kde_input_points ]
+		# run the KDE
+		estimates, locations = kde(Xvector,Yvector,Wvector)
+		# determine average GPS accuracy value for this user
+		# (sqrt of the mean variance)
+		mean_accuracy = math.sqrt(
+			sum( [p.accuracy**2 for p in self.points] ) 
+			/ len(self.points)
+		)
+		# estimate peak threshold value
+		threshold = min_peak(
+			mean_accuracy,		# mean sd of GPS accuracy for user
+			sum(Wvector),		# total seconds entering KDE
+		)
+		# Find peaks in the density surface
+		locations = self.find_peaks(estimates,locations,threshold)
+		# store the result
+		self.locations.extend( locations )
+		return self.locations
 
-#	def break_trips(self):
-#		"""DOCUMENTATION NEEDED"""
-#		if len(self.points) <= 10:
-#			return
-#		ml = []
-#		for sl in self.subsets:
-#			interpolated = self.interpolate_segment(sl, 30)
-#			self.weight_points(interpolated)
-#			ml.extend(interpolated)
-#		# format as vectors for KDE function
-#		# TODO don't need to call project twice, ideally
-#		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
-#		Yvector = [ project(p.longitude, p.latitude)[1] for p in kde_input_points ]
-#		Wvector = [ p.weight for p in kde_input_points ]
-#		# run the KDE
-#		estimates, locations = kde(Xvector,Yvector,Wvector)
-#		# determine average GPS accuracy value for this user
-#		# (sqrt of the mean variance)
-#		mean_accuracy = math.sqrt(
-#			sum( [p.accuracy**2 for p in self.points] ) 
-#			/ len(self.points)
-#		)
-#		# estimate peak threshold value
-#		threshold = min_peak(
-#			mean_accuracy,		# mean sd of GPS accuracy for user
-#			sum(Wvector),		# total seconds entering KDE
-#		)
-#		# Find peaks in the density surface
-#		locations = self.find_peaks(estimates,locations,threshold)
+
 #<<<<<<< HEAD
 #=======
 
@@ -194,9 +190,6 @@ class Trace(object):
 #		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 #>>>>>>> c712487606131fb44c40556850b019a3f0825f0e
-#		# store the result
-#		self.locations.extend( locations )
-#		return self.locations
 
 	def break_trips(self):
 		"""Allocate time to activity locations and the trips between them."""
