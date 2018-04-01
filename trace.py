@@ -193,23 +193,9 @@ class Trace(object):
 		for segment in self.known_subsets:
 			for point in segment:
 				pass
+		# TODO finish algorithm
 		raise SystemExit
-#		# What does this do? 
-#		ptl = self.make_ptl(self.locations)
-#		# write output? 
-#		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
-#		# What does this do?
-#		self.add_times(inted, locations, config.output_file)
-#		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
-	def make_ptl(self, locations):
-		"""DOCUMENTATION NEEDED"""
-		d = {}
-		for p in self.points:
-			for l in locations:
-				if distance(p, l) < config.cluster_distance / 2:
-					d[p.ts] = l
-		return d
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a 
@@ -413,11 +399,6 @@ class Trace(object):
 			segment[i].add_weight(w1 + w2)
 		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
-
-
-	def add_times(self, inted, locations):
-		for line in input_file:
-			pass
 
 	def time_at_loc(self, locations, inted):
 		for p in inted:
