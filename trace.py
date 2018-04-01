@@ -114,6 +114,8 @@ class Trace(object):
                 
 	def break_trips(self):
 		"""DOCUMENTATION NEEDED"""
+		if len(self.points) <= 10:
+			return
 		ml = []
 		for sl in self.subsets:
 			interpolated = self.interpolate_segment(sl, 30)
@@ -351,6 +353,8 @@ class Trace(object):
 
 	def weight_points(self,segment):
 		"""DOCUMENTATION NEEDED"""
+		if len(segment) <= 1:
+			return
 		for i in range(1, len(segment)-1):
 			w1 = (segment[i].time - segment[i-1].time).seconds / 2
 			w2 = (segment[i+1].time - segment[i].time).seconds / 2
