@@ -176,21 +176,6 @@ class Trace(object):
 		self.locations.extend( locations )
 		return self.locations
 
-
-#<<<<<<< HEAD
-#=======
-
-#		sequence = self.compute_sequence(locations)
-#		self.clean_sequence(sequence)
-#		ptl = self.make_ptl(locations)
-#		self.time_at_loc(locations, interpolated)
-#		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
-
-#		self.add_times(inted, locations, config.output_file)
-#		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
-
-#>>>>>>> c712487606131fb44c40556850b019a3f0825f0e
-
 	def break_trips(self):
 		"""Allocate time to activity locations and the trips between them."""
 		# measure distances between points and locations, giving each point a 
