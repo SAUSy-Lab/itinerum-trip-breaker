@@ -1,5 +1,5 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
-import datetime, math
+import datetime, math, config
 from config import cluster_distance
 
 class Point(object):
@@ -31,7 +31,8 @@ class Point(object):
 
 	def far_from(self, next):
 		# next must be a Point
-		return distance(self, next) > cluster_distance #and (next.time - self.time).seconds > 7200 
+
+		return distance(self, next) > (config.cluster_distance * 2) #and (next.time - self.time).seconds > 7200 
         
 	@property
 	def epoch(self):
