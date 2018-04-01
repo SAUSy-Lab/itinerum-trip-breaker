@@ -1,7 +1,7 @@
 #Meaningless change
 import config, csv, math
 from point import Point
-from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak
+from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak, gaussian
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -177,24 +177,39 @@ class Trace(object):
 		return self.locations
 
 	def break_trips(self):
-		"""Allocate time to activity locations and the trips between them."""
+		"""Allocate time to activity locations and the trips between them.
+			1) Assign probability to the event of a point having come from a
+			particular location (based on distance from). 2) Use neighboring 
+			points to smooth that probability in time. 3) Points above p=0.5
+			are assigned to their location."""
 		# measure distances between points and locations, giving each point a 
-		# distance-sorted list of location rferences
+		# distance-sorted list of location references
 		for point in self.points:
 			# distances to all locations
 			dists = [ distance(loc,point) for loc in self.locations ]
+			cluster_d = min(dists) - config.cluster_distance / 2
+			cluster_d = 0 if cluster_d < 0 else cluster_d
+			point.prob = gaussian(cluster_d,50)
 			# get a list of locations sorted by distance to the point
-			# but only if within 1 km
-			sorted_locs = [ loc for d,loc in sorted(zip(dists,self.locations)) if d < 1000 ]
+			sorted_locs = [ loc for d,loc in sorted(zip(dists,self.locations)) ]
 			# store it with the point
 			point.potential_locations = sorted_locs
-		# now develop moving averages of probability associated with each 
-		# potential location. Run for each subset separately
+		# now develop moving averages of probability 
+		# Run for each subset separately
 		for segment in self.known_subsets:
-			for point in segment:
-				pass
-		# TODO finish algorithm
-		raise SystemExit
+			for i, point in enumerate(segment):
+				# get a list of the two nearest (temporal) neighbors on either side
+				lower_limit = 0 if i-2 < 0 else i-2
+				neighbors = segment[lower_limit:i+3]
+				# from these construct a probability estimate for this point, 
+				# smoothed in time
+				weights = [ gaussian(abs(n.epoch-point.epoch),5*60) for n in neighbors ]
+				probs = [ neighbor.prob for neighbor in neighbors ]				
+				point.smooth_prob = sum([p*w for p,w in zip(probs,weights)]) / sum(weights)
+			# now use regular expressions to find the start/end indices of activities
+			seq = [ 't' if p.smooth_prob > 0.5 else 'f' for p in segment ]
+			seq_string = ''.join(seq)
+			
 
 
 	def find_peaks(self,estimates,locations,threshold):
@@ -249,7 +264,7 @@ class Trace(object):
 		print( '\tfound',len(clusters),'clusters with',sum([len(c) for c in clusters]),'total points' )
 		potential_activity_locations = []
 		# find the maximum estimate and a location with that value
-		for cluster in clusters:
+		for cluster_index, cluster in enumerate(clusters):
 			peak_height = max( [estimates[i] for i in cluster] )
 			for i in cluster:
 				# if this is the highest point
@@ -257,7 +272,7 @@ class Trace(object):
 					x,y = locations[i]
 					lon,lat = unproject(x,y)
 					# create a location and append to the list
-					location = ActivityLocation(lon,lat)
+					location = ActivityLocation(lon,lat,cluster_index)
 					potential_activity_locations.append( location )
 					break
 
