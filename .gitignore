@@ -5,3 +5,4 @@ __pycache__
 *.qgs~
 *.qgd
 *.qgd~
+./inputs/new-coordinates.csv

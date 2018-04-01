@@ -89,7 +89,8 @@ class Trace(object):
 		uid = 1
 		for location in locations:
 			description = ""
-			line = "{},{},{},{},{}\n".format(self.id, str(uid), str(location.longitude), str(location.latitude), description)
+			line = "{},{},{},{},{},{}\n".format(
+                                self.id, str(uid), str(location.longitude), str(location.latitude), description, str(location.time_at))
 			fd.write(line)
 			if (location.longitude, location.latitude) not in d:
 				d[(location.longitude, location.latitude)] = uid
@@ -149,6 +150,16 @@ class Trace(object):
 			interpolated_points = self.interpolate_segment(subset, 30)
 			self.weight_points( interpolated_points )
 			kde_input_points.extend( interpolated_points )
+
+	def break_trips(self):
+		"""DOCUMENTATION NEEDED"""
+		if len(self.points) <= 10:
+			return
+		ml = []
+		for sl in self.subsets:
+			interpolated = self.interpolate_segment(sl, 30)
+			self.weight_points(interpolated)
+			ml.extend(interpolated)
 		# format as vectors for KDE function
 		# TODO don't need to call project twice, ideally
 		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
@@ -173,20 +184,14 @@ class Trace(object):
 		sequence = self.compute_sequence(locations)
 		self.clean_sequence(sequence)
 		ptl = self.make_ptl(locations)
+		self.time_at_loc(locations, interpolated)
 		l_to_uid = self.write_l_csv(locations, config.output_locations_file)
+
 		self.add_times(inted, locations, config.output_file)
-		#self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 		# store the result
 		self.locations.extend( locations )
-
-	def break_trips(self):
-		"""Allocate time to activity locations and the trips between them.
-			TODO: clean this function out"""
-		sequence = self.compute_sequence(self.locations)
-		ptl = self.make_ptl(self.locations)
-		l_to_uid = self.write_l_csv(self.locations, config.output_locations_file)
-		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
@@ -391,6 +396,8 @@ class Trace(object):
 
 	def weight_points(self,segment):
 		"""DOCUMENTATION NEEDED"""
+		if len(segment) <= 1:
+			return
 		for i in range(1, len(segment)-1):
 			w1 = (segment[i].time - segment[i-1].time).seconds / 2
 			w2 = (segment[i+1].time - segment[i].time).seconds / 2
@@ -398,5 +405,8 @@ class Trace(object):
 		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
 		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
 
-	def add_times(self, inted, locations):
-		for line in input_file:
+	def time_at_loc(self, locations, inted):
+		for p in inted:
+			for l in locations:
+				if not p.far_from(l):
+					l.time_at += p.weight
