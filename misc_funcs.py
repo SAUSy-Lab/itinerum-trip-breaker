@@ -141,6 +141,16 @@ def distance(point1,point2):
 	p2 = ( point2.latitude, point2.longitude )
 	return great_circle( p1, p2 ).meters
 
+def gaussian(distance,bandwidth):
+	"""Calculate a probability that a point originated from a location, 
+		given the distance."""
+	# https://en.wikipedia.org/wiki/Gaussian_function
+	a = 1 # height
+	b = 0 # mean
+	c = bandwidth
+	x = distance
+	return a * math.exp( -( (x-b)**2 / (2*c**2) ) )
+	
 
 def inner_angle_sphere(point1,point2,point3):
 	"""Given three point objects, calculate      p1

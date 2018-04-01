@@ -186,9 +186,11 @@ class Trace(object):
 			sorted_locs = [ loc for d,loc in sorted(zip(dists,self.locations)) if d < 1000 ]
 			# store it with the point
 			point.potential_locations = sorted_locs
-		# now develop moving averages of probability associated with each potential location
-		print('num points',len(self.points))
-		print('sum_segs',sum([len(seg) for seg in self.known_subsets]))		
+		# now develop moving averages of probability associated with each 
+		# potential location. Run for each subset separately
+		for segment in self.known_subsets:
+			for point in segment:
+				
 
 		raise SystemExit
 #		# What does this do? 
@@ -198,6 +200,7 @@ class Trace(object):
 #		# What does this do?
 #		self.add_times(inted, locations, config.output_file)
 #		self.write_a_csv(sequence, ptl, l_to_uid, config.output_activities_file)
+
 
 	def make_ptl(self, locations):
 		"""DOCUMENTATION NEEDED"""
