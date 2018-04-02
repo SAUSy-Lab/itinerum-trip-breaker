@@ -313,15 +313,6 @@ class Trace(object):
 					location = ActivityLocation(lon,lat,cluster_index)
 					potential_activity_locations.append( location )
 					break
-
-		# GEOTESTING: checking post-cleaning geometry
-		import csv
-		with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
-			writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-			writer.writerow(['longitude','latitude','id'])
-			for location in potential_activity_locations:
-				writer.writerow([location.longitude,location.latitude,location.id])
-
 		return potential_activity_locations
 
 	def weight_points(self,segment):
