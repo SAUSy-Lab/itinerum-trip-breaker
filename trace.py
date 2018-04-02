@@ -177,40 +177,64 @@ class Trace(object):
 		return self.locations
 
 	def break_trips(self):
-		"""Allocate time to activity locations and the trips between them.
-			1) Assign probability to the event of a point having come from a
-			particular location (based on distance from). 2) Use neighboring 
-			points to smooth that probability in time. 3) Points above p=0.5
-			are assigned to their location."""
-		# measure distances between points and locations, giving each point a 
-		# distance-sorted list of location references
+		"""Use a Hidden Markov Model to classify all points as deriving from 
+			either time spent travelling or time spent at one of the potential 
+			activity locations. Allocate time to these sequences of activities 
+			accordingly."""
 		for point in self.points:
-			# distances to all locations
-			dists = [ distance(loc,point) for loc in self.locations ]
-			cluster_d = min(dists) - config.cluster_distance / 2
-			cluster_d = 0 if cluster_d < 0 else cluster_d
-			point.prob = gaussian(cluster_d,50)
-			# get a list of locations sorted by distance to the point
-			sorted_locs = [ loc for d,loc in sorted(zip(dists,self.locations)) ]
-			# store it with the point
-			point.potential_locations = sorted_locs
-		# now develop moving averages of probability 
-		# Run for each subset separately
-		for segment in self.known_subsets:
-			for i, point in enumerate(segment):
-				# get a list of the two nearest (temporal) neighbors on either side
-				lower_limit = 0 if i-2 < 0 else i-2
-				neighbors = segment[lower_limit:i+3]
-				# from these construct a probability estimate for this point, 
-				# smoothed in time
-				weights = [ gaussian(abs(n.epoch-point.epoch),5*60) for n in neighbors ]
-				probs = [ neighbor.prob for neighbor in neighbors ]				
-				point.smooth_prob = sum([p*w for p,w in zip(probs,weights)]) / sum(weights)
-			# now use regular expressions to find the start/end indices of activities
-			seq = [ 't' if p.smooth_prob > 0.5 else 'f' for p in segment ]
-			seq_string = ''.join(seq)
-			
+			# get first-pass emission probabilities from all locations 
+			point.emit_p = [ gaussian(distance(loc,point),50) for loc in self.locations ]
+			# standardize to one if necessary
+			if sum(point.emit_p) > 1:
+				point.emit_p = [ p / sum(point.emit_p) for p in point.emit_p ]
+			# prepend travel probability as the difference from 1 if there is any
+			point.emit_p = [1 - sum(point.emit_p)] + point.emit_p
+		# make a list of starting probabilities (50/50 start travelling, start stationary)
+		start_p = [0.5]+[(0.5/len(self.locations))]*len(self.locations)
+		# get list of potential state indices
+		# 0 is travel, others are then +1 from their list location
+		states = range(0,len(self.locations)+1)
+		# simple transition probability matrix TODO fix this
+		trans_p = []
+		for s0 in states:
+			trans_p.append([])
+			for s1 in states:
+				if s0 + s1 == 0: # travel -> travel
+					trans_p[s0].append( 0.8 )
+				elif s0 == 0: # travel -> place
+					trans_p[s0].append( 0.2/len(self.locations) )
+				elif s1 == 0: # place -> travel
+					trans_p[s0].append( 1.0/len(self.locations) )
+				elif s0 == s1: # place -> same place
+					trans_p[s0].append( 1.0 )
+				else: # place -> place (no travel)
+					trans_p[s0].append( 0.0 ) 
+		print(sum([ sum(s0) for s0 in trans_p ]))
+		print( '\tstarting viterbi on',len(states),'possible states' )
+		# VITERBI ALGORITHM
+		V = [{}]
+		path = {}
+		for state in states:
+			# Initialize base cases (t == 0)
+			V[0][state] = start_p[state] * self.points[0].emit_p[state]
+			path[state] = [state]
+		for t in range(1,len(self.points)):	# Run Viterbi for t > 0
+			V.append({})
+			newpath = {}
+			for s1 in states:
+				(prob, state) = max(
+					[ ( V[t-1][s0] * trans_p[s0][s1] * self.points[t].emit_p[s1], s0 ) for s0 in states ]
+				)
+				V[t][s1] = prob
+				newpath[s1] = path[state] + [s1]
+			path = newpath	# Don't need to remember the old paths
+		(prob, state) = max( [ (V[len(self.points)-1][s], s) for s in states ] )
+		print( (prob, path[state]) )
+		# TODO finish this function
 
+		return 'this function is not yet finished'
+
+		
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a 
