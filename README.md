@@ -18,7 +18,7 @@ Data is segmented into lists of points where we feel confident that we haven't l
 
 1. Consider as unknown any time where the user moves more than 1 kilometer and two hours without reporting a location. 
 
-This is obviously not sufficient, and there is much more to come here. 
+This is obviously not sufficient, and there is much more to come here. For example, subways will need to be scrutinized. 
 
 ### Location detection
 This phase largely follows the [method described by Thierry Chaix and Kestens](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3637118/). We essentially do a time-weighted KDE on the user's points, spatio-temporally linear-interpolated where necessary. The kernel density estimation will be done in R (for lack of a decent Python package) and then brought back into Python. 
@@ -29,14 +29,12 @@ This phase largely follows the [method described by Thierry Chaix and Kestens](h
     - average GPS error for the user
     - kernel bandwidth
 3. Points with a PDF estimate above the threshold are clustered into contiguous groups.
-4. The maximum PDF estimate from each group (the peak) will be taken as a possible activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point from the peak. This is not implemented yet.)
+4. The maximum PDF estimate from each cluster (the peak) will be taken as a potential activity location. (It's possible that it may make sense to use a polygonized version of the cluster as a definition of the activity location rather than a point from the peak. This is not implemented yet.)
 
 ### Activity/Trip sequencing
-This phase is a bit hazier as it's still two steps away from implementation, but the idea is as follows:
-* Treat time sufficiently near a potential activity location as an activity
-* Treat time between activity locations as a trip
-* Look for activity/travel times that are implausibly long/short and reallocate time if necessary.
-* Potential activity locations that never get visited or get visited for many brief periods only will be ignored and time reallocated to trips, etc.
+The ultimate goal of this program is to create a travel-diary-like sequence of activities; this step is where that happens. Conceptually, time may be spent in only one of two (three) ways in this model: 1) travelling, 2) at an 'activity' (or 3) it may be classified as unknown). Framing the problem thus leads to a [hidden Markov model](https://en.wikipedia.org/wiki/Hidden_Markov_model) approach to discrete activity sequence classification. Each observed GPS point can be assigned an emission probability associated with each location, based on distance between the two. Transition probabilities give strong preference to state continuity and disallow teleporting (activities without intermediating travel).
+
+The Viterbi algorithm provides the most likely underlying classification of points, and these are used to map time to travel and activities. 
 
 
 ## Dependencies
