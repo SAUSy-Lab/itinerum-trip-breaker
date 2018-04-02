@@ -1,7 +1,7 @@
 #Meaningless change
 import config, csv, math
 from point import Point
-from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak, gaussian
+from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak, gaussian, ts_str
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -18,6 +18,8 @@ class Trace(object):
 		self.known_subsets = []
 		# list of potential activity locations
 		self.locations = []
+		# records the number of activity records written so far
+		self.activity_count = 0
 		# read in all time and location data for points
 		# right now only using a few fields
 		with open(config.input_coordinates_file, newline='') as f:
@@ -37,23 +39,6 @@ class Trace(object):
 		# measure to and from neighbors
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
-
-	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
-		"""DOCUMENTATION NEEDED"""
-		fd = open(filename, "a") #append to the file
-		s_no = 1
-		for event in sequence:
-			mode = ""
-			unknown = ""
-			time = event[0].ts
-			location_id = ""
-			if time in point_to_lid:
-				location_id = l_to_uid[(point_to_lid[time].longitude, point_to_lid[time].latitude)]
-			line = "{},{},{},{},{},{}\n".format(
-			        self.id, str(s_no), location_id, mode, unknown, time)
-			fd.write(line)
-			s_no += 1
-		fd.close()
 
 	def write_l_csv(self, locations, filename):
 		"""DOCUMENTATION NEEDED"""
@@ -209,11 +194,63 @@ class Trace(object):
 					V[t][s1] = prob
 					newpath[s1] = path[state] + [s1]
 				path = newpath	# Don't need to remember the old paths
-			(prob, state) = max( [ (V[len(points)-1][s], s) for s in states ] )
-			print( path[state] )
-			
-		raise SystemExit
-		
+			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
+			# get the optimal sequence of states
+			final_path = path[final_state]
+			# output the first activity start
+			self.write_activity( 
+				'' if final_path[0] == 0 else final_path[0] - 1, # location_id 
+				'', # mode 
+				False, # unknown time
+				ts_str(points[0].time,points[0].tz) # timestamp
+			)
+			prev_state = final_path[0]
+			start_time = points[0].epoch
+			# for each point after the first
+			for i in range(1,len(final_path)):
+				# look for state changes
+				if prev_state != final_path[i]:
+					print('state change from',prev_state,'to',final_path[i])
+					prev_state = final_path[i]
+			# output the last (unknown) activity to cap off this segment
+			self.write_activity( 
+				'', # location_id 
+				'', # mode 
+				True, # unknown time
+				ts_str(points[-1].time,points[-1].tz) # timestamp
+			)
+
+	def write_activity( self, location_id, mode, unknown_val, start_time ):
+		"""Write a single activity record to the output CSV."""
+		f = open(config.output_activities_file, "a") # append to the file
+		self.activity_count += 1
+		line = "{},{},{},{},{},{}\n".format(
+			self.id, 
+			self.activity_count, 
+			location_id,
+			mode,
+			unknown_val,
+			start_time
+		)
+		f.write(line)
+		f.close()
+
+	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
+		"""DOCUMENTATION NEEDED"""
+		fd = open(filename, "a") #append to the file
+		s_no = 1
+		for event in sequence:
+			mode = ""
+			unknown = ""
+			time = event[0].ts
+			location_id = ""
+			if time in point_to_lid:
+				location_id = l_to_uid[(point_to_lid[time].longitude, point_to_lid[time].latitude)]
+			line = "{},{},{},{},{},{}\n".format(
+			        self.id, str(s_no), location_id, mode, unknown, time)
+			fd.write(line)
+			s_no += 1
+		fd.close()
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a 
