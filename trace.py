@@ -1,7 +1,6 @@
-#Meaningless change
 import config, csv, math
 from point import Point
-from misc_funcs import distance, inner_angle_sphere, project, kde, min_peak, gaussian, ts_str
+from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -11,12 +10,20 @@ class Trace(object):
 		"""Construct the user object by pulling all data pertaining to this user.
 			Identified by ID"""
 		self.id = user_id		# 
-		self.points = []		# time-ordered list of points
-		self.discarded_points = [] # list of points removed
-		# ordered list of ordered lists of points separated by unknown times
-		# this will be the basic object of any trip-breaking analysis
+		# There are many lists of points. The first is the set of original
+		# input points, minus any that get cleaned out. Those are moved to 
+		# "discarded_points" where they are left to their own devices. 
+		# "known_subsets" is a list of lists of points partitioned by gaps in 
+		# the data where e.g. the phone has turned off inexplicably.
+		# "known_subsets_interpolated" are the subsets with points added in the 
+		# middle. "all_interpolated_points" is the flattened version of the 
+		# preceding, containing all real and interpolated points in one place.
+		# This one gets used for KDE etc.
+		self.points = []
+		self.discarded_points = []
 		self.known_subsets = []
 		self.known_subsets_interpolated = []
+		self.all_interpolated_points = []
 		# list of potential activity locations
 		self.locations = []
 		# records the number of activity records written so far
@@ -100,11 +107,11 @@ class Trace(object):
 			self.known_subsets_interpolated.append( interpolated_subset )
 			self.weight_points( interpolated_subset )
 		# get all (real & interpolated) points in one big list
-		kde_points = [ p for s in self.known_subsets_interpolated for p in s ]
+		self.all_interpolated_points = [ p for s in self.known_subsets_interpolated for p in s ]
 		# format as vectors for KDE function
-		Xvector = [ p.x for p in kde_points ]
-		Yvector = [ p.y for p in kde_points ]
-		Wvector = [ p.weight for p in kde_points ]
+		Xvector = [ p.x for p in self.all_interpolated_points ]
+		Yvector = [ p.y for p in self.all_interpolated_points ]
+		Wvector = [ p.weight for p in self.all_interpolated_points ]
 		# run the KDE
 		estimates, locations = kde(Xvector,Yvector,Wvector)
 		# determine average GPS accuracy value for this user
