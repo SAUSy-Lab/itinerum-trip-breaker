@@ -40,22 +40,6 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def write_l_csv(self, locations, filename):
-		"""DOCUMENTATION NEEDED"""
-		fd = open(filename, "a")
-		d = {}
-		uid = 1
-		for location in locations:
-			description = ""
-			line = "{},{},{},{},{},{}\n".format(
-				self.id, str(uid), str(location.longitude), str(location.latitude), description, str(location.time_at))
-			fd.write(line)
-			if (location.longitude, location.latitude) not in d:
-				d[(location.longitude, location.latitude)] = uid
-			uid += 1
-		fd.close()
-		return d
-
 	def interpolate_segment(self, segment, sample=30):
 		"""DOCUMENTATION NEEDED"""
 		new_points = []
@@ -156,6 +140,8 @@ class Trace(object):
 		# get list of potential state indices
 		# 0 is travel, others are then +1 from their list location
 		states = range(0,len(self.locations)+1)
+		# list of locations that actually get used
+		used_locations = set()
 		# simple transition probability matrix e.g.:
 		#     0   1   2	
 		# 0  .8  .1  .1
@@ -197,6 +183,9 @@ class Trace(object):
 			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
 			# get the optimal sequence of states
 			state_path = path[final_state]
+			print(state_path)
+			# note which locations have been used
+			used_locations = used_locations | set([s-1 for s in state_path if s != 0])
 			# NOW WE OUTPUT THE ACTIVITIES TO FILE
 			# output the first activity start
 			self.write_activity( 
@@ -228,6 +217,23 @@ class Trace(object):
 				True, # unknown time
 				ts_str(points[-1].time,points[-1].tz) # timestamp
 			)
+		# write the locations, whether used or not
+		for location in self.locations:
+			self.write_location(location,location.id in used_locations)
+		
+	def write_location(self, location, used):
+		"""Write a single location record to the output file."""
+		f = open(config.output_locations_file, "a")
+		line = "{},{},{},{},{},{}\n".format(
+			self.id, 
+			location.id, 
+			location.longitude, 
+			location.latitude, 
+			'', # description 
+			used
+		)
+		f.write(line)
+		f.close()
 
 	def write_activity( self, location_id, mode, unknown_val, start_time ):
 		"""Write a single activity record to the output CSV."""

@@ -11,9 +11,9 @@ def init_file(filename, t):
 	fd = open(filename, "w")
 	header = ""
 	if t == "activities":
-		header = "user_id,sequence,location_id,travel_mode(s),Unknown,start_time\n"
+		header = "user_id,sequence,location_id,mode,unknown,start_time\n"
 	elif t == "locations":
-		header = "user_id,uid,lon,lat,description,time_at\n"
+		header = "user_id,location_id,lon,lat,description,used\n"
 	fd.write(header)
 	fd.close()
 
