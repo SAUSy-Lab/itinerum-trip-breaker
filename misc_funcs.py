@@ -29,15 +29,6 @@ def kde(x_vector,y_vector,weights):
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
-
-	# GEOTESTING: checking input geometry
-	import csv
-	with open('outputs/TESTING_kde_inputs.csv', 'w+') as csvfile:
-		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-		writer.writerow(['x','y','w'])
-		for x,y,w in zip(x_vector,y_vector,weights):
-			writer.writerow([x,y,w])
-
 	# normalize the weights to the sample size
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
@@ -81,9 +72,9 @@ def kde(x_vector,y_vector,weights):
 	import csv
 	with open('outputs/TESTING_kde-eval-points.csv', 'w+') as csvfile:
 		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-		writer.writerow(['x','y','estimate'])
-		for p,(x,y) in zip(est,eva):
-			writer.writerow([x,y,p])
+		writer.writerow(['x','y','estimate','weights'])
+		for p,(x,y),w in zip(est,eva,weights):
+			writer.writerow([x,y,p,w])
 
 	return est, eva
 

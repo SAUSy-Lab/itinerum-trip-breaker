@@ -27,7 +27,7 @@ if __name__ == "__main__":
 		for row in reader:
 			user_ids.append( row['uuid'] )
 	# Keep only unique user_id's
-	user_ids = list(set(user_ids)) 
+	user_ids = sorted(list(set(user_ids)))
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each
 	init_file(config.output_activities_file, "activities")

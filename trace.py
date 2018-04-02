@@ -44,6 +44,8 @@ class Trace(object):
 						float(row['h_accuracy'])
 					)
 				)
+		# sort the list by time
+		self.points.sort( key=lambda x: x.epoch )
 		# measure to and from neighbors
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
@@ -76,7 +78,7 @@ class Trace(object):
 				# distance over 1 km?
 				distance( self.points[i], self.points[i-1] ) > 1000 and
 				# time gap > 2 hours?
-				self.points[i].epoch - self.points[i-1].epoch > 2*3600
+				self.points[i].epoch - self.points[i-1].epoch > 1*3600
 			):
 				# append point to next segment
 				known_segments.append( segment )
@@ -136,12 +138,12 @@ class Trace(object):
 			either time spent travelling or time spent at one of the potential 
 			activity locations. Allocate time to these sequences of activities 
 			accordingly."""
-		for point in self.points:
+		for point in self.all_interpolated_points:
 			# get first-pass emission probabilities from all locations 
 			dists = [ distance(loc,point) for loc in self.locations ]
-			dists = [ d - config.cluster_distance/2 for d in dists ]
+			dists = [ d - 100 for d in dists ]
 			dists = [ 0 if d < 0 else d for d in dists ]
-			point.emit_p = [ gaussian(d,25) for d in dists ]
+			point.emit_p = [ gaussian(d,100) for d in dists ]
 			# standardize to one if necessary
 			if sum(point.emit_p) > 1:
 				point.emit_p = [ p / sum(point.emit_p) for p in point.emit_p ]
@@ -174,7 +176,7 @@ class Trace(object):
 				else: # place -> place (no travel)
 					trans_p[s0].append( 0.0 ) 
 		# run the viterbi algorithm on each known subset 
-		for points in self.known_subsets:
+		for points in self.known_subsets_interpolated:
 			# VITERBI ALGORITHM
 			V = [{}]
 			path = {}
@@ -195,7 +197,6 @@ class Trace(object):
 			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
 			# get the optimal sequence of states
 			state_path = path[final_state]
-			#print(state_path)
 			# note which locations have been used
 			used_locations = used_locations | set([s-1 for s in state_path if s != 0])
 			# NOW WE OUTPUT THE ACTIVITIES TO FILE
