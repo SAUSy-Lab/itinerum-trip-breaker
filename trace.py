@@ -56,7 +56,6 @@ class Trace(object):
 			which trip and activity reconstruction would be impossible.
 			TODO: Eventually we will need some much stricter checking here 
 			and eventually an explicit check foro subway trips."""
-		print( '\tidentifying known subsets...' )
 		known_segments = []
 		segment = [ self.points[0] ]
 		# iterate over all points (except the first). Test each point to see 
@@ -85,6 +84,7 @@ class Trace(object):
 				segment[-1].epoch - segment[0].epoch > 3600
 			): # mininum time length of segment?
 				self.known_subsets.append(segment)
+		print( '\t',len(self.known_subsets)-1,'gap(s) found in data' )
 		
 
 	def get_activity_locations(self):
@@ -161,7 +161,7 @@ class Trace(object):
 					trans_p[s0].append( 0.8 )
 				else: # place -> place (no travel)
 					trans_p[s0].append( 0.0 ) 
-		print( '\tstarting viterbi...' )
+		# run the viterbi algorithm on each known subset 
 		for points in self.known_subsets:
 			# VITERBI ALGORITHM
 			V = [{}]
@@ -183,7 +183,7 @@ class Trace(object):
 			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
 			# get the optimal sequence of states
 			state_path = path[final_state]
-			print(state_path)
+			#print(state_path)
 			# note which locations have been used
 			used_locations = used_locations | set([s-1 for s in state_path if s != 0])
 			# NOW WE OUTPUT THE ACTIVITIES TO FILE
@@ -217,6 +217,7 @@ class Trace(object):
 				True, # unknown time
 				ts_str(points[-1].time,points[-1].tz) # timestamp
 			)
+		print( '\tFound',self.activity_count,'activities/trips' )
 		# write the locations, whether used or not
 		for location in self.locations:
 			self.write_location(location,location.id in used_locations)
@@ -264,7 +265,7 @@ class Trace(object):
 		locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 		estimates = [ est for est in estimates if est >= threshold ]
 		assert len(estimates) == len(locations)
-		print('\tclustering',len(estimates),'points above',threshold,'threshold')
+		print('\tClustering',len(estimates),'points above',threshold,'threshold')
 		# now calculate a distance-based connectivity matrix between all these points
 		neighbs = []
 		for i,(x1,y1) in enumerate(locations):
@@ -273,7 +274,6 @@ class Trace(object):
 				# use euclidian distance since this is already projected
 				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.cluster_distance
 				neighbs[i].append( connection )
-		print( '\thave connection matrix with',sum([len(l) for l in neighbs]),'entries' )
 		# clusters will be a list of disjoint sets
 		clusters = []
 		# now for each point, check for cluster membership and add and merge clusters
@@ -298,8 +298,7 @@ class Trace(object):
 					neighbors = neighbors | clusters.pop(i)
 					# add the new cluster
 				clusters.append(neighbors)
-
-		print( '\tfound',len(clusters),'clusters with',sum([len(c) for c in clusters]),'total points' )
+		print( '\tFound',len(clusters),'activity locations' )
 		potential_activity_locations = []
 		# find the maximum estimate and a location with that value
 		for cluster_index, cluster in enumerate(clusters):
