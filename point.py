@@ -1,6 +1,6 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
-import datetime, math, config
-from config import cluster_distance
+from datetime import timedelta
+from math import ceil
 
 class Point(object):
 	"""A location/time point ie GPS point."""
@@ -43,11 +43,12 @@ class Point(object):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
 	def pair_interpolation(self, other, sample):
+		"""DOCUMENTATION NEEDED"""
 		new_points = [self.copy()]
 		dist = distance(self, other)
 		if dist > sample:
 			time_dif = (other.time - self.time).seconds
-			n_segs = math.ceil(dist / sample)
+			n_segs = ceil(dist / sample)
 			seg_len = dist // n_segs
 			x1, y1 = project(self.longitude, self.latitude)
 			x2, y2 = project(other.longitude, other.latitude)
@@ -56,13 +57,13 @@ class Point(object):
 			for np in range(1, n_segs):
 				x0, y0 = x1 + np*dx, y1 + np*dy
 				lng, lat = unproject(x0, y0)
-				tstamp = self.time + datetime.timedelta(seconds=dt*np)
+				tstamp = self.time + timedelta(seconds=dt*np)
 				ts = ts_str(tstamp, self.ts[-5:])
 				new_points.append(Point(ts, lng, lat, self.accuracy))
 		return new_points
 
 	def add_weight(self, w):
+		"""Assigns time-based weight value."""
+		assert weight >= 0
 		self.weight = w
 
-	def close_to(self, location):
-		pass
