@@ -16,6 +16,7 @@ class Trace(object):
 		# ordered list of ordered lists of points separated by unknown times
 		# this will be the basic object of any trip-breaking analysis
 		self.known_subsets = []
+		self.known_subsets_interpolated = []
 		# list of potential activity locations
 		self.locations = []
 		# records the number of activity records written so far
@@ -93,16 +94,17 @@ class Trace(object):
 	def get_activity_locations(self):
 		"""Get activity locations for this trace. ( Create inputs for a KDE
 			function and find peaks in the surface. )"""
-		kde_input_points = []
 		for subset in self.known_subsets:
-			interpolated_points = self.interpolate_segment(subset)
-			self.weight_points( interpolated_points )
-			kde_input_points.extend( interpolated_points )
+			# interpolate the subset and weight the points
+			interpolated_subset = self.interpolate_segment(subset)
+			self.known_subsets_interpolated.append( interpolated_subset )
+			self.weight_points( interpolated_subset )
+		# get all (real & interpolated) points in one big list
+		kde_points = [ p for s in self.known_subsets_interpolated for p in s ]
 		# format as vectors for KDE function
-		# TODO don't need to call project twice, ideally
-		Xvector = [ project(p.longitude, p.latitude)[0] for p in kde_input_points ]
-		Yvector = [ project(p.longitude, p.latitude)[1] for p in kde_input_points ]
-		Wvector = [ p.weight for p in kde_input_points ]
+		Xvector = [ p.x for p in kde_points ]
+		Yvector = [ p.y for p in kde_points ]
+		Wvector = [ p.weight for p in kde_points ]
 		# run the KDE
 		estimates, locations = kde(Xvector,Yvector,Wvector)
 		# determine average GPS accuracy value for this user

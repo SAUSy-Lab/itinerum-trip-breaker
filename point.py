@@ -11,6 +11,8 @@ class Point(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
+		self.X = None
+		self.Y = None
 		# a string representation of a timestampt
 		self.ts = timestamp
 		# datetime representation of the same timestamp
@@ -33,6 +35,23 @@ class Point(object):
 	def epoch(self):
 		"""Return the time in seconds since the epoch."""
 		return self.time.timestamp()
+
+	@property
+	def x(self):
+		"""Return the projected X value."""
+		if not self.X: self.project()
+		return self.X
+
+	@property
+	def y(self):
+		"""Return the projected Y value."""
+		if not self.Y: self.project()
+		return self.Y
+			
+	def project(self):
+		"""Set projected x,y values from lon,lat."""
+		self.X, self.Y = project(self.longitude,self.latitude)
+		
 
 	def __repr__(self):
 		return str(project(self.longitude, self.latitude))
