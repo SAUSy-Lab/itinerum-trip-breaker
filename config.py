@@ -24,3 +24,7 @@ cluster_distance = 50
 # what is the limit of stated h_accuracy which will be acceptable?
 # (standard deviation in meters of a normal distribution?)
 min_accuracy = 100
+
+# interpolation distance parameter (meters). maximum length of segment to 
+# remain uninterpolated for linear spatial interpolations
+interpolation_distance = 30

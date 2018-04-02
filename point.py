@@ -1,6 +1,7 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
 from datetime import timedelta
 from math import ceil
+import config
 
 class Point(object):
 	"""A location/time point ie GPS point."""
@@ -21,7 +22,7 @@ class Point(object):
 		self.inter = False	# point shares location with both neighbors?
 		self.error_index = 0	# measure used during point cleaning
 		self.weight = 0		# time-based weight for KDE function
-		emit_p = []				# emission probabilities for set of travel + locations
+		self.emit_p = []				# emission probabilities for set of travel + locations
 		
 	@property
 	def geom(self):
@@ -42,16 +43,18 @@ class Point(object):
 	def copy(self):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
-	def pair_interpolation(self, other, sample):
-		"""DOCUMENTATION NEEDED"""
-		new_points = [self.copy()]
-		dist = distance(self, other)
-		if dist > sample:
-			time_dif = (other.time - self.time).seconds
-			n_segs = ceil(dist / sample)
+	def pair_interpolation(self, other_point):
+		"""Given this and one other Point object, attempts to supply a list of 
+			interpolated points between the two such that gaps between the points 
+			are never greater than config.interpolation_distance."""
+		new_points = [self.copy()] # Why is this copied?
+		dist = distance(self, other_point)
+		if dist > config.interpolation_distance:
+			time_dif = (other_point.time - self.time).seconds
+			n_segs = ceil( dist / config.interpolation_distance )
 			seg_len = dist // n_segs
 			x1, y1 = project(self.longitude, self.latitude)
-			x2, y2 = project(other.longitude, other.latitude)
+			x2, y2 = project(other_point.longitude, other_point.latitude)
 			dx, dy = (x2 - x1)/n_segs, (y2 - y1)/n_segs
 			dt = time_dif / n_segs
 			for np in range(1, n_segs):
@@ -62,8 +65,8 @@ class Point(object):
 				new_points.append(Point(ts, lng, lat, self.accuracy))
 		return new_points
 
-	def add_weight(self, w):
+	def add_weight(self, weight):
 		"""Assigns time-based weight value."""
 		assert weight >= 0
-		self.weight = w
+		self.weight = weight
 

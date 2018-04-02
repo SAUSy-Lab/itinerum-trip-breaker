@@ -40,11 +40,14 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def interpolate_segment(self, segment, sample=30):
-		"""DOCUMENTATION NEEDED"""
+	def interpolate_segment(self, segment):
+		"""Takes a known subset (a list of ordered points) and interpolates
+			linearly between them such that the distance between new points
+			is never greater than a value specified in config, e.g. 30m."""
 		new_points = []
-		for i in range(len(segment)-1):
-			pair_int = segment[i].pair_interpolation(segment[i+1], sample)
+		# For each point bu the last
+		for i in range( 0, len(segment)-1 ):
+			pair_int = segment[i].pair_interpolation(segment[i+1])
 			new_points.extend(pair_int)
 		new_points.append(segment[-1])
 		return new_points
@@ -92,7 +95,7 @@ class Trace(object):
 			function and find peaks in the surface. )"""
 		kde_input_points = []
 		for subset in self.known_subsets:
-			interpolated_points = self.interpolate_segment(subset, 30)
+			interpolated_points = self.interpolate_segment(subset)
 			self.weight_points( interpolated_points )
 			kde_input_points.extend( interpolated_points )
 		# format as vectors for KDE function
