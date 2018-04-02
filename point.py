@@ -5,7 +5,7 @@ from config import cluster_distance
 class Point(object):
 	"""A location/time point ie GPS point."""
 
-	def __init__(self, timestamp, longitude, latitude, accuracy_meters, other_fields):
+	def __init__(self, timestamp, longitude, latitude, accuracy_meters):
 		# set initially:
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
@@ -14,8 +14,6 @@ class Point(object):
 		self.ts = timestamp
 		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
-		# dictionary storing other fields that will just pass through
-		self.other_fields = other_fields
 		# these  get set later... just defining them here
 		self.d_ante = None		# distance to previous point
 		self.d_post = None		# distance to next point
@@ -43,7 +41,7 @@ class Point(object):
 		return self.latitude == other.latitude and self.longitude == other.longitude
 
 	def copy(self):
-		return Point(self.ts, self.longitude, self.latitude, self.accuracy, self.other_fields)
+		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
 	def pair_interpolation(self, other, sample):
 		new_points = [self.copy()]
@@ -61,7 +59,7 @@ class Point(object):
 				lng, lat = unproject(x0, y0)
 				tstamp = self.time + datetime.timedelta(seconds=dt*np)
 				ts = ts_str(tstamp, self.ts[-5:])
-				new_points.append(Point(ts, lng, lat, self.accuracy, None))
+				new_points.append(Point(ts, lng, lat, self.accuracy))
 		return new_points
 
 	def add_weight(self, w):

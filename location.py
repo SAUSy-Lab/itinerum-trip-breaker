@@ -6,3 +6,4 @@ class ActivityLocation(object):
 		self.latitude = latitude
 		self.longitude = longitude
 		self.id = id_num
+		self.time_at = 0

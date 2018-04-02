@@ -18,9 +18,6 @@ class Trace(object):
 		self.known_subsets = []
 		# list of potential activity locations
 		self.locations = []
-		
-		other_keys = ['id','speed','v_accuracy','point_type'] # The keys you want
-
 		# read in all time and location data for points
 		# right now only using a few fields
 		with open(config.input_coordinates_file, newline='') as f:
@@ -34,8 +31,7 @@ class Trace(object):
 						row['timestamp'],
 						float(row['longitude']),
 						float(row['latitude']),
-						float(row['h_accuracy']),
-						dict((k, row[k]) for k in other_keys if k in row)
+						float(row['h_accuracy'])
 					)
 				)
 		# measure to and from neighbors
@@ -120,6 +116,7 @@ class Trace(object):
 				segment[-1].epoch - segment[0].epoch > 3600
 			): # mininum time length of segment?
 				self.known_subsets.append(segment)
+		
 
 	def get_activity_locations(self):
 		"""Get activity locations for this trace. ( Create inputs for a KDE
@@ -175,10 +172,10 @@ class Trace(object):
 		# 0 is travel, others are then +1 from their list location
 		states = range(0,len(self.locations)+1)
 		# simple transition probability matrix e.g.:
-		#    0   1   2	
-		#0  .8  .1  .1
-		#1  .2  .8  .0
-		#2  .2  .0  .8
+		#     0   1   2	
+		# 0  .8  .1  .1
+		# 1  .2  .8  .0
+		# 2  .2  .0  .8
 		trans_p = []
 		for s0 in states:
 			trans_p.append([])
@@ -213,9 +210,8 @@ class Trace(object):
 					newpath[s1] = path[state] + [s1]
 				path = newpath	# Don't need to remember the old paths
 			(prob, state) = max( [ (V[len(points)-1][s], s) for s in states ] )
-			print( (prob, path[state]) )
-			print( 'path_len',len(path[state]),'seg_len',len(points) )
-
+			print( path[state] )
+			
 		raise SystemExit
 		
 
