@@ -196,22 +196,31 @@ class Trace(object):
 				path = newpath	# Don't need to remember the old paths
 			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
 			# get the optimal sequence of states
-			final_path = path[final_state]
+			state_path = path[final_state]
+			# NOW WE OUTPUT THE ACTIVITIES TO FILE
 			# output the first activity start
 			self.write_activity( 
-				'' if final_path[0] == 0 else final_path[0] - 1, # location_id 
+				'' if state_path[0] == 0 else state_path[0] - 1, # location_id 
 				'', # mode 
 				False, # unknown time
 				ts_str(points[0].time,points[0].tz) # timestamp
 			)
-			prev_state = final_path[0]
+			prev_state = state_path[0]
 			start_time = points[0].epoch
 			# for each point after the first
-			for i in range(1,len(final_path)):
+			for i in range(1,len(state_path)):
 				# look for state changes
-				if prev_state != final_path[i]:
-					print('state change from',prev_state,'to',final_path[i])
-					prev_state = final_path[i]
+				if prev_state != state_path[i]:
+					# assume the transition happens halfway between points
+					transition_time = points[i-1].time + (points[i].time-points[i-1].time)/2
+					# output start of this new state
+					self.write_activity( 
+						'' if state_path[i] == 0 else state_path[i] - 1, # location_id 
+						'', # mode 
+						False, # unknown time
+						ts_str(transition_time,points[i].tz) # timestamp
+					)
+					prev_state = state_path[i]
 			# output the last (unknown) activity to cap off this segment
 			self.write_activity( 
 				'', # location_id 
@@ -234,23 +243,6 @@ class Trace(object):
 		)
 		f.write(line)
 		f.close()
-
-	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
-		"""DOCUMENTATION NEEDED"""
-		fd = open(filename, "a") #append to the file
-		s_no = 1
-		for event in sequence:
-			mode = ""
-			unknown = ""
-			time = event[0].ts
-			location_id = ""
-			if time in point_to_lid:
-				location_id = l_to_uid[(point_to_lid[time].longitude, point_to_lid[time].latitude)]
-			line = "{},{},{},{},{},{}\n".format(
-			        self.id, str(s_no), location_id, mode, unknown, time)
-			fd.write(line)
-			s_no += 1
-		fd.close()
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a 
