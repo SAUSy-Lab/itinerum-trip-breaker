@@ -1,3 +1,4 @@
+# TODO move this doc somewhere sle and rewrite for main file
 # This is an early algorithm for cleaning itinerum output data.
 # I'm mainly trying to remove obvious positional errors and drop out 
 # redundant points. After this comes trip/activity partitioning. 

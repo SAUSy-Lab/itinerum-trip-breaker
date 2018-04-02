@@ -23,8 +23,8 @@ class Point(object):
 		self.inter = False		# point shares location with both neighbors?
 		self.error_index = 0		# ????
 		self.weight = 0			# time-based weight for KDE function
-		# list of location references ordered by distance from this point
-		self.potential_locations = []
+		# set elsewhere
+		emit_p = []					# emission probabilities for set of travel + locations
 		
 	@property
 	def geom(self):

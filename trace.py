@@ -42,29 +42,6 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-#	def compute_sequence(self, locations):
-#		"""???"""
-#		sequence = []
-#		cur = []
-#		prior_loc = None #previous location
-#		loc = None #current location
-#		# for each point
-#		for p in self.points:
-#			cur.append(p)
-#			found = False
-#			for l in locations:
-#				if distance(p, l) < config.cluster_distance / 2: #unique location
-#					prior_loc = loc
-#					loc = l
-#					found = True
-#			if not found:
-#				prior_loc = loc
-#				loc = None
-#			if not loc == prior_loc:
-#				sequence.append(cur)
-#				cur = []
-#		return sequence
-
 	def write_a_csv(self, sequence, point_to_lid, l_to_uid, filename):
 		"""DOCUMENTATION NEEDED"""
 		fd = open(filename, "a") #append to the file
@@ -183,7 +160,10 @@ class Trace(object):
 			accordingly."""
 		for point in self.points:
 			# get first-pass emission probabilities from all locations 
-			point.emit_p = [ gaussian(distance(loc,point),50) for loc in self.locations ]
+			dists = [ distance(loc,point) for loc in self.locations ]
+			dists = [ d - config.cluster_distance/2 for d in dists ]
+			dists = [ 0 if d < 0 else d for d in dists ]
+			point.emit_p = [ gaussian(d,25) for d in dists ]
 			# standardize to one if necessary
 			if sum(point.emit_p) > 1:
 				point.emit_p = [ p / sum(point.emit_p) for p in point.emit_p ]
@@ -194,7 +174,11 @@ class Trace(object):
 		# get list of potential state indices
 		# 0 is travel, others are then +1 from their list location
 		states = range(0,len(self.locations)+1)
-		# simple transition probability matrix TODO fix this
+		# simple transition probability matrix e.g.:
+		#    0   1   2	
+		#0  .8  .1  .1
+		#1  .2  .8  .0
+		#2  .2  .0  .8
 		trans_p = []
 		for s0 in states:
 			trans_p.append([])
@@ -202,38 +186,37 @@ class Trace(object):
 				if s0 + s1 == 0: # travel -> travel
 					trans_p[s0].append( 0.8 )
 				elif s0 == 0: # travel -> place
-					trans_p[s0].append( 0.2/len(self.locations) )
+					trans_p[s0].append( 0.2 / len(self.locations) )
 				elif s1 == 0: # place -> travel
-					trans_p[s0].append( 1.0/len(self.locations) )
+					trans_p[s0].append( 0.2 )
 				elif s0 == s1: # place -> same place
-					trans_p[s0].append( 1.0 )
+					trans_p[s0].append( 0.8 )
 				else: # place -> place (no travel)
 					trans_p[s0].append( 0.0 ) 
-		print(sum([ sum(s0) for s0 in trans_p ]))
-		print( '\tstarting viterbi on',len(states),'possible states' )
-		# VITERBI ALGORITHM
-		V = [{}]
-		path = {}
-		for state in states:
-			# Initialize base cases (t == 0)
-			V[0][state] = start_p[state] * self.points[0].emit_p[state]
-			path[state] = [state]
-		for t in range(1,len(self.points)):	# Run Viterbi for t > 0
-			V.append({})
-			newpath = {}
-			for s1 in states:
-				(prob, state) = max(
-					[ ( V[t-1][s0] * trans_p[s0][s1] * self.points[t].emit_p[s1], s0 ) for s0 in states ]
-				)
-				V[t][s1] = prob
-				newpath[s1] = path[state] + [s1]
-			path = newpath	# Don't need to remember the old paths
-		(prob, state) = max( [ (V[len(self.points)-1][s], s) for s in states ] )
-		print( (prob, path[state]) )
-		# TODO finish this function
+		print( '\tstarting viterbi...' )
+		for points in self.known_subsets:
+			# VITERBI ALGORITHM
+			V = [{}]
+			path = {}
+			for state in states:
+				# Initialize base cases (t == 0)
+				V[0][state] = start_p[state] * points[0].emit_p[state]
+				path[state] = [state]
+			for t in range(1,len(points)):	# Run Viterbi for t > 0
+				V.append({})
+				newpath = {}
+				for s1 in states:
+					(prob, state) = max(
+						[ ( V[t-1][s0] * trans_p[s0][s1] * points[t].emit_p[s1], s0 ) for s0 in states ]
+					)
+					V[t][s1] = prob
+					newpath[s1] = path[state] + [s1]
+				path = newpath	# Don't need to remember the old paths
+			(prob, state) = max( [ (V[len(points)-1][s], s) for s in states ] )
+			print( (prob, path[state]) )
+			print( 'path_len',len(path[state]),'seg_len',len(points) )
 
-		return 'this function is not yet finished'
-
+		raise SystemExit
 		
 
 	def find_peaks(self,estimates,locations,threshold):
@@ -304,9 +287,9 @@ class Trace(object):
 		import csv
 		with open('outputs/TESTING_potential-activity-locations.csv', 'w+') as csvfile:
 			writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-			writer.writerow(['longitude','latitude'])
+			writer.writerow(['longitude','latitude','id'])
 			for location in potential_activity_locations:
-				writer.writerow([location.longitude,location.latitude])
+				writer.writerow([location.longitude,location.latitude,location.id])
 
 		return potential_activity_locations
 
