@@ -15,14 +15,13 @@ class Point(object):
 		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
 		# these  get set later... just defining them here
-		self.d_ante = None		# distance to previous point
-		self.d_post = None		# distance to next point
-		self.angle = None			# angle between this and adjacent points
-		self.inter = False		# point shares location with both neighbors?
-		self.error_index = 0		# ????
-		self.weight = 0			# time-based weight for KDE function
-		# set elsewhere
-		emit_p = []					# emission probabilities for set of travel + locations
+		self.d_ante = None	# distance to previous point
+		self.d_post = None	# distance to next point
+		self.angle = None		# angle between this and adjacent points
+		self.inter = False	# point shares location with both neighbors?
+		self.error_index = 0	# measure used during point cleaning
+		self.weight = 0		# time-based weight for KDE function
+		emit_p = []				# emission probabilities for set of travel + locations
 		
 	@property
 	def geom(self):

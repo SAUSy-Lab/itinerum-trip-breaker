@@ -9,7 +9,7 @@ The basic idea in the cleaning phase to remove points not based on decent GPS da
 
 1. Remove points with high known error (h_accuracy > x meters) 
 2. Remove points at same location as temporal neighbors
-3. Remove points based on angle and distance to temporal neighbors
+3. Any major jump away and back again, especially if the h_error doesn't justify the distance may indicate a non-GPS signal or a bad error estimate. Away-and-back-again points are identified by the minimum distance from neighboring points and the angle formed between the three. 
 4. Repeat step 2
 5. More to come...
 

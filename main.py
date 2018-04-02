@@ -1,29 +1,3 @@
-# TODO move this doc somewhere sle and rewrite for main file
-# This is an early algorithm for cleaning itinerum output data.
-# I'm mainly trying to remove obvious positional errors and drop out 
-# redundant points. After this comes trip/activity partitioning. 
-# 
-# The key thing here is to remove points that don't appear to be based 
-# on reasonably accurate *GPS*. Id est, some points come from black-box 
-# systems inside the phone, and some are GPS based but not accurate. 
-# There a few things we can look for to pick these out:
-
-# 1) GPS noise has a roughly gaussian distribution, and should very 
-#		rarely hit the same exact point twice, given enough precision. 
-#		Yet phones often get "stuck" on a point and repeat it. 
-#		This may indicate a cell-tower or some other problem. Any 
-#		point that is used two or more times should come under strict 
-#		scrutiny. This is not quite yet implemented here. 
-
-# 2) Any major jump away and back again, especially if the h_error
-#		Doesn't justify the distance may indicate a non-GPS signal 
-#		or a bad error estimate. Away-and-back-again points are identified 
-#		by the minimum distance from neighboring points and the angle formed 
-#		between the three. 
-
-# The algorithm iterates over users and advances iteratively over each 
-# user's data.  
-
 # standard modules
 import datetime, csv, math, rpy2
 # our own classes

@@ -289,6 +289,27 @@ class Trace(object):
 
 		return potential_activity_locations
 
+	def weight_points(self,segment):
+		"""DOCUMENTATION NEEDED"""
+		if len(segment) <= 1:
+			return
+		for i in range(1, len(segment)-1):
+			w1 = (segment[i].time - segment[i-1].time).seconds / 2
+			w2 = (segment[i+1].time - segment[i].time).seconds / 2
+			segment[i].add_weight(w1 + w2)
+		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
+		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
+
+	def time_at_loc(self, locations, inted):
+		for p in inted:
+			for l in locations:
+				if not p.far_from(l):
+					l.time_at += p.weight
+
+	#
+	# CLEANING FUNCTIONS BELOW
+	# 
+
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -406,20 +427,3 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
-
-	def weight_points(self,segment):
-		"""DOCUMENTATION NEEDED"""
-		if len(segment) <= 1:
-			return
-		for i in range(1, len(segment)-1):
-			w1 = (segment[i].time - segment[i-1].time).seconds / 2
-			w2 = (segment[i+1].time - segment[i].time).seconds / 2
-			segment[i].add_weight(w1 + w2)
-		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
-		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
-
-	def time_at_loc(self, locations, inted):
-		for p in inted:
-			for l in locations:
-				if not p.far_from(l):
-					l.time_at += p.weight
