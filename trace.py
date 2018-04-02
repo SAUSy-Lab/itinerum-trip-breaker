@@ -315,15 +315,20 @@ class Trace(object):
 		return potential_activity_locations
 
 	def weight_points(self,segment):
-		"""DOCUMENTATION NEEDED"""
-		if len(segment) <= 1:
-			return
+		"""Assign time-based weights to a series of sequential points.
+			Values are in seconds, and are split between neighboring points.
+			e.g.  |--p2-time---|
+			p1----|----p2------|------p3
+		"""
+		assert len(segment) > 1
+		# set weights of middle points
 		for i in range(1, len(segment)-1):
-			w1 = (segment[i].time - segment[i-1].time).seconds / 2
-			w2 = (segment[i+1].time - segment[i].time).seconds / 2
+			w1 = (segment[i].time - segment[i-1].time).total_seconds() / 2
+			w2 = (segment[i+1].time - segment[i].time).total_seconds() / 2
 			segment[i].add_weight(w1 + w2)
-		segment[0].add_weight((segment[1].time - segment[0].time).seconds / 2)
-		segment[-1].add_weight((segment[-1].time - segment[-2].time).seconds / 2)
+		# set weights of first and last points
+		segment[0].add_weight((segment[1].time - segment[0].time).total_seconds() / 2)
+		segment[-1].add_weight((segment[-1].time - segment[-2].time).total_seconds() / 2)
 
 	def time_at_loc(self, locations, inted):
 		for p in inted:
