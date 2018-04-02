@@ -6,16 +6,16 @@ from trace import Trace
 import config
 
 
-def init_file(filename, t):
-	"""DOCUMENTATION NEEDED"""
-	fd = open(filename, "w")
+def init_file(filename, out_type):
+	"""Open files for accepting output through script execution."""
+	f = open(filename, "w")
 	header = ""
-	if t == "activities":
+	if out_type == "activities":
 		header = "user_id,sequence,location_id,mode,unknown,start_time\n"
-	elif t == "locations":
+	elif out_type == "locations":
 		header = "user_id,location_id,lon,lat,description,used\n"
-	fd.write(header)
-	fd.close()
+	f.write(header)
+	f.close()
 
 
 # Standard format so we can import this module elsewhere.
