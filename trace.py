@@ -66,7 +66,7 @@ class Trace(object):
 				if row['location_work_lat'] != '':
 					self.work = Location(row['location_work_lon'],row['location_work_lat'])
 				if row['location_study_lat'] != '':
-					self.home = Location(row['location_study_lon'],row['location_study_lat'])
+					self.school = Location(row['location_study_lon'],row['location_study_lat'])
 		# sort the list by time
 		self.points.sort( key=lambda x: x.epoch )
 		# measure to and from neighbors
@@ -83,12 +83,12 @@ class Trace(object):
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write( "{},{},{},{},{},{}\n".format(
-					self.id, # user_id
-					location.id, # location_id
+					self.id,				# user_id
+					location.id,		# location_id
 					location.longitude, 
 					location.latitude, 
-					'', # description 
-					location.visited 
+					location.name,		# description 
+					location.visited 	# whether it was used or not
 				) )
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
@@ -249,6 +249,23 @@ class Trace(object):
 		# store the result
 		self.locations.extend( locations )
 		return self.locations
+
+	def identify_locations(self):
+		"""Identify locations with user-provided home, work, school locations if 
+			possible."""
+		# TODO this function was written in a hurry and should be made more robust
+		if self.home:
+			for location in self.locations:
+				if distance( location, self.home ) <= 150: # meters 
+					location.identify('home')
+		if self.work:
+			for location in self.locations:
+				if distance( location, self.work ) <= 150: # meters 
+					location.identify('work')
+		if self.school:
+			for location in self.locations:
+				if distance( location, self.school ) <= 150: # meters 
+					location.identify('school')
 
 	def break_trips(self):
 		"""Use a Hidden Markov Model to classify all points as deriving from 

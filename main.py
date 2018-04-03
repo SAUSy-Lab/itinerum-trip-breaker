@@ -17,7 +17,7 @@ def initialize_output_files():
 	f.close()
 	# points file
 	f = open(config.output_points_file, "w")
-	f.write('user_id,lon,lat,removed,interpolated,state\n')
+	f.write('user_id,lon,lat,weight,removed,interpolated,state\n')
 	f.close()
 	# days file
 	f = open(config.output_days_file, "w")
@@ -59,6 +59,7 @@ if __name__ == "__main__":
 		user.make_known_subsets()
 		# find locations with the cleaned data
 		user.get_activity_locations()
+		user.identify_locations()
 		# allocate time
 		user.break_trips()
 		# write the output
