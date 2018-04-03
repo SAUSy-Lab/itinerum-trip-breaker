@@ -81,6 +81,18 @@ class Trace(object):
 					episode.unknown,	# unknown
 					episode.start		# start_time
 				) )
+		# write preliminary points file
+		# 'user_id,lon,lat,removed,interpolated,state'
+		with open(config.output_points_file,'a') as f:
+			for point in self.all_interpolated_points:
+				f.write( "{},{},{},{},{},{}\n".format(
+					self.id,		# user_id
+					point.longitude,
+					point.latitude,
+					'',	# removed
+					'',	# interpolated
+					''		# state
+				) )
 
 	def interpolate_segment(self, segment):
 		"""Takes a known subset (a list of ordered points) and interpolates
