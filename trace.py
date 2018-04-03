@@ -1,5 +1,6 @@
 import config, csv, math
 from point import Point
+from episode import Episode
 from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str
 
 class Trace(object):
@@ -26,8 +27,8 @@ class Trace(object):
 		self.all_interpolated_points = []
 		# list of potential activity locations
 		self.locations = []
-		# dictionary of activities?
-		self.activities = []
+		# dictionary of activity episodes?
+		self.episodes = []
 		# records the number of activity records written so far
 		self.activity_count = 0
 		# read in all time and location data for points
@@ -55,17 +56,31 @@ class Trace(object):
 	def flush(self):
 		"""After everything is finished write all the output from this trace. 
 			All writing to files should be done here if possible. Any data that 
-			needs to ultimately find it's way here should be stored as a property."""
+			needs to ultimately find it's way here should be stored as a property.
+			All Trace's call this at the end, and the files are initialized in main
+			so we only append rows here."""
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write( "{},{},{},{},{},{}\n".format(
-					self.id, location.id, 
-					location.longitude, location.latitude, 
+					self.id, # user_id
+					location.id, # location_id
+					location.longitude, 
+					location.latitude, 
 					'', # description 
-					location.visited
+					location.visited 
 				) )
-		# write 
+		# write episodes file
+		with open(config.output_episodes_file, "a") as f:
+			for i, episode in enumerate(self.episodes):
+				f.write( "{},{},{},{},{},{}\n".format(
+					self.id,		# user_id
+					i,				# activity sequence
+					episode.location_id,	# location_id
+					'',						# mode
+					episode.unknown,	# unknown
+					episode.start		# start_time
+				) )
 
 	def interpolate_segment(self, segment):
 		"""Takes a known subset (a list of ordered points) and interpolates
@@ -214,17 +229,16 @@ class Trace(object):
 			(prob, final_state) = max( [ (V[len(points)-1][s], s) for s in states ] )
 			# get the optimal sequence of states
 			state_path = path[final_state]
-			# note which locations have been used
+			# note which locations have been used TODO move this elsewhere
 			for visited_id in set([s-1 for s in state_path if s != 0]):
 				self.locations[visited_id].visited = True
-			# NOW WE OUTPUT THE ACTIVITIES TO FILE
-			# output the first activity start
-			self.write_activity( 
-				'' if state_path[0] == 0 else state_path[0] - 1, # location_id 
-				'', # mode 
-				False, # unknown time
-				ts_str(points[0].time,points[0].tz) # timestamp
-			)
+			# now record the first activity episode
+			self.episodes.append( Episode( 
+				points[0].time, # start_time
+				# location, if any
+				None if state_path[0] == 0 else self.locations[state_path[0]-1],
+				False # unknown_time
+			) )
 			prev_state = state_path[0]
 			start_time = points[0].epoch
 			# for each point after the first
@@ -234,36 +248,21 @@ class Trace(object):
 					# assume the transition happens halfway between points
 					transition_time = points[i-1].time + (points[i].time-points[i-1].time)/2
 					# output start of this new state
-					self.write_activity( 
-						'' if state_path[i] == 0 else state_path[i] - 1, # location_id 
-						'', # mode 
-						False, # unknown time
-						ts_str(transition_time,points[i].tz) # timestamp
-					)
+					# now record the first activity episode
+					self.episodes.append( Episode( 
+						points[i].time, # start_time
+						# location, if any
+						None if state_path[i] == 0 else self.locations[state_path[i]-1],
+						False # unknown_time
+					) )
 					prev_state = state_path[i]
-			# output the last (unknown) activity to cap off this segment
-			self.write_activity( 
-				'', # location_id 
-				'', # mode 
-				True, # unknown time
-				ts_str(points[-1].time,points[-1].tz) # timestamp
-			)
-		print( '\tFound',self.activity_count,'activities/trips' )
-
-	def write_activity( self, location_id, mode, unknown_val, start_time ):
-		"""Write a single activity record to the output CSV."""
-		f = open(config.output_activities_file, "a") # append to the file
-		self.activity_count += 1
-		line = "{},{},{},{},{},{}\n".format(
-			self.id, 
-			self.activity_count, 
-			location_id,
-			mode,
-			unknown_val,
-			start_time
-		)
-		f.write(line)
-		f.close()
+			# now record the first activity episode
+			self.episodes.append( Episode( 
+				points[-1].time,	# start_time				
+				None,	# no location,
+				True	# unknown time ends every segment
+			) )
+		print( '\tFound',len(self.episodes),'activities/trips' )
 
 	def find_peaks(self,estimates,locations,threshold):
 		"""PDF was estimated at a selection of points, which are here given as a 
