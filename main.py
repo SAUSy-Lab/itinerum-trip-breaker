@@ -14,6 +14,8 @@ def init_file(filename, out_type):
 		header = "user_id,sequence,location_id,mode,unknown,start_time\n"
 	elif out_type == "locations":
 		header = "user_id,location_id,lon,lat,description,used\n"
+	elif out_type == 'points':
+		header = 'user_id,lon,lat,removed,interpolated,state'
 	f.write(header)
 	f.close()
 
@@ -29,15 +31,20 @@ if __name__ == "__main__":
 	# Keep only unique user_id's
 	user_ids = sorted(list(set(user_ids)))
 	print( len(user_ids),'user(s) to clean' )
+	# TODO Testing
+#	i = int(input('i:'))
+#	user_ids = [user_ids[1]]
 	# loop over users calling all the functions for each
 	init_file(config.output_activities_file, "activities")
 	init_file(config.output_locations_file, "locations")
+	init_file(config.output_points_file, "points")
 	u = 1
 	for user_id in user_ids:
 		# create trace object for this user
 		user = Trace(user_id)
+		if len(user.points) < 100: continue
 		# remove GPS points believed to be in error
-		print("User :", u, len(user.points),'points at start for',user_id )
+		print("User:", u, len(user.points),'points at start for',user_id )
 		u += 1
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()

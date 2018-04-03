@@ -24,7 +24,9 @@ class Point(object):
 		self.inter = False	# point shares location with both neighbors?
 		self.error_index = 0	# measure used during point cleaning
 		self.weight = 0		# time-based weight for KDE function
-		self.emit_p = []				# emission probabilities for set of travel + locations
+		self.emit_p = []		# emission probabilities for set of travel + locations
+		self.state = None		# HMM state classification
+		self.kde_p = None		# estimated PDF at this point
 		
 	@property
 	def geom(self):

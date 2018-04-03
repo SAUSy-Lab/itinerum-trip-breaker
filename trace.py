@@ -119,7 +119,7 @@ class Trace(object):
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = math.sqrt(
-			sum( [p.accuracy**2 for p in self.points] ) 
+			sum( [p.accuracy**2 for p in self.points] )
 			/ len(self.points)
 		)
 		# estimate peak threshold value

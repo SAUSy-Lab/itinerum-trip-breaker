@@ -3,11 +3,12 @@
 #
 
 # coordinates.csv file as from Itinerum
-input_coordinates_file = 'input/coordinates.csv'
+input_coordinates_file = './inputs/coordinates.csv'
 
 # 
 output_activities_file = "./outputs/activities.csv"
 output_locations_file = "./outputs/locations.csv"
+output_points_file = './outputs/points_diagnostic.csv'
 time_file = "./outputs/location_times.csv"
 
 # How much time must be spent in one spot for it to be detected as a potential  
