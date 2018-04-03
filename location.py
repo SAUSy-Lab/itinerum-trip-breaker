@@ -6,4 +6,12 @@ class ActivityLocation(object):
 		self.latitude = latitude
 		self.longitude = longitude
 		self.id = id_num
-		self.time_at = 0
+		# total time spent at this location in seconds
+		self.total_time_at = 0
+		# whether or not there is an actual activity recored here
+		self.visited = False
+
+	def add_time(self,seconds):
+		"""Add some time to this location."""
+		assert seconds >= 0
+		self.total_time_at += seconds

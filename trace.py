@@ -26,6 +26,8 @@ class Trace(object):
 		self.all_interpolated_points = []
 		# list of potential activity locations
 		self.locations = []
+		# dictionary of activities?
+		self.activities = []
 		# records the number of activity records written so far
 		self.activity_count = 0
 		# read in all time and location data for points
@@ -49,6 +51,21 @@ class Trace(object):
 		# measure to and from neighbors
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
+
+	def flush(self):
+		"""After everything is finished write all the output from this trace. 
+			All writing to files should be done here if possible. Any data that 
+			needs to ultimately find it's way here should be stored as a property."""
+		# write potential activity locations to file
+		with open(config.output_locations_file, "a") as f:
+			for location in self.locations:
+				f.write( "{},{},{},{},{},{}\n".format(
+					self.id, location.id, 
+					location.longitude, location.latitude, 
+					'', # description 
+					location.visited
+				) )
+		# write 
 
 	def interpolate_segment(self, segment):
 		"""Takes a known subset (a list of ordered points) and interpolates
@@ -198,7 +215,8 @@ class Trace(object):
 			# get the optimal sequence of states
 			state_path = path[final_state]
 			# note which locations have been used
-			used_locations = used_locations | set([s-1 for s in state_path if s != 0])
+			for visited_id in set([s-1 for s in state_path if s != 0]):
+				self.locations[visited_id].visited = True
 			# NOW WE OUTPUT THE ACTIVITIES TO FILE
 			# output the first activity start
 			self.write_activity( 
@@ -231,23 +249,6 @@ class Trace(object):
 				ts_str(points[-1].time,points[-1].tz) # timestamp
 			)
 		print( '\tFound',self.activity_count,'activities/trips' )
-		# write the locations, whether used or not
-		for location in self.locations:
-			self.write_location(location,location.id in used_locations)
-		
-	def write_location(self, location, used):
-		"""Write a single location record to the output file."""
-		f = open(config.output_locations_file, "a")
-		line = "{},{},{},{},{},{}\n".format(
-			self.id, 
-			location.id, 
-			location.longitude, 
-			location.latitude, 
-			'', # description 
-			used
-		)
-		f.write(line)
-		f.close()
 
 	def write_activity( self, location_id, mode, unknown_val, start_time ):
 		"""Write a single activity record to the output CSV."""

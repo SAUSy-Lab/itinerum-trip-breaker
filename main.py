@@ -57,6 +57,8 @@ if __name__ == "__main__":
 		# find locations with the cleaned data
 		user.get_activity_locations()
 		# allocate time
-		user.break_trips() 
+		user.break_trips()
+		# write the output
+		user.flush()
 
 
