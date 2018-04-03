@@ -36,6 +36,17 @@ The ultimate goal of this program is to create a travel-diary-like sequence of a
 
 The Viterbi algorithm provides the most likely underlying classification of points, and these are used to map time to travel and activities. 
 
+### Output Data
+Data is output in several files, some of which contain somewhat overlapping information.
+
+#### Episodes File
+The episodes file is the most elemental output. It's in a sort of this happenend and then that happened format. 
+
+#### Locations File
+This file contains a list of *potential* activity locations, many of which will correspond to an entry in the episodes file. Locations not used will be marked as such. 
+
+#### Person Days File
+This file summarizes the episodes file per calendar day. Since many people may stay up a little past midnight, but few go all the way around the clock, a calndar date is considered to go from 3am to 3am. Each episode type is counted and summed. E.g. How much time was spent at home today and how many trips were made?
 
 ## Dependencies
 * Python 3
