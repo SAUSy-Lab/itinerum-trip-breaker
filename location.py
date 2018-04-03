@@ -1,10 +1,10 @@
-class ActivityLocation(object):
+class Location(object):
 	"""A location point"""
 
-	def __init__(self, longitude, latitude, id_num):
+	def __init__(self, longitude, latitude, id_num = None):
 		# set initially:
-		self.latitude = latitude
-		self.longitude = longitude
+		self.latitude = float(latitude)
+		self.longitude = float(longitude)
 		self.id = id_num
 		# total time spent at this location in seconds
 		self.total_time_at = 0

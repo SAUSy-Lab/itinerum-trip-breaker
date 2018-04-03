@@ -1,6 +1,7 @@
 import config, csv, math
 from point import Point
 from episode import Episode
+from location import Location
 from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str
 from datetime import timedelta, datetime
 
@@ -32,6 +33,12 @@ class Trace(object):
 		self.episodes = []
 		# records the number of activity records written so far
 		self.activity_count = 0
+		# home location
+		self.home = None
+		# work location
+		self.work = None
+		# school location 
+		self.school = None
 		# read in all time and location data for points
 		# right now only using a few fields
 		with open(config.input_coordinates_file, newline='') as f:
@@ -48,6 +55,18 @@ class Trace(object):
 						float(row['h_accuracy'])
 					)
 				)
+		# get user home, work, study locations
+		with open(config.input_survey_responses_file, newline='') as f:
+			reader = csv.DictReader(f)
+			for row in reader:
+				if row['uuid'] != user_id:
+					continue
+				if row['location_home_lat'] != '':
+					self.home = Location(row['location_home_lon'],row['location_home_lat'])
+				if row['location_work_lat'] != '':
+					self.work = Location(row['location_work_lon'],row['location_work_lat'])
+				if row['location_study_lat'] != '':
+					self.home = Location(row['location_study_lon'],row['location_study_lat'])
 		# sort the list by time
 		self.points.sort( key=lambda x: x.epoch )
 		# measure to and from neighbors
@@ -99,13 +118,14 @@ class Trace(object):
 		with open(config.output_days_file,'a') as f:
 			for date in days:
 				#print( days[date] )
-				f.write( "{},{},{},{},{},{}\n".format(
+				f.write( "{},{},{},{},{},{},{}\n".format(
 					self.id,		# user_id
 					date,
 					date.weekday(),
 					sum(days[date]['total']),	# total minutes
-					'',	# 
-					''		# 
+					len(days[date]['travel']),	# trip count
+					sum(days[date]['travel']),	# travel time
+					sum(days[date]['unknown'])	# unknown time
 				) )
 				
 	def get_days(self):
@@ -337,7 +357,7 @@ class Trace(object):
 			value is the activity location."""
 		assert len(estimates) == len(locations)
 		from math import sqrt
-		from location import ActivityLocation
+		from location import Location
 		from misc_funcs import unproject
 		# drop values below the threshold
 		locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
@@ -387,7 +407,7 @@ class Trace(object):
 					x,y = locations[i]
 					lon,lat = unproject(x,y)
 					# create a location and append to the list
-					location = ActivityLocation(lon,lat,cluster_index)
+					location = Location(lon,lat,cluster_index)
 					potential_activity_locations.append( location )
 					break
 		return potential_activity_locations
