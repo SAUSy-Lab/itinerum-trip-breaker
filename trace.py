@@ -118,14 +118,20 @@ class Trace(object):
 		with open(config.output_days_file,'a') as f:
 			for date in days:
 				#print( days[date] )
-				f.write( "{},{},{},{},{},{},{}\n".format(
+				f.write( "{},{},{},{},{},{},{},{},{},{}\n".format(
 					self.id,		# user_id
 					date,
 					date.weekday(),
 					sum(days[date]['total']),	# total minutes
 					len(days[date]['travel']),	# trip count
 					sum(days[date]['travel']),	# travel time
-					sum(days[date]['unknown'])	# unknown time
+					sum(days[date]['unknown']),# unknown time
+					sum(days[date]['home']),	# home_time
+					sum(days[date]['work']),	# work_time
+					sum(days[date]['school']),	# school_time
+					len(days[date]['home']),	# home count
+					len(days[date]['work']),	# work count
+					len(days[date]['school'])	# school count
 				) )
 				
 	def get_days(self):
@@ -144,7 +150,7 @@ class Trace(object):
 				# initialize the date the first time we see it
 				if date not in days:
 					days[date] = {
-						'home': [], 'work': [], 'home/work': [], 'school': [], 'other': [],
+						'home': [], 'work': [], 'school': [], 'other': [],
 						'travel': [], 'unknown': [], 'total': []
 					}
 				# how much of this activity occured on this date?
@@ -164,7 +170,11 @@ class Trace(object):
 				elif self.episodes[i].e_type == 'unknown':
 					days[date]['unknown'].append( duration )
 				elif self.episodes[i].e_type == 'activity':
-					days[date]['other'].append( duration )
+					if self.episodes[i].a_type:
+						# activity location in ['home','work','school']
+						days[date][self.episodes[i].a_type].append( duration )
+					else: # activity location not known
+						days[date]['other'].append( duration )
 		return days
 
 	def interpolate_segment(self, segment):

@@ -14,6 +14,7 @@ class Episode(object):
 	def location_id(self):
 		"""Return the id of the location if any, otherwise None."""
 		return self.location.id if self.location else None
+
 	@property
 	def e_type(self):
 		"""What kind of activity episode is this? 
@@ -26,3 +27,12 @@ class Episode(object):
 			return 'trip'
 		else:
 			return 'activity'
+
+	@property
+	def a_type(self):
+		"""What type of activity is this?"""
+		assert self.e_type == 'activity'
+		if self.location.name == '':
+			return None
+		assert self.location.name in ['home','work','school']
+		return self.location.name
