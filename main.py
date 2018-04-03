@@ -19,6 +19,11 @@ def initialize_output_files():
 	f = open(config.output_points_file, "w")
 	f.write('user_id,lon,lat,removed,interpolated,state\n')
 	f.close()
+	# days file
+	f = open(config.output_days_file, "w")
+	# TODO so much more to do here
+	f.write('user_id,date,DoW,total_minutes\n')
+	f.close()
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":

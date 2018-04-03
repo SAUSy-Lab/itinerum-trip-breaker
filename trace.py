@@ -2,6 +2,7 @@ import config, csv, math
 from point import Point
 from episode import Episode
 from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str
+from datetime import timedelta, datetime
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -93,6 +94,58 @@ class Trace(object):
 					'',	# interpolated
 					''		# state
 				) )
+		# output day summary file for Steve
+		days = self.get_days()
+		with open(config.output_days_file,'a') as f:
+			for date in days:
+				#print( days[date] )
+				f.write( "{},{},{},{},{},{}\n".format(
+					self.id,		# user_id
+					date,
+					date.weekday(),
+					sum(days[date]['total']),	# total minutes
+					'',	# 
+					''		# 
+				) )
+				
+	def get_days(self):
+		"""Repartition episodes into day units."""
+		day_offset = timedelta(hours=3)
+		days = {}
+		# for each episode except the last (always compare to next)
+		for i in range(0,len(self.episodes)-1):
+			# what date(s) did this occur on?
+			start_date = ( self.episodes[i].start - day_offset ).date()
+			end_date = ( self.episodes[i+1].start - day_offset ).date()
+			date_range = (end_date-start_date).days
+			# for each date touched by each activity
+			for offset in range(0,date_range+1):
+				date = start_date + timedelta(days=offset)
+				# initialize the date the first time we see it
+				if date not in days:
+					days[date] = {
+						'home': [], 'work': [], 'home/work': [], 'school': [], 'other': [],
+						'travel': [], 'unknown': [], 'total': []
+					}
+				# how much of this activity occured on this date?
+				# first limit start_time to start of this day
+				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
+				st1 = slicer1 if self.episodes[i].start < slicer1 else self.episodes[i].start
+				# now limit end time to end of this day
+				slicer2 = datetime.combine(date + timedelta(days=1), datetime.min.time()) + day_offset
+				st2 = slicer2 if self.episodes[i+1].start > slicer2 else self.episodes[i+1].start
+				# get duration in minutes from timedelta obj
+				duration = (st2-st1).total_seconds() / 60
+				# add activity duration to the total for this date
+				days[date]['total'].append( duration )
+				# now also add the duration to the appropriate category
+				if self.episodes[i].e_type == 'trip':
+					days[date]['travel'].append( duration )
+				elif self.episodes[i].e_type == 'unknown':
+					days[date]['unknown'].append( duration )
+				elif self.episodes[i].e_type == 'activity':
+					days[date]['other'].append( duration )
+		return days
 
 	def interpolate_segment(self, segment):
 		"""Takes a known subset (a list of ordered points) and interpolates

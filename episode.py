@@ -14,3 +14,15 @@ class Episode(object):
 	def location_id(self):
 		"""Return the id of the location if any, otherwise None."""
 		return self.location.id if self.location else None
+	@property
+	def e_type(self):
+		"""What kind of activity episode is this? 
+			['trip','home','work','school','other']"""
+		# TODO Not yet fully developed. 
+		# Waiting for full user location integration
+		if self.unknown:
+			return 'unknown'
+		elif not self.location:
+			return 'trip'
+		else:
+			return 'activity'

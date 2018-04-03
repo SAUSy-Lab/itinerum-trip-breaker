@@ -11,8 +11,8 @@ output_episodes_file = "./outputs/episodes.csv"
 output_locations_file = "./outputs/locations.csv"
 # diagnostic output
 output_points_file = './outputs/points_diagnostic.csv'
-# sum of times spent at locations (corresponds to activities)
-time_file = "./outputs/location_times.csv"
+# day by day summary file
+output_days_file = "./outputs/days.csv"
 
 # How much time must be spent in one spot for it to be detected as a potential  
 # activity location? In seconds.
