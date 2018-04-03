@@ -5,20 +5,20 @@ from point import Point
 from trace import Trace
 import config
 
-
-def init_file(filename, out_type):
+def initialize_output_files():
 	"""Open files for accepting output through script execution."""
-	f = open(filename, "w")
-	header = ""
-	if out_type == "activities":
-		header = "user_id,sequence,location_id,mode,unknown,start_time\n"
-	elif out_type == "locations":
-		header = "user_id,location_id,lon,lat,description,used\n"
-	elif out_type == 'points':
-		header = 'user_id,lon,lat,removed,interpolated,state'
-	f.write(header)
+	# activities file
+	f = open(config.output_activities_file, "w")
+	f.write('user_id,sequence,location_id,mode,unknown,start_time\n')
 	f.close()
-
+	# locations file
+	f = open(config.output_locations_file, "w")
+	f.write('user_id,location_id,lon,lat,description,used\n')
+	f.close()
+	# points file
+	f = open(config.output_locations_file, "w")
+	f.write('user_id,lon,lat,removed,interpolated,state\n')
+	f.close()
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
@@ -35,9 +35,7 @@ if __name__ == "__main__":
 #	i = int(input('i:'))
 #	user_ids = [user_ids[1]]
 	# loop over users calling all the functions for each
-	init_file(config.output_activities_file, "activities")
-	init_file(config.output_locations_file, "locations")
-	init_file(config.output_points_file, "points")
+	initialize_output_files()
 	u = 1
 	for user_id in user_ids:
 		# create trace object for this user
