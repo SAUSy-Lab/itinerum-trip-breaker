@@ -43,6 +43,7 @@ class Trace(object):
 		self.school = None
 		# read in all time and location data for points
 		# right now only using a few fields
+		#TODO we don't want to read the whole file for each user
 		with open(config.input_coordinates_file, newline='') as f:
 			reader = csv.DictReader(f)
 			for row in reader:

@@ -88,6 +88,6 @@ class Point(object):
 
 	def add_weight(self, weight):
 		"""Assigns time-based weight value."""
-		assert weight >= 0
+		assert weight >= 0 # we may want negative weights eventually
 		self.weight = weight
 

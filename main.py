@@ -63,7 +63,7 @@ if __name__ == "__main__":
 			user.break_trips()
 			# write the output
 			user.flush()
-		except Exception:
+		except Exception: # TODO specify what exceptions are permissible
 			print( user.id,'aborted' )
 
 
