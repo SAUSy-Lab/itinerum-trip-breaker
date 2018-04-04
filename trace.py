@@ -1,9 +1,11 @@
-import config, csv, math
+import config, csv
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str
+from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str, unproject
 from datetime import timedelta, datetime
+from random import sample
+from math import sqrt
 
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
@@ -118,7 +120,7 @@ class Trace(object):
 		with open(config.output_days_file,'a') as f:
 			for date in days:
 				#print( days[date] )
-				f.write( "{},{},{},{},{},{},{},{},{},{}\n".format(
+				f.write( "{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
 					self.id,		# user_id
 					date,
 					date.weekday(),
@@ -226,7 +228,6 @@ class Trace(object):
 				self.known_subsets.append(segment)
 		print( '\t',len(self.known_subsets)-1,'gap(s) found in data' )
 		
-
 	def get_activity_locations(self):
 		"""Get activity locations for this trace. ( Create inputs for a KDE
 			function and find peaks in the surface. )"""
@@ -237,6 +238,8 @@ class Trace(object):
 			self.weight_points( interpolated_subset )
 		# get all (real & interpolated) points in one big list
 		self.all_interpolated_points = [ p for s in self.known_subsets_interpolated for p in s ]
+		if len(self.all_interpolated_points) > 75000:
+			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
 		Xvector = [ p.x for p in self.all_interpolated_points ]
 		Yvector = [ p.y for p in self.all_interpolated_points ]
@@ -245,7 +248,7 @@ class Trace(object):
 		estimates, locations = kde(Xvector,Yvector,Wvector)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = math.sqrt(
+		mean_accuracy = sqrt(
 			sum( [p.accuracy**2 for p in self.points] )
 			/ len(self.points)
 		)
@@ -383,14 +386,13 @@ class Trace(object):
 			clusters among those that remain. In each such cluster, the highest 
 			value is the activity location."""
 		assert len(estimates) == len(locations)
-		from math import sqrt
-		from location import Location
-		from misc_funcs import unproject
 		# drop values below the threshold
 		locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
 		estimates = [ est for est in estimates if est >= threshold ]
 		assert len(estimates) == len(locations)
 		print('\tClustering',len(estimates),'points above',threshold,'threshold')
+		if len(estimates) > 5000:
+			raise Exception('distance matrix will be too large')
 		# now calculate a distance-based connectivity matrix between all these points
 		neighbs = []
 		for i,(x1,y1) in enumerate(locations):

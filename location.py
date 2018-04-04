@@ -20,4 +20,3 @@ class Location(object):
 	def identify(self,name):
 		"""Name this location ('home','work','school')."""
 		self.name = name
-		print( '\t',name,'found at',self.id )
