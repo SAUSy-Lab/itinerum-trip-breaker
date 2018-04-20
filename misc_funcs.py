@@ -26,6 +26,8 @@ def min_peak(GPS_error_sd,total_time):
 def kde(x_vector,y_vector,weights):
 	"""Do weighted 2d KDE in R KS package, returning python results.
 		Returns two lists: P estimates and estimate locations as x,y tuples."""
+	# Another possible way of doing this is with 
+	# http://pysal.readthedocs.io/en/latest/users/tutorials/smoothing.html#non-parametric-smoothing ???
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
