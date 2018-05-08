@@ -1,3 +1,2 @@
 created_at,uuid,model,itinerum_version,os,os_version,member_type,travel_mode_work,travel_mode_alt_work,travel_mode_study,travel_mode_alt_study,gender,age,location_home_lat,location_home_lon,location_work_lat,location_work_lon,location_study_lat,location_study_lon
 2017-09-08 16:50:46-04:00,44b9444a-ccb8-426b-878b-8b09318348e5,SM-G550T,3.3.0-vanilla,Android,6.0.1,A student and a worker,Bike,Public Transit,Walk,Public Transit,Male,25-34,43.6454980466,-79.4366079569,43.6625622939,-79.3983083591,43.6627078207,-79.3982218578
-2018-04-04 17:05:06,4BF6AA88-5D4D-4FBE-B086-F0FDEEFE390E,iPhone 6,6.1.1.2.1.7,iOS,11.2.6,A student,,,Bicycle,Walk,Male,25-34,43.673812,-79.406403,,,43.662436,-79.398173
