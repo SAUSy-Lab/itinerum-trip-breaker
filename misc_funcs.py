@@ -69,15 +69,6 @@ def kde(x_vector,y_vector,weights):
 		eva.append( ( eval_points.rx(i,True)[0], eval_points.rx(i,True)[1] ) )
 	# these are now vectors (python lists) giving estimated probabilities
 	# and locations as x,y tuples
-
-	# GEOTESTING: checking sampling geometry
-	import csv
-	with open('outputs/TESTING_kde-eval-points.csv', 'w+') as csvfile:
-		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-		writer.writerow(['x','y','estimate','weights'])
-		for p,(x,y),w in zip(est,eva,weights):
-			writer.writerow([x,y,p,w])
-
 	return est, eva
 
 

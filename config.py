@@ -3,15 +3,15 @@
 #
 
 # coordinates.csv file as from Itinerum
-input_coordinates_file = './inputs/coordinates.csv'
-input_survey_responses_file = './inputs/survey_responses.csv'
+input_coordinates_file = 'inputs/coordinates.csv'
+input_survey_responses_file = 'inputs/survey_responses.csv'
 
 # sequential episodes file 
 output_episodes_file = "./outputs/episodes.csv"
 # locations file
 output_locations_file = "./outputs/locations.csv"
 # diagnostic output
-output_points_file = './outputs/points_diagnostic.csv'
+output_points_file = './outputs/classified_points.csv'
 # day by day summary file
 output_days_file = "./outputs/days.csv"
 
@@ -32,4 +32,4 @@ min_accuracy = 100
 
 # interpolation distance parameter (meters). maximum length of segment to 
 # remain uninterpolated for linear spatial interpolations
-interpolation_distance = 30
+interpolation_distance = 50
