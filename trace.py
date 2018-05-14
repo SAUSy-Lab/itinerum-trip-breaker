@@ -44,7 +44,7 @@ class Trace(object):
 		self.school = None
 		# read in all time and location data for points
 		# right now only using a few fields
-		#TODO we don't want to read the whole file for each user
+
 		for row in raw_data:
 			self.points.append(
 				Point( #works for our format not others 
@@ -56,6 +56,7 @@ class Trace(object):
 				)
 		# get user home, work, study locations
 		with open(config.input_survey_responses_file, newline='') as f:
+                        #TODO should get passed along like the raw data
 			reader = csv.DictReader(f)
 			for row in reader:
 				if row['uuid'] != user_id:
