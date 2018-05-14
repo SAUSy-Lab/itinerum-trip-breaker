@@ -26,6 +26,10 @@ def min_peak(GPS_error_sd,total_time):
 def kde(x_vector,y_vector,weights):
 	"""Do weighted 2d KDE in R KS package, returning python results.
 		Returns two lists: P estimates and estimate locations as x,y tuples."""
+	# Another possible way of doing this is with 
+	# http://pysal.readthedocs.io/en/latest/users/tutorials/smoothing.html#non-parametric-smoothing ???
+	# or with 
+	# http://scikit-learn.org/stable/modules/density.html
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
@@ -67,15 +71,6 @@ def kde(x_vector,y_vector,weights):
 		eva.append( ( eval_points.rx(i,True)[0], eval_points.rx(i,True)[1] ) )
 	# these are now vectors (python lists) giving estimated probabilities
 	# and locations as x,y tuples
-
-	# GEOTESTING: checking sampling geometry
-	import csv
-	with open('outputs/TESTING_kde-eval-points.csv', 'w+') as csvfile:
-		writer = csv.writer(csvfile, delimiter=',', quotechar='"')
-		writer.writerow(['x','y','estimate','weights'])
-		for p,(x,y),w in zip(est,eva,weights):
-			writer.writerow([x,y,p,w])
-
 	return est, eva
 
 
