@@ -43,7 +43,7 @@ if __name__ == "__main__":
 	for user_id in user_ids:
 		try:
 			# create trace object for this user
-			user = Trace(user_id, user_ids[user_ids])
+			user = Trace(user_id, user_ids[user_id])
 			if len(user.points) < 100: continue
 			# remove GPS points believed to be in error
 			print("User:", u, len(user.points),'points at start for',user_id )
