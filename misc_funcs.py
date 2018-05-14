@@ -111,7 +111,7 @@ def ts_str(ts, tz):
 def parse_ts(timestamp): # I need to fix this
 	"""
 	Return a datetime object and a timezone string given a 
-	properlerly formatted timestamt string.
+	properly formatted timestamt string.
 	
 	inverts ts_str
 	"""
