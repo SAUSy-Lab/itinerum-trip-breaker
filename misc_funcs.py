@@ -94,7 +94,12 @@ def unproject(x,y,from_projection_string='epsg:3347'):
 
 
 def ts_str(ts, tz):
-	"""DOCUMENTATION NEEDED"""
+	"""
+	Return a properly formatted timestamp string from a datetime
+	object and a timezone string.
+
+	inverts parse_ts 
+	"""
 	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
 	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
 	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
@@ -104,7 +109,12 @@ def ts_str(ts, tz):
 
 
 def parse_ts(timestamp): # I need to fix this
-	"""DOCUMENTATION NEEDED"""
+	"""
+	Return a datetime object and a timezone string given a 
+	properly formatted timestamt string.
+	
+	inverts ts_str
+	"""
 	import datetime
 	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
 	year = int(timestamp[:4])

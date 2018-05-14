@@ -11,7 +11,7 @@ class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
 
-	def __init__(self,user_id):
+	def __init__(self,user_id, raw_data): #TODO big ol bottleneck
 		"""Construct the user object by pulling all data pertaining to this user.
 			Identified by ID"""
 		self.id = user_id		# 
@@ -24,6 +24,7 @@ class Trace(object):
 		# middle. "all_interpolated_points" is the flattened version of the 
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
+                self.raw = raw_data
 		self.points = []
 		self.discarded_points = []
 		self.known_subsets = []
@@ -43,22 +44,19 @@ class Trace(object):
 		self.school = None
 		# read in all time and location data for points
 		# right now only using a few fields
-		with open(config.input_coordinates_file, newline='') as f:
-			reader = csv.DictReader(f)
-			for row in reader:
-				if row['uuid'] != user_id:
-					continue
-				# add point to the list
-				self.points.append(
-					Point(
-						row['timestamp'],
-						float(row['longitude']),
-						float(row['latitude']),
-						float(row['h_accuracy'])
+
+		for row in raw_data:
+			self.points.append(
+				Point( #works for our format not others 
+					row[7],
+					float(row[2]),
+					float(row[1]),
+					float(row[3])
 					)
 				)
 		# get user home, work, study locations
 		with open(config.input_survey_responses_file, newline='') as f:
+                        #TODO should get passed along like the raw data
 			reader = csv.DictReader(f)
 			for row in reader:
 				if row['uuid'] != user_id:
@@ -75,7 +73,7 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def flush(self):
+	def flush(self): #TODO bottlenecked
 		"""After everything is finished write all the output from this trace. 
 			All writing to files should be done here if possible. Any data that 
 			needs to ultimately find it's way here should be stored as a property.
@@ -255,7 +253,7 @@ class Trace(object):
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			sum(Wvector),		# total seconds entering KDE
+			Sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
 		locations = self.find_peaks(estimates,locations,threshold)

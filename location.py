@@ -13,7 +13,7 @@ class Location(object):
 		self.name = ''
 
 	def add_time(self,seconds):
-		"""Add some time to this location."""
+		"""Add seconds spent at this location."""
 		assert seconds >= 0
 		self.total_time_at += seconds
 
