@@ -27,14 +27,15 @@ def initialize_output_files():
 
 # Standard format so we can import this module elsewhere.
 if __name__ == "__main__":
-	user_ids = []
+	user_ids = {}
 	# get a list of all user_ids in the coordinates file
 	with open(config.input_coordinates_file, newline='') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
-			user_ids.append( row['uuid'] )
-	# Keep only unique user_id's
-	user_ids = sorted(list(set(user_ids)))
+			if row['uuid'] not in user_ids:
+                        	user_ids[row['uuid'] = [row]
+			else:
+				user_ids[row['uuid'].append(row)
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each
 	initialize_output_files()
@@ -42,7 +43,7 @@ if __name__ == "__main__":
 	for user_id in user_ids:
 		try:
 			# create trace object for this user
-			user = Trace(user_id)
+			user = Trace(user_id, user_ids[user_ids])
 			if len(user.points) < 100: continue
 			# remove GPS points believed to be in error
 			print("User:", u, len(user.points),'points at start for',user_id )

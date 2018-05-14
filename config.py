@@ -3,7 +3,7 @@
 #
 
 # coordinates.csv file as from Itinerum
-input_coordinates_file = './inputs/coordinates.csv'
+input_coordinates_file = './inputs/new-coordinates.csv'
 input_survey_responses_file = './inputs/survey_responses.csv'
 
 # sequential episodes file 
