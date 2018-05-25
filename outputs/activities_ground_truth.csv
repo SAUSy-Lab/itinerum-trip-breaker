@@ -1,4 +1,4 @@
-user_id,sequence,location_id,travel_mode(s),Unknown,start_time
+user_id,sequence,location_id,mode,unknown,start_time
 44b9444a-ccb8-426b-878b-8b09318348e5,1,2,,TRUE,
 44b9444a-ccb8-426b-878b-8b09318348e5,2,,walk,,09/08/17 05:26 PM
 44b9444a-ccb8-426b-878b-8b09318348e5,3,1,,,09/08/17 05:32 PM
