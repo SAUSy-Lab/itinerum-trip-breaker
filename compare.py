@@ -6,7 +6,7 @@ from misc_funcs import distance
 def compare_locations(truth, compd):
 	true_locations = {}
 	computed_locations = {}
-	get_locations(config.locations_gt, true_locations)
+	get_locations(truth, true_locations)
 	get_locations(compd, computed_locations)
 
 	users_to_matrix = {}
@@ -34,13 +34,14 @@ def distance_matrix(user, matrix, truths, compds):
 
 def get_locations(location_file, utl):
 	fd = open(location_file)
-	line = fd.readline().split('\n')
+	line = fd.readline().split(',')
 	for line in fd:
-		loc = line.split('\n')
+		print(line)
+		loc = line.split(',')
 		if loc[0] not in utl:
-			utl[line[0]] = [loc]
+			utl[loc[0]] = [loc]
 		else:
-			utl[line[0]].append(loc)
+			utl[loc[0]].append(loc)
                     
 
 if __name__ == "__main__":
