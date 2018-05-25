@@ -3,6 +3,7 @@ import datetime, csv, math, rpy2
 # our own classes
 from point import Point
 from trace import Trace
+from location import Location
 import config
 
 def initialize_output_files():
@@ -33,9 +34,17 @@ if __name__ == "__main__":
 		reader = csv.DictReader(f)
 		for row in reader:
 			if row['uuid'] not in user_ids:
-                        	user_ids[row['uuid'] = [row]
+                        	user_ids[row['uuid']] = [row]
 			else:
-				user_ids[row['uuid'].append(row)
+				user_ids[row['uuid']].append(row)
+	survey_responses = {}
+	with open(config.input_survey_responses_file, newline='') as f:
+		reader = csv.DictReader(f)
+		for row in reader:
+			home = Location(row['location_home_lon'], row['location_home_lat'])
+			work = Location(row['location_work_lon'], row['location_work_lat'])
+			school = Location(row['location_study_lon'], row['location_work_lat'])
+			survey_responses[row['uuid']] = [home, work, school]
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each
 	initialize_output_files()
@@ -43,7 +52,7 @@ if __name__ == "__main__":
 	for user_id in user_ids:
 		try:
 			# create trace object for this user
-			user = Trace(user_id, user_ids[user_id])
+			user = Trace(user_id, user_ids[user_id], survey_responses[user_id])
 			if len(user.points) < 100: continue
 			# remove GPS points believed to be in error
 			print("User:", u, len(user.points),'points at start for',user_id )
@@ -65,6 +74,7 @@ if __name__ == "__main__":
 			# write the output
 			user.flush()
 		except Exception: # TODO specify what exceptions are permissible
+			# Some kind of exception description would be nice TODO
 			print( user.id,'aborted' )
 
 
