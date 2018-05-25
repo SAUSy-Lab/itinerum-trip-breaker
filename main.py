@@ -74,6 +74,7 @@ if __name__ == "__main__":
 			# write the output
 			user.flush()
 		except Exception: # TODO specify what exceptions are permissible
+			# Some kind of exception description would be nice TODO
 			print( user.id,'aborted' )
 
 

@@ -15,6 +15,11 @@ output_points_file = './outputs/classified_points.csv'
 # day by day summary file
 output_days_file = "./outputs/days.csv"
 
+# locations ground truth file
+locations_gt = "./outputs/locations_ground_truth.csv"
+# activities ground truth file
+activities_gt = "./outputs/activities_ground_truth.csv"
+
 # How much time must be spent in one spot for it to be detected as a potential  
 # activity location? In seconds.
 minimum_activity_time = 10*60
