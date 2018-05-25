@@ -27,6 +27,9 @@ class Point(object):
 		self.emit_p = []		# emission probabilities for set of travel + locations
 		self.state = None		# HMM state classification
 		self.kde_p = None		# estimated PDF at this point
+		# for diagnostic output
+		self.discarded = False	# will be true if point tossed in cleaning
+		self.synthetic = False	# was this point generated e.g. by interpolation? 
 		
 	@property
 	def geom(self):
@@ -83,7 +86,9 @@ class Point(object):
 				lng, lat = unproject(x0, y0)
 				tstamp = self.time + timedelta(seconds=dt*np)
 				ts = ts_str(tstamp, self.ts[-5:])
-				new_points.append(Point(ts, lng, lat, self.accuracy))
+				new_point = Point(ts, lng, lat, self.accuracy)
+				new_point.synthetic = True
+				new_points.append(new_point)
 		return new_points
 
 	def add_weight(self, weight):

@@ -94,14 +94,15 @@ class Trace(object):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file,'a') as f:
-			for point in self.all_interpolated_points:
-				f.write( "{},{},{},{},{},{}\n".format(
-					self.id,		# user_id
-					point.longitude,
-					point.latitude,
-					'',	# removed
-					'',	# interpolated
-					''		# state
+			for point in self.discarded_points + self.all_interpolated_points :
+				f.write( "{},{},{},{},{},{},{}\n".format(
+					self.id,					# user_id
+					point.longitude,		# lon 
+					point.latitude,		# lat
+					point.weight,			# weight
+					point.discarded,		# removed
+					point.synthetic,		# interpolated
+					point.state				# state
 				) )
 		# output day summary file for Steve
 		days = self.get_days()
@@ -344,6 +345,9 @@ class Trace(object):
 			) )
 			prev_state = state_path[0]
 			start_time = points[0].epoch
+			# store state classification for debugging, etc
+			for i in range(0,len(state_path)):
+				points[i].state = state_path[i]
 			# for each point after the first
 			for i in range(1,len(state_path)):
 				# look for state changes
@@ -460,6 +464,7 @@ class Trace(object):
 			Then update it's former neighbors in the list."""
 		# pop and append 
 		point = self.points.pop(key)
+		point.discarded = True
 		self.discarded_points.append(point)
 		# now using the (former) key, update the (former) neighbors 
 		i_ante = key-1
