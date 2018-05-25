@@ -243,7 +243,7 @@ class Trace(object):
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			Sum(Wvector),		# total seconds entering KDE
+			sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
 		locations = self.find_peaks(estimates,locations,threshold)
