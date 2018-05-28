@@ -100,8 +100,6 @@ def ts_str(ts, tz):
 
 	inverts parse_ts 
 	"""
-	if ts == "":
-		return ""
 	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
 	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
 	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
@@ -117,6 +115,8 @@ def parse_ts(timestamp): # I need to fix this
 	
 	inverts ts_str
 	"""
+	if timestamp == "":
+		return "", ""
 	import datetime
 	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
 	year = int(timestamp[:4])
