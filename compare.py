@@ -22,23 +22,38 @@ def compare_locations(truth, compd):
 				# users_to_matrix[user][true_location][computed_location] = distance
 				# dictionary of dictionaries of dictionaries of distances
 			min_distances = []
-			dist_list = sorted([sorted([(users_to_matrix[user][loc][guess], guess, loc)
-                                      for guess in users_to_matrix[user][loc]])
-                                     for loc in users_to_matrix[user]])
-			while len(dist_list) != 0:
+			dist_list = []
+			for loc in users_to_matrix[user]:
+				for guess in users_to_matrix[user][loc]:
+					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
+			while len(dist_list) > 0:#remaining_locations(dist_list, num_locations):
+				dist_list.sort()
+				remaining_locations(dist_list, num_locations)
 				best = dist_list.pop(0) #removes all the ground truth truth entries
 				min_distances.append(best[0])
 				guess = best[1]
-				for sublist in dist_list:
-					for entry in sublist:
-						if entry[1] == guess:
-							sublist.remove(entry)
-					print(dist_list, "\n")
+				loc = best[2]
+				for entry in dist_list:
+					if entry[1] == guess or entry[2] == loc:
+						dist_list.remove(entry)
 			min_avg_dis = sum(min_distances) / len(min_distances)        
-			results.append((num_locations, min_avg_dis))
+			results.append((user, num_locations, min_avg_dis))
 	return results
-                                
 
+def remaining_locations(dist_list, excess):
+	locs = []
+	guess = []
+	for entry in dist_list:
+		if entry[1] not in guess:
+			guess.append(entry[1])
+		if entry[2] not in locs:
+			locs.append(entry[2])
+	if excess > 0:
+		return len(guess) > excess
+	elif excess < 0:
+		return len(locs) < excess
+	else: #excess ==0
+		return len([])
 	
 def distance_matrix(user, matrix, truths, compds):
 	for locus in truths:
@@ -62,4 +77,4 @@ def get_locations(location_file, utl):
                     
 
 if __name__ == "__main__":
-	compare_locations(config.locations_gt, config.output_locations_file)    
+	print(compare_locations(config.locations_gt, config.output_locations_file))    
