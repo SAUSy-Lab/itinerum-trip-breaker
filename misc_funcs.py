@@ -108,10 +108,11 @@ def ts_str(ts, tz):
 	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
 
 
-def parse_ts(timestamp): # I need to fix this
+def parse_ts(timestamp):
 	"""
 	Return a datetime object and a timezone string given a 
-	properly formatted timestamt string.
+	properly formatted timestamp string.
+	Formatted according to itinerum output.
 	
 	inverts ts_str
 	"""

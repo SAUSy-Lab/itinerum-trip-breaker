@@ -1,9 +1,12 @@
 from point import Point
-import config
+from config import *
 from misc_funcs import distance
 from statistics import median
-# what does activities_gt get compared to? TODO
+from datetime import timedelta, datetime
+import misc_functions
 
+
+# TODO this should be refactored
 def compare_locations(truth, compd):
 	""" (str, str) -> [(str, int, float, float)]
 	Compare ground truth locations to the computed locations,
@@ -33,7 +36,7 @@ def compare_locations(truth, compd):
 					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
 			while remaining_locations(dist_list, num_locations):
 				dist_list.sort()
-				best = dist_list.pop(0) #removes all the ground truth truth entries
+				best = dist_list.pop(0)
 				min_distances.append(best[0])
 				guess = best[1]
 				loc = best[2]
@@ -75,7 +78,7 @@ def distance_matrix(user, matrix, truths, compds):
 			# TODO data fields shouldn't be hardcoded
 			p1 = Point("", guess[2], guess[3], 0)
 			p2 = Point("", locus[2], locus[3], 0)
-			# Felipvhe forgets if these need to be projected first
+			# Felipevh forgets if these need to be projected first
 			matrix[locus[1]][guess[1]] = distance(p1, p2) 
 
 def get_locations(location_file, utl):
@@ -94,8 +97,56 @@ def get_locations(location_file, utl):
 def compare_episodes(truth, guess):
 	""" (str, str) -> []
 	"""
+	truth_dict = read_file(truth)
+	guess_dict = read_file(guess)
+	# True and computed unknown times
+	tut = find_unknown_time(truth_dict[5], truth_dict[4]) # TODO don't hardcode
+	cut = find_unknown_time(gues_dict[5], guess_dict[4])
+
+def read_file(fname):
+	""" (str) -> {int : [str]}
+	Return a dictionary mapping column numbers
+	to lists of entries for that column in fname.
+	Drops the header line and strips whitespace.
+	"""
 	pass
 
+def find_unknown_time(start_times, uflags):
+	""" ([str], [str]) -> [(timedelta, bool)]
+	Return a list of timedeltas, and true iff
+	that time is classified as unknown
+	"""
+	assert(len(start_time) == len(uflags))
+        result = []
+	for i in range(len(start_times)):
+		if start_times[i].endswith("M"):
+			ts = parse_gt_ts(start_times[i])
+		else:
+			ts, _ = parse_ts(start_times[i] + "-00:00")
+		result.append((ts, literal_eval(uflags[i])))
+	return result
+
+def parse_gt_ts(t):
+	""" (str) -> DateTime
+	'mm/dd/yyyy HH:mm XX'
+	'yyyy-mm-ddTHH:mm:ss-00:00'
+
+	Parse archaic timestamps into a human readable format.
+	"""
+	real_timestamp = t[6:10]+"-"+t[:2]+"-"t[3:5]+"T"+t[11:13]+":"+t[14:16]+"00-00:00"
+	return misc_functions(real_timestamp)[0]
+
+def literal_eval(string):
+	""" (str) -> Bool
+	Return a Boolean represented by string.
+	"""
+	if string.lower() == 'true':
+		return True:
+	elif string.lower() == 'false' or string.lower() == '':
+		return False
+	else:
+		raise ValueError("Cannot convert {} to a boolean".format(string))
+
 if __name__ == "__main__":
-	print(compare_locations(config.locations_gt, config.output_locations_file))
-	print(compare_episodes(config.activities_gt, config.output_episodes_file))
+	print(compare_locations(locations_gt, output_locations_file))
+	#print(compare_episodes(config.activities_gt, config.output_episodes_file))
