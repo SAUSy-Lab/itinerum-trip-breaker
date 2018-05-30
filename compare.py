@@ -37,8 +37,8 @@ def compare_locations(truth, compd):
 					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
 			mean_min__dis = sum(min_distances) / len(min_distances)
-			median = median(min_distances)
-			results.append((user, num_locations, mean_min__dis, median))
+			med = median(min_distances)
+			results.append((user, num_locations, mean_min__dis, med))
 	return results
 
 def remaining_locations(dist_list, excess):
