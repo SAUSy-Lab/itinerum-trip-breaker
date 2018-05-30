@@ -26,9 +26,8 @@ def compare_locations(truth, compd):
 			for loc in users_to_matrix[user]:
 				for guess in users_to_matrix[user][loc]:
 					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
-			while len(dist_list) > 0:#remaining_locations(dist_list, num_locations):
+			while remaining_locations(dist_list, num_locations):
 				dist_list.sort()
-				remaining_locations(dist_list, num_locations)
 				best = dist_list.pop(0) #removes all the ground truth truth entries
 				min_distances.append(best[0])
 				guess = best[1]
@@ -36,8 +35,9 @@ def compare_locations(truth, compd):
 				for entry in dist_list:
 					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
-			min_avg_dis = sum(min_distances) / len(min_distances)        
-			results.append((user, num_locations, min_avg_dis))
+			min_avg_dis = sum(min_distances) / len(min_distances)
+			median = 0 #TODO
+			results.append((user, num_locations, min_avg_dis, median))
 	return results
 
 def remaining_locations(dist_list, excess):
@@ -53,7 +53,7 @@ def remaining_locations(dist_list, excess):
 	elif excess < 0:
 		return len(locs) < excess
 	else: #excess ==0
-		return len([])
+		return len(locs) == len(guess) == 0
 	
 def distance_matrix(user, matrix, truths, compds):
 	for locus in truths:
