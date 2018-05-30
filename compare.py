@@ -1,6 +1,7 @@
 from point import Point
 import config
 from misc_funcs import distance
+from statistics import median
 # what does activities_gt get compared to? TODO
 
 def compare_locations(truth, compd):
@@ -35,9 +36,9 @@ def compare_locations(truth, compd):
 				for entry in dist_list:
 					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
-			min_avg_dis = sum(min_distances) / len(min_distances)
-			median = 0 #TODO
-			results.append((user, num_locations, min_avg_dis, median))
+			mean_min__dis = sum(min_distances) / len(min_distances)
+			median = median(min_distances)
+			results.append((user, num_locations, mean_min__dis, median))
 	return results
 
 def remaining_locations(dist_list, excess):
