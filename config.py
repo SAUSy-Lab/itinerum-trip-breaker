@@ -18,7 +18,7 @@ output_days_file = "./outputs/days.csv"
 # locations ground truth file
 locations_gt = "./outputs/locations_ground_truth.csv"
 # activities ground truth file
-activities_gt = "./outputs/activities_ground_truth.csv"
+activities_gt = "./outputs/episodes_ground_truth.csv"
 
 # How much time must be spent in one spot for it to be detected as a potential  
 # activity location? In seconds.
