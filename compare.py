@@ -3,7 +3,7 @@ from config import *
 from misc_funcs import distance
 from statistics import median
 from datetime import timedelta, datetime
-import misc_functions
+import misc_funcs
 
 
 # TODO this should be refactored
@@ -117,7 +117,7 @@ def find_unknown_time(start_times, uflags):
 	that time is classified as unknown
 	"""
 	assert(len(start_time) == len(uflags))
-        result = []
+	result = []
 	for i in range(len(start_times)):
 		if start_times[i].endswith("M"):
 			ts = parse_gt_ts(start_times[i])
@@ -133,15 +133,15 @@ def parse_gt_ts(t):
 
 	Parse archaic timestamps into a human readable format.
 	"""
-	real_timestamp = t[6:10]+"-"+t[:2]+"-"t[3:5]+"T"+t[11:13]+":"+t[14:16]+"00-00:00"
-	return misc_functions(real_timestamp)[0]
+	real_timestamp = t[6:10]+"-"+t[:2]+"-"+t[3:5]+"T"+t[11:13]+":"+t[14:16]+"00-00:00"
+	return misc_funcs.parse_ts(real_timestamp)[0]
 
 def literal_eval(string):
 	""" (str) -> Bool
 	Return a Boolean represented by string.
 	"""
 	if string.lower() == 'true':
-		return True:
+		return True
 	elif string.lower() == 'false' or string.lower() == '':
 		return False
 	else:
