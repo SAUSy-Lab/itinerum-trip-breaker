@@ -24,7 +24,7 @@ class Trace(object):
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
 		self.raw = raw_data
-		self.home = raw_survey[0]
+		self.home = raw_survey[0] #TODO don't hardcode
 		self.work = raw_survey[1]
 		self.study = raw_survey[2]
 		self.points = []
@@ -62,7 +62,7 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def flush(self):
+	def flush(self): #TODO refactor
 		"""After everything is finished write all the output from this trace. 
 			All writing to files should be done here if possible. Any data that 
 			needs to ultimately find it's way here should be stored as a property.
@@ -234,6 +234,9 @@ class Trace(object):
 		Wvector = [ p.weight for p in self.all_interpolated_points ]
 		# run the KDE
 		estimates, locations = kde(Xvector,Yvector,Wvector)
+		v1 = hash(str(estimates))
+		v2 = hash(str(locations))
+		print(v1, v2)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(
@@ -268,7 +271,7 @@ class Trace(object):
 				if distance( location, self.school ) <= 150: # meters 
 					location.identify('school')
 
-	def break_trips(self):
+	def break_trips(self): # TODO refactor
 		"""Use a Hidden Markov Model to classify all points as deriving from 
 			either time spent travelling or time spent at one of the potential 
 			activity locations. Allocate time to these sequences of activities 

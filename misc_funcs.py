@@ -20,8 +20,8 @@ def min_peak(GPS_error_sd,total_time):
 	# this is the peak height if we have no movement and 
 	# total_time == threshold_time
 	assert total_time > config.minimum_activity_time
-	return peak_height * (float(config.minimum_activity_time) / total_time)
-
+	rv = peak_height * (float(config.minimum_activity_time) / total_time)
+	return rv
 
 def kde(x_vector,y_vector,weights):
 	"""Do weighted 2d KDE in R KS package, returning python results.
