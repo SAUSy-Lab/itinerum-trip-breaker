@@ -6,6 +6,8 @@ from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts
 from datetime import timedelta, datetime
 from math import sqrt
 
+#TODO functions may need to be refactored or taken elsewhere
+
 class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
