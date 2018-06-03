@@ -24,9 +24,11 @@ class Trace(object):
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
 		self.raw = raw_data
+
 		self.home = raw_survey[0] #TODO don't hardcode
 		self.work = raw_survey[1]
 		self.study = raw_survey[2]
+
 		self.points = []
 		self.discarded_points = []
 		self.known_subsets = []
@@ -38,12 +40,6 @@ class Trace(object):
 		self.episodes = []
 		# records the number of activity records written so far
 		self.activity_count = 0
-		# home location
-		self.home = None
-		# work location
-		self.work = None
-		# school location 
-		self.school = None
 		# read in all time and location data for points
 		# right now only using a few fields
 

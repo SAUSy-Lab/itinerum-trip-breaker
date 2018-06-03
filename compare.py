@@ -25,6 +25,7 @@ def compare_locations(truth, compd):
 		else:
 			num_locations = len(computed_locations[user]) - len(true_locations[user])
 			users_to_matrix[user] = {}
+			# TODO exclude unused locations
 			distance_matrix(
                             user, users_to_matrix[user], true_locations[user], computed_locations[user])
 				# users_to_matrix[user][true_location][computed_location] = distance
@@ -94,7 +95,7 @@ def get_locations(location_file, utl):
 		else:
 			utl[loc[0]].append(loc)
                     
-def compare_episodes(truth, guess):
+def compare_episodes(truth, guess): #TODO finish
 	""" (str, str) -> []
 	"""
 	truth_dict = read_file(truth)
@@ -109,7 +110,7 @@ def read_file(fname):
 	to lists of entries for that column in fname.
 	Drops the header line and strips whitespace.
 	"""
-	pass
+	pass #TODO
 
 def find_unknown_time(start_times, uflags):
 	""" ([str], [str]) -> [(timedelta, bool)]

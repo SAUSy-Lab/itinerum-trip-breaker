@@ -38,3 +38,6 @@ min_accuracy = 100
 # interpolation distance parameter (meters). maximum length of segment to 
 # remain uninterpolated for linear spatial interpolations
 interpolation_distance = 50
+
+# TODO get indices for each input/output csv column
+# make a {str: int} for each file
