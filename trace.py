@@ -4,7 +4,6 @@ from episode import Episode
 from location import Location
 from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str, unproject
 from datetime import timedelta, datetime
-from random import sample
 from math import sqrt
 
 class Trace(object):
