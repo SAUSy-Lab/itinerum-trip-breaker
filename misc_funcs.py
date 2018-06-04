@@ -37,6 +37,7 @@ def kde(x_vector,y_vector,weights):
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
 		weights = [ w * adjust_factor for w in weights ]
+	print( '\tinput weights hash:', hash(str(weights)) )
 	# get the ks package with kde function
 	from rpy2.robjects.packages import importr
 	ks = importr('ks')
@@ -49,6 +50,7 @@ def kde(x_vector,y_vector,weights):
 	# do the KDE
 	print( '\tRunning KDE on',len(x_vector),'points' )
 	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
+	print( '\tinput points hash:', hash(str(point_matrix)) )
 	bandwidth = config.kernel_bandwidth
 	surface = ks.kde(
 		# points and evaluation points are the same
@@ -59,6 +61,8 @@ def kde(x_vector,y_vector,weights):
 		# bandwidth / covariance matrix
 		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
 	)
+	print( '\tkde function hash:', hash(str(ks.kde)) )
+	print( '\tsurface result hash:', hash(str(surface)) )
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't 
