@@ -43,7 +43,7 @@ if __name__ == "__main__":
 		for row in reader:
 			home = Location(row['location_home_lon'], row['location_home_lat'])
 			work = Location(row['location_work_lon'], row['location_work_lat'])
-			school = Location(row['location_study_lon'], row['location_work_lat'])
+			school = Location(row['location_study_lon'], row['location_study_lat'])
 			survey_responses[row['uuid']] = [home, work, school]
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each

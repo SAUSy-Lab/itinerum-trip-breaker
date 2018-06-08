@@ -3,6 +3,7 @@
 #
 
 import math, config
+from hashlib import md5
 
 def min_peak(GPS_error_sd,total_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
@@ -37,6 +38,7 @@ def kde(x_vector,y_vector,weights):
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
 		weights = [ w * adjust_factor for w in weights ]
+	print( '\tinput weights hash:', md5(str(weights).encode('utf-8')).hexdigest() )
 	# get the ks package with kde function
 	from rpy2.robjects.packages import importr
 	ks = importr('ks')
@@ -49,6 +51,7 @@ def kde(x_vector,y_vector,weights):
 	# do the KDE
 	print( '\tRunning KDE on',len(x_vector),'points' )
 	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
+	print( '\tinput points hash:', md5(str(point_matrix).encode('utf-8')).hexdigest() )
 	bandwidth = config.kernel_bandwidth
 	surface = ks.kde(
 		# points and evaluation points are the same
@@ -59,6 +62,8 @@ def kde(x_vector,y_vector,weights):
 		# bandwidth / covariance matrix
 		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
 	)
+	print( '\tkde function hash:', md5(str(ks.kde).encode('utf-8')).hexdigest() )
+	print( '\tsurface result hash:', md5(str(surface).encode('utf-8')).hexdigest() )
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't 
