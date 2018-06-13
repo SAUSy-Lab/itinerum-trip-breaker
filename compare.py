@@ -24,6 +24,7 @@ def compare_locations(truth, compd):
 			print(user, " not in computed locations")
 		else:
 			num_locations = len(computed_locations[user]) - len(true_locations[user])
+			num_to_match = min(len(computed_locations[user]), len(true_locations[user]))
 			users_to_matrix[user] = {}
 			# TODO exclude unused locations
 			distance_matrix(
@@ -35,7 +36,7 @@ def compare_locations(truth, compd):
 			for loc in users_to_matrix[user]:
 				for guess in users_to_matrix[user][loc]:
 					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
-			while remaining_locations(dist_list, num_locations):
+			for _ in range(num_to_match):
 				dist_list.sort()
 				best = dist_list.pop(0)
 				min_distances.append(best[0])
@@ -44,29 +45,11 @@ def compare_locations(truth, compd):
 				for entry in dist_list:
 					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
+			print(user, len(computed_locations[user]), len(true_locations[user]), len(min_distances))
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
 			results.append((user, num_locations, mean_min_dis, med))
 	return results
-
-def remaining_locations(dist_list, excess):
-	""" ([(float, int, int)]) -> Bool
-	Return true iff there are more remaining unique locations in dist_list than
-	we expect, given our original excess locations.
-	"""
-	locs = []
-	guess = []
-	for entry in dist_list:
-		if entry[1] not in guess:
-			guess.append(entry[1])
-		if entry[2] not in locs:
-			locs.append(entry[2])
-	if excess > 0:
-		return len(guess) > excess
-	elif excess < 0:
-		return len(locs) < excess
-	else: #excess ==0
-		return len(locs) == len(guess) == 0
 	
 def distance_matrix(user, matrix, truths, compds):
 	""" (str, dict, dict, dict) -> None

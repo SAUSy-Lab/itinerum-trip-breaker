@@ -29,7 +29,7 @@ class Trace(object):
 
 		self.home = raw_survey[0] #TODO don't hardcode
 		self.work = raw_survey[1]
-		self.study = raw_survey[2]
+		self.school = raw_survey[2]
 
 		self.points = []
 		self.discarded_points = []

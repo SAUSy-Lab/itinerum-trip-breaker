@@ -41,9 +41,9 @@ if __name__ == "__main__":
 	with open(config.input_survey_responses_file, newline='') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
-			home = Location(row['location_home_lon'], row['location_home_lat'])
-			work = Location(row['location_work_lon'], row['location_work_lat'])
-			school = Location(row['location_study_lon'], row['location_study_lat'])
+			home = None #Location(row['location_home_lon'], row['location_home_lat'])
+			work = None #Location(row['location_work_lon'], row['location_work_lat'])
+			school = None #Location(row['location_study_lon'], row['location_study_lat'])
 			survey_responses[row['uuid']] = [home, work, school]
 	print( len(user_ids),'user(s) to clean' )
 	# loop over users calling all the functions for each
