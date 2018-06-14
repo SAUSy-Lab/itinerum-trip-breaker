@@ -3,7 +3,7 @@ from config import *
 from misc_funcs import distance
 from statistics import median
 from datetime import timedelta, datetime
-import misc_funcs
+from misc_funcs import parse_ts
 
 
 # TODO this should be refactored
@@ -45,10 +45,9 @@ def compare_locations(truth, compd):
 				for entry in dist_list:
 					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
-			print(user, len(computed_locations[user]), len(true_locations[user]), len(min_distances))
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
-			results.append((user, num_locations, mean_min_dis, med))
+			results.append((num_locations, mean_min_dis, med))
 	return results
 	
 def distance_matrix(user, matrix, truths, compds):
@@ -81,11 +80,43 @@ def get_locations(location_file, utl):
 def compare_episodes(truth, guess): #TODO finish
 	""" (str, str) -> []
 	"""
+	result = []
 	truth_dict = read_file(truth)
 	guess_dict = read_file(guess)
 	# True and computed unknown times
-	tut = find_unknown_time(truth_dict[5], truth_dict[4]) # TODO don't hardcode
-	cut = find_unknown_time(gues_dict[5], guess_dict[4])
+	tut = find_unknown_time(truth_dict[5], truth_dict[4], truth_dict[0]) # TODO don't hardcode
+	cut = find_unknown_time(guess_dict[5], guess_dict[4], guess_dict[0])
+	for user in tut.keys():
+		if user not in cut.keys():
+			print("user {} not in computed data".format(user))
+		else:
+			result.append(compare(tut[user], cut[user]))
+	return result
+
+def compare(truth, computed):
+	"""
+	"""
+	start_time = max(truth[0][0], computed[0][0])
+	end_time = min(truth[-1][0], computed[-1][0])
+        # Time in minutes that the survey lasted, trimmed
+	total_time = (end_time - start_time).days * 24 * 60 + (end_time - start_time).seconds / 60
+	i, j = 0, 0
+	ciut = 0 # correctly identified unknown time
+	tut = 0 # total, true unknown time
+	# while both iterators haven't reached the end of the survey time
+	while truth[i][0] < end_time and computed[j][0] < end_time:
+		pass
+	return
+
+"""
+		if truth[i][1]: # this is true unknown time
+			# add up total unknown time
+			tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
+			i += 1
+		else:
+			i += 1
+	return (tut)
+"""
 
 def read_file(fname):
 	""" (str) -> {int : [str]}
@@ -93,21 +124,40 @@ def read_file(fname):
 	to lists of entries for that column in fname.
 	Drops the header line and strips whitespace.
 	"""
-	pass #TODO
+	fd = open(fname, "r")
+	fd.readline() #header
+	d = {}
+	for line in fd:
+		cleaned = line.split(',')
+		for i in range(len(cleaned)):
+			if i in d.keys():
+				d[i].append(cleaned[i].strip())
+			else:
+				d[i] = [cleaned[i].strip()]
+	return d
 
-def find_unknown_time(start_times, uflags):
+def find_unknown_time(start_times, uflags, users):
 	""" ([str], [str]) -> [(timedelta, bool)]
 	Return a list of timedeltas, and true iff
 	that time is classified as unknown
 	"""
-	assert(len(start_time) == len(uflags))
-	result = []
+	assert(len(start_times) == len(uflags))
+	result = {}
 	for i in range(len(start_times)):
-		if start_times[i].endswith("M"):
+		lst = []
+		user = users[i]
+		if start_times[i].strip().endswith("M"):
 			ts = parse_gt_ts(start_times[i])
+			lst.append((ts,literal_eval(uflags[i])))
+		elif start_times[i] == "":
+                        pass
 		else:
 			ts, _ = parse_ts(start_times[i] + "-00:00")
-		result.append((ts, literal_eval(uflags[i])))
+			lst.append((ts, literal_eval(uflags[i])))
+		if user not in result.keys():
+			result[user] = lst
+		else:
+			result[user].extend(lst)
 	return result
 
 def parse_gt_ts(t):
@@ -117,8 +167,14 @@ def parse_gt_ts(t):
 
 	Parse archaic timestamps into a human readable format.
 	"""
-	real_timestamp = t[6:10]+"-"+t[:2]+"-"+t[3:5]+"T"+t[11:13]+":"+t[14:16]+"00-00:00"
-	return misc_funcs.parse_ts(real_timestamp)[0]
+	year = t[6:8]
+	month = t[:2]
+	day = t[3:5]
+	minute = t[12:14]
+	hour = t[9:11]
+	second = "01"
+	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(year, month, day, hour, minute, second)
+	return parse_ts(real_timestamp)[0]
 
 def literal_eval(string):
 	""" (str) -> Bool
@@ -133,4 +189,4 @@ def literal_eval(string):
 
 if __name__ == "__main__":
 	print(compare_locations(locations_gt, output_locations_file))
-	#print(compare_episodes(config.activities_gt, config.output_episodes_file))
+	print(compare_episodes(activities_gt, output_episodes_file))
