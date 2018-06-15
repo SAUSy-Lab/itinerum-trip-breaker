@@ -100,23 +100,41 @@ def compare(truth, computed):
 	end_time = min(truth[-1][0], computed[-1][0])
         # Time in minutes that the survey lasted, trimmed
 	total_time = (end_time - start_time).days * 24 * 60 + (end_time - start_time).seconds / 60
-	i, j = 0, 0
-	ciut = 0 # correctly identified unknown time
+
+	i = 0
 	tut = 0 # total, true unknown time
 	# while both iterators haven't reached the end of the survey time
-	while truth[i][0] < end_time and computed[j][0] < end_time:
-		pass
-	return
+	while truth[i][0] < end_time:
+		if truth[i][1]:
+                	tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
+		i += 1
 
-"""
-		if truth[i][1]: # this is true unknown time
-			# add up total unknown time
-			tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
+	i, j = 0, 0
+	ciut, mut = 0, 0
+	# we need correctly identified unknown time ciut
+	# and misidentified unknown time mut
+	while truth[i][0] < end_time and computed[j][0] < end_time:
+		if overlaps(truth[i][0], truth[i+1][0], computed[j][0], computed[j+1][0]):
+			# identified time lies between latest begining and earliest end
+			ee = min(truth[i+1][0], computed[j+1][0])
+			lb = max(truth[i][0], computed[j][0])
+			it = (ee - lb)
+			if truth[i][1] and computed[j][1]: # correctly identified unknown time 
+				ciut += it.days * 24 * 60 + it.seconds / 60
+			if not truth[i][1] and computed[j][1]: # misidentified unknown time
+				mut += (ee - lb).days * 24 *60 + (ee - lb).seconds / 60
+
+                # whichever episode ends first needs to be incremented
+		if truth[i+1][0] < computed[j+1][0]: #truth ep ends first
 			i += 1
-		else:
-			i += 1
-	return (tut)
-"""
+		else: # computed ep ends first
+			j += 1        
+	pciut = ciut / tut
+	pmiut = mut / (total_time - tut)
+	return (pciut * 100, pmiut * 100)
+
+def overlaps(t1, t2, c1, c2):
+	return (t1 < c1 and t2 > c1) or (c1 < t1 and c2 > t1)
 
 def read_file(fname):
 	""" (str) -> {int : [str]}
