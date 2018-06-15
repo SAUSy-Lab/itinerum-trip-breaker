@@ -232,9 +232,6 @@ class Trace(object):
 		Wvector = [ p.weight for p in self.all_interpolated_points ]
 		# run the KDE
 		estimates, locations = kde(Xvector,Yvector,Wvector)
-		v1 = hash(str(estimates))
-		v2 = hash(str(locations))
-		print(v1, v2)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(
