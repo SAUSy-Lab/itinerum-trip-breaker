@@ -40,7 +40,7 @@ if __name__ == "__main__":
 	survey_responses = {}
 	with open(config.input_survey_responses_file, newline='') as f:
 		reader = csv.DictReader(f)
-		for row in reader:
+		for row in reader: #TODO we don't use these right now
 			home = None #Location(row['location_home_lon'], row['location_home_lat'])
 			work = None #Location(row['location_work_lon'], row['location_work_lat'])
 			school = None #Location(row['location_study_lon'], row['location_study_lat'])

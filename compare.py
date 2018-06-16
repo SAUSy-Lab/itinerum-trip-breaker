@@ -3,7 +3,7 @@ from config import *
 from misc_funcs import distance
 from statistics import median
 from datetime import timedelta, datetime
-from misc_funcs import parse_ts
+from misc_funcs import parse_ts, read_headers
 
 
 # TODO this should be refactored
@@ -27,8 +27,9 @@ def compare_locations(truth, compd):
 			num_to_match = min(len(computed_locations[user]), len(true_locations[user]))
 			users_to_matrix[user] = {}
 			# TODO exclude unused locations
+			headers = read_headers(truth)
 			distance_matrix(
-                            user, users_to_matrix[user], true_locations[user], computed_locations[user])
+                            headers, users_to_matrix[user], true_locations[user], computed_locations[user])
 				# users_to_matrix[user][true_location][computed_location] = distance
 				# dictionary of dictionaries of dictionaries of distances
 			min_distances = []
@@ -38,29 +39,28 @@ def compare_locations(truth, compd):
 					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
 			for _ in range(num_to_match):
 				dist_list.sort()
-				best = dist_list.pop(0)
-				min_distances.append(best[0])
-				guess = best[1]
+				best = dist_list.pop(0) # First in the list
+				min_distances.append(best[0]) # the distance entry
+				guess = best[1] 
 				loc = best[2]
 				for entry in dist_list:
-					if entry[1] == guess or entry[2] == loc:
+					if entry[1] == guess or entry[2] == loc: # if the guess or true location match
 						dist_list.remove(entry)
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
 			results.append((user, num_locations, mean_min_dis, med))
 	return results
 	
-def distance_matrix(user, matrix, truths, compds):
-	""" (str, dict, dict, dict) -> None
+def distance_matrix(h, matrix, truths, compds):
+	""" (dict, dict, dict, dict) -> None
 	Update matrix for user with a 2d matrix mapping true
 	locations and computed locations to their respective distances.
 	"""
 	for locus in truths:
-		matrix[locus[1]] = {}
+		matrix[locus[1]] = {} # what is this 1 value? TODO
 		for guess in compds:
-			# TODO data fields shouldn't be hardcoded
-			p1 = Point("", guess[2], guess[3], 0)
-			p2 = Point("", locus[2], locus[3], 0)
+			p1 = Point("", guess[h["lon"]], guess[h["lat"]], 0)
+			p2 = Point("", locus[h["lon"]], locus[h["lat"]], 0)
 			# Felipevh forgets if these need to be projected first
 			matrix[locus[1]][guess[1]] = distance(p1, p2) 
 
@@ -69,23 +69,27 @@ def get_locations(location_file, utl):
 	Populate utl with the locations described in location_file.
 	"""
 	fd = open(location_file)
+	h = read_headers(location_file)
 	line = fd.readline().split(',')
 	for line in fd:
 		loc = line.split(',')
-		if loc[0] not in utl:
-			utl[loc[0]] = [loc]
+		if loc[h["user_id"]] not in utl:
+			utl[loc[h["user_id"]]] = [loc]
 		else:
-			utl[loc[0]].append(loc)
+			utl[loc[h["user_id"]]].append(loc)
                     
-def compare_episodes(truth, guess): #TODO finish
-	""" (str, str) -> []
+def compare_episodes(truth, guess):
+	""" (str, str) -> [str, float, float]
+	Return a list of users and their episode quality metrics.
 	"""
 	result = []
 	truth_dict = read_file(truth)
 	guess_dict = read_file(guess)
 	# True and computed unknown times
-	tut = find_unknown_time(truth_dict[5], truth_dict[4], truth_dict[0]) # TODO don't hardcode
-	cut = find_unknown_time(guess_dict[5], guess_dict[4], guess_dict[0])
+	ht = read_headers(truth)
+	hg = read_headers(guess)
+	tut = find_unknown_time(truth_dict[ht["start_time"]], truth_dict[ht["unknown"]], truth_dict[ht["user_id"]])
+	cut = find_unknown_time(guess_dict[hg["start_time"]], guess_dict[hg["unknown"]], guess_dict[hg["user_id"]])
 	for user in tut.keys():
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
@@ -93,8 +97,9 @@ def compare_episodes(truth, guess): #TODO finish
 			result.append((user,compare(tut[user], cut[user])))
 	return result
 
-def compare(truth, computed):
-	"""
+def compare(truth, computed): # TODO refactor
+	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
+	Return the episode quality metrics for this user
 	"""
 	start_time = max(truth[0][0], computed[0][0])
 	end_time = min(truth[-1][0], computed[-1][0])
@@ -134,6 +139,9 @@ def compare(truth, computed):
 	return (pciut * 100, pmiut * 100)
 
 def overlaps(t1, t2, c1, c2):
+	""" (Datetime, Datetime, Datetime, Datetime) -> Bool
+	Return true iff the time gaps t2 - t1 and c2 - c1 overlap.
+	"""
 	return (t1 < c1 and t2 > c1) or (c1 < t1 and c2 > t1)
 
 def read_file(fname):
@@ -178,7 +186,7 @@ def find_unknown_time(start_times, uflags, users):
 			result[user].extend(lst)
 	return result
 
-def parse_gt_ts(t):
+def parse_gt_ts(t): # TODO remove this once timestamps are standardized to epoch time
 	""" (str) -> DateTime
 	'mm/dd/yyyy HH:mm XX'
 	'yyyy-mm-ddTHH:mm:ss-00:00'

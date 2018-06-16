@@ -2,7 +2,7 @@ import config, csv
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str, unproject
+from misc_funcs import distance, inner_angle_sphere, kde, min_peak, gaussian, ts_str, unproject, read_headers
 from datetime import timedelta, datetime
 from math import sqrt
 
@@ -12,7 +12,7 @@ class Trace(object):
 	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
 		It's mainly treated here as a temporal/spatial sequence of points."""
 
-	def __init__(self,user_id, raw_data, raw_survey): #TODO big ol bottleneck
+	def __init__(self,user_id, raw_data, raw_survey):
 		"""Construct the user object by pulling all data pertaining to this user.
 			Identified by ID"""
 		self.id = user_id		# 
@@ -26,8 +26,8 @@ class Trace(object):
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
 		self.raw = raw_data
-
-		self.home = raw_survey[0] #TODO don't hardcode
+		h = read_headers()
+		self.home = raw_survey[0] # Raw survey data passed as a list of 3 data
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
 
@@ -47,7 +47,7 @@ class Trace(object):
 
 		for row in raw_data:
 			self.points.append(
-				Point( #works for our format not others TODO 
+				Point( 
 					row['timestamp'],
 					float(row['longitude']),
 					float(row['latitude']),
@@ -70,7 +70,7 @@ class Trace(object):
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write( "{},{},{},{},{},{}\n".format(
-					self.id,				# user_id
+					self.id,		# user_id
 					location.id,		# location_id
 					location.longitude, 
 					location.latitude, 
@@ -102,6 +102,7 @@ class Trace(object):
 					point.state				# state
 				) )
 		# output day summary file for Steve
+		# Just for Steve? TODO
 		days = self.get_days()
 		with open(config.output_days_file,'a') as f:
 			for date in days:
