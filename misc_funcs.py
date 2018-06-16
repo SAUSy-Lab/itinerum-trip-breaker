@@ -178,3 +178,16 @@ def inner_angle_sphere(point1,point2,point3):
 	degree_difference = min( abs(bearing1-bearing2), (360 - abs(bearing1-bearing2)) )
 	assert degree_difference <= 180
 	return degree_difference
+
+def read_headers(fname):
+	"""
+	Return a dictionary mapping header names to column indices/
+	"""
+	fd = open(fname)
+	d = {}
+	header = fd.readline()
+	titles = header.split(",")
+	for i in range(len(titles)):
+		d[titles[i].strip()] = i
+	fd.close()
+	return d
