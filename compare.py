@@ -47,7 +47,7 @@ def compare_locations(truth, compd):
 						dist_list.remove(entry)
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
-			results.append((num_locations, mean_min_dis, med))
+			results.append((user, num_locations, mean_min_dis, med))
 	return results
 	
 def distance_matrix(user, matrix, truths, compds):
@@ -90,7 +90,7 @@ def compare_episodes(truth, guess): #TODO finish
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
 		else:
-			result.append(compare(tut[user], cut[user]))
+			result.append((user,compare(tut[user], cut[user])))
 	return result
 
 def compare(truth, computed):
@@ -205,6 +205,17 @@ def literal_eval(string):
 	else:
 		raise ValueError("Cannot convert {} to a boolean".format(string))
 
+def display(locs, eps):
+	user_to_loc = {user: [excess, mean, med] for (user, excess, mean, med) in locs}
+	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
+	rs = "user\t\t\t\t\texcess locations\tmean distance\t\tmedian distance\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
+	for user in user_to_loc.keys():
+		excess, mean, median, ciut, mut =\
+			user_to_loc[user][0], user_to_loc[user][1], user_to_loc[user][2], round(user_to_eps[user][0], 2), round(user_to_eps[user][1], 2)
+		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(user, excess, mean, median, ciut, mut)
+	return rs
+
 if __name__ == "__main__":
-	print(compare_locations(locations_gt, output_locations_file))
-	print(compare_episodes(activities_gt, output_episodes_file))
+	loc = compare_locations(locations_gt, output_locations_file)
+	eps = compare_episodes(activities_gt, output_episodes_file)
+	print(display(loc, eps))
