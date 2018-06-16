@@ -94,10 +94,10 @@ def compare_episodes(truth, guess):
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
 		else:
-			result.append((user,compare(tut[user], cut[user])))
+			result.append((user,compare_user(tut[user], cut[user])))
 	return result
 
-def compare(truth, computed): # TODO refactor
+def compare_user(truth, computed): # TODO refactor
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
 	Return the episode quality metrics for this user
 	"""
