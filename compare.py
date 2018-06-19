@@ -99,25 +99,15 @@ def compare_episodes(truth, guess):
 
 def compare_user(truth, computed): # TODO refactor
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
-	Return the episode quality metrics for this user
+	Return the episode quality metrics for this user.
 	"""
 	start_time = max(truth[0][0], computed[0][0])
 	end_time = min(truth[-1][0], computed[-1][0])
         # Time in minutes that the survey lasted, trimmed
-	total_time = (end_time - start_time).days * 24 * 60 + (end_time - start_time).seconds / 60
-
-	i = 0
-	tut = 0 # total, true unknown time
-	# while both iterators haven't reached the end of the survey time
-	while truth[i][0] < end_time:
-		if truth[i][1]:
-                	tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
-		i += 1
-
+	total_time = (end_time - start_time).days * 24 * 60 + (end_time - start_time).seconds / 60	
 	i, j = 0, 0
-	ciut, mut = 0, 0
-	# we need correctly identified unknown time ciut
-	# and misidentified unknown time mut
+	tut, ciut, mut = 0, 0, 0
+	# while both iterators haven't reached the end of the survey time
 	while truth[i][0] < end_time and computed[j][0] < end_time:
 		if overlaps(truth[i][0], truth[i+1][0], computed[j][0], computed[j+1][0]):
 			# identified time lies between latest begining and earliest end
@@ -131,6 +121,8 @@ def compare_user(truth, computed): # TODO refactor
 
                 # whichever episode ends first needs to be incremented
 		if truth[i+1][0] < computed[j+1][0]: #truth ep ends first
+			if truth[i][1]:
+				tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
 			i += 1
 		else: # computed ep ends first
 			j += 1        
