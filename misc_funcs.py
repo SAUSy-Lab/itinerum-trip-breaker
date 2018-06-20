@@ -180,8 +180,8 @@ def inner_angle_sphere(point1,point2,point3):
 	return degree_difference
 
 def read_headers(fname):
-	"""
-	Return a dictionary mapping header names to column indices/
+	""" Return a dictionary mapping header names to column indices. 
+		TODO: please explain why this is necessary and exactly what the return value is. 
 	"""
 	fd = open(fname)
 	d = {}
