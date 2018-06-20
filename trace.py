@@ -26,7 +26,6 @@ class Trace(object):
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
 		self.raw = raw_data
-		h = read_headers()
 		self.home = raw_survey[0] # Raw survey data passed as a list of 3 data
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
@@ -60,8 +59,8 @@ class Trace(object):
 		all_indices = [ i for i,p in enumerate(self.points) ]
 		self.observe_neighbors( all_indices )
 
-	def flush(self): #TODO refactor
-		"""After everything is finished write all the output from this trace. 
+	def flush(self):
+		"""After everything is finished, write all the output from this trace. 
 			All writing to files should be done here if possible. Any data that 
 			needs to ultimately find it's way here should be stored as a property.
 			All Trace's call this at the end, and the files are initialized in main
@@ -102,7 +101,6 @@ class Trace(object):
 					point.state				# state
 				) )
 		# output day summary file for Steve
-		# Just for Steve? TODO
 		days = self.get_days()
 		with open(config.output_days_file,'a') as f:
 			for date in days:
@@ -253,7 +251,7 @@ class Trace(object):
 	def identify_locations(self):
 		"""Identify locations with user-provided home, work, school locations if 
 			possible."""
-		# TODO this function was written in a hurry and should be made more robust
+		# TODO this algorithm was written in a hurry and needs to be made more robust
 		if self.home:
 			for location in self.locations:
 				if distance( location, self.home ) <= 150: # meters 
@@ -267,7 +265,7 @@ class Trace(object):
 				if distance( location, self.school ) <= 150: # meters 
 					location.identify('school')
 
-	def break_trips(self): # TODO refactor
+	def break_trips(self): # TODO refactor Viterbi algorithm into a separate function
 		"""Use a Hidden Markov Model to classify all points as deriving from 
 			either time spent travelling or time spent at one of the potential 
 			activity locations. Allocate time to these sequences of activities 
