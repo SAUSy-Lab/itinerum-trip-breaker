@@ -18,18 +18,18 @@ class Point(object):
 		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
 		# these  get set later... just defining them here
-		self.d_ante = None	# distance to previous point
-		self.d_post = None	# distance to next point
-		self.angle = None		# angle between this and adjacent points
-		self.inter = False	# point shares location with both neighbors?
-		self.error_index = 0	# measure used during point cleaning
-		self.weight = 0		# time-based weight for KDE function
-		self.emit_p = []		# emission probabilities for set of travel + locations
-		self.state = None		# HMM state classification
-		self.kde_p = None		# estimated PDF at this point
+		self.d_ante = None   # distance to previous point
+		self.d_post = None   # distance to next point
+		self.angle = None    # angle between this and adjacent points
+		self.inter = False   # point shares location with both neighbors?
+		self.error_index = 0 # measure used during point cleaning
+		self.weight = 0      # time-based weight for KDE function
+		self.emit_p = []     # emission probabilities for set of travel + locations
+		self.state = None    # HMM state classification
+		self.kde_p = -1      # estimated PDF at this point
 		# for diagnostic output
-		self.discarded = False	# will be true if point tossed in cleaning
-		self.synthetic = False	# was this point generated e.g. by interpolation? 
+		self.discarded = False  # will be true if point tossed in cleaning
+		self.synthetic = False  # was this point generated e.g. by interpolation? 
 		
 	@property
 	def geom(self):

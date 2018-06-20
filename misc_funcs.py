@@ -57,7 +57,7 @@ def kde(x_vector,y_vector,weights):
 		# weights
 		w = FloatVector( weights ),
 		# bandwidth / covariance matrix
-		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
+		H = diag( FloatVector( [ bandwidth, bandwidth ] ) )
 	)
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')

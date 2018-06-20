@@ -35,6 +35,8 @@ min_accuracy = 100
 # (parameter for activity location detection)
 cluster_distance = 50
 
+location_distance = 150 # meters
+
 # interpolation distance parameter (meters). maximum length of segment to 
 # remain uninterpolated for linear spatial interpolations. 
 # For reasonable results, this must be < cluster_distance

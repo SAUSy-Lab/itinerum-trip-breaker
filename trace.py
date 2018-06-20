@@ -247,7 +247,8 @@ class Trace(object):
 			sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
-		locations = self.find_peaks(estimates,locations,threshold)
+		#locations = self.find_peaks(estimates,locations,threshold)
+		locations = self.find_peaks2(threshold)
 		# store the result
 		self.locations.extend( locations )
 		return self.locations
@@ -433,6 +434,32 @@ class Trace(object):
 					potential_activity_locations.append( location )
 					break
 		return potential_activity_locations
+
+	def find_peaks2(self,threshold):
+		"""Detect peaks in the KDE surface which are above the time-spent
+			threshold. KDE values are stored in self.points."""
+		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
+		print('\tClustering',len(points),'points above',threshold,'threshold')
+		# For each point:
+		#   for every other point within cluster distance:
+		#      if comparison point has higher KDE value, this is not the peak
+		potential_activity_locations = []
+		loc_num = 1
+		for point in points:
+			is_peak = True # starting assumption
+			for neighbor in points:
+				if distance(point,neighbor) > config.location_distance:
+					continue
+				if point.kde_p < neighbor.kde_p:
+					is_peak = False # assumption proven false if anything else higher
+					break
+			if is_peak:
+				location = Location(point.longitude,point.latitude,loc_num)
+				potential_activity_locations.append(location)
+				loc_num += 1
+		
+		return potential_activity_locations
+
 
 	def weight_points(self,segment):
 		"""Assign time-based weights to a series of sequential points.
