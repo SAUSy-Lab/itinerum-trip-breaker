@@ -247,8 +247,7 @@ class Trace(object):
 			sum(Wvector),		# total seconds entering KDE
 		)
 		# Find peaks in the density surface
-		#locations = self.find_peaks(estimates,locations,threshold)
-		locations = self.find_peaks2(threshold)
+		locations = self.find_peaks(threshold)
 		# store the result
 		self.locations.extend( locations )
 		return self.locations
@@ -372,70 +371,7 @@ class Trace(object):
 			) )
 		print( '\tFound',len(self.episodes),'activities/trips' )
 
-	def find_peaks(self,estimates,locations,threshold):
-		"""PDF was estimated at a selection of points, which are here given as a 
-			list of P values (estimates) and a list of (x,y) locations. The idea 
-			is to toss out any values below the threshold and identify spatial 
-			clusters among those that remain. In each such cluster, the highest 
-			value is the activity location."""
-		assert len(estimates) == len(locations)
-		# drop values below the threshold
-		locations = [ (x,y) for (x,y),est in zip(locations,estimates) if est >= threshold ]
-		estimates = [ est for est in estimates if est >= threshold ]
-		assert len(estimates) == len(locations)
-		print('\tClustering',len(estimates),'points above',threshold,'threshold')
-		if len(estimates) > 5000:
-			raise Exception('distance matrix will be too large')
-		# now calculate a distance-based connectivity matrix between all these points
-		neighbs = []
-		# neighbs is an n x n boolean connectivity list
-		for i,(x1,y1) in enumerate(locations):
-			neighbs.append([])
-			for j,(x2,y2) in enumerate(locations):
-				# use euclidian distance since this is already projected
-				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.cluster_distance
-				neighbs[i].append( connection )
-		# clusters will be a list of disjoint sets
-		clusters = []
-		# now for each point, check for cluster membership and add and merge clusters
-		for i in range(0,len(neighbs)):
-			# get a set of neighbor indices within distance, 
-			# including this point itself ( dist = 0 )
-			neighbors = set( [ j for j,n in enumerate(neighbs[i]) if n ] )
-			# create list to keep track of clusters this set belongs to
-			member_cluster_indices = []
-			for i,cluster in enumerate(clusters):
-				# check each cluster for overlap with this set
-				if not cluster.isdisjoint( neighbors ):
-					member_cluster_indices.append(i)
-			if len(member_cluster_indices) == 0:
-				#  we have no overlap, so this becomes a new cluster
-				clusters.append(neighbors)
-			elif len(member_cluster_indices) > 0:
-				# we have one or more matching clusters
-				for i in reversed(member_cluster_indices):
-					# add everyhting together in a new cluster and
-					# drop off the old clusters which are now merged in the new one
-					neighbors = neighbors | clusters.pop(i)
-					# add the new cluster
-				clusters.append(neighbors)
-		print( '\tFound',len(clusters),'activity locations' )
-		potential_activity_locations = []
-		# find the maximum estimate and a location with that value
-		for cluster_index, cluster in enumerate(clusters):
-			peak_height = max( [estimates[i] for i in cluster] )
-			for i in cluster:
-				# if this is the highest point
-				if estimates[i] == peak_height:
-					x,y = locations[i]
-					lon,lat = unproject(x,y)
-					# create a location and append to the list
-					location = Location(lon,lat,cluster_index)
-					potential_activity_locations.append( location )
-					break
-		return potential_activity_locations
-
-	def find_peaks2(self,threshold):
+	def find_peaks(self,threshold):
 		"""Detect peaks in the KDE surface which are above the time-spent
 			threshold. KDE values are stored in self.points."""
 		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
@@ -457,7 +393,6 @@ class Trace(object):
 				location = Location(point.longitude,point.latitude,loc_num)
 				potential_activity_locations.append(location)
 				loc_num += 1
-		
 		return potential_activity_locations
 
 
