@@ -2,8 +2,10 @@
 # This file defines functions not associated with object classes
 #
 
-import math, config
+import math, config, datetime
 from geopy.distance import great_circle
+from pyproj import Proj, transform
+from scipy.stats import multivariate_normal
 
 def min_peak(GPS_error_sd,total_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
@@ -11,7 +13,6 @@ def min_peak(GPS_error_sd,total_time):
 		-	total_time is the sum of the time weights used in the KDE.
 		-	threshold_time is the minimum activity time.
 		Times are given in seconds"""
-	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
 	peak_height = multivariate_normal.pdf(
 		[0.5,0.5],	# quantiles (center)
@@ -78,7 +79,6 @@ def kde(x_vector,y_vector,weights):
 def project(longitude,latitude,projection_string='epsg:3347'):
 	"""Project lat-lon values. Default of 3347 is StatsCan Lambert.
 		Units in meters."""
-	from pyproj import Proj, transform
 	inProj = Proj( init = 'epsg:4326' )
 	outProj = Proj( init = projection_string )
 	x,y = transform( inProj, outProj, longitude, latitude )
@@ -87,7 +87,6 @@ def project(longitude,latitude,projection_string='epsg:3347'):
 
 def unproject(x,y,from_projection_string='epsg:3347'):
 	"""Unproject to lat-lon values. Default of 3347 is StatsCan Lambert."""
-	from pyproj import Proj, transform
 	inProj = Proj( init = from_projection_string )
 	outProj = Proj( init = 'epsg:4326' )
 	longitude,latitude = transform( inProj, outProj, x, y )
@@ -119,7 +118,6 @@ def parse_ts(timestamp):
 	"""
 	if timestamp == "":
 		return "", ""
-	import datetime
 	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
 	year = int(timestamp[:4])
 	month = int(timestamp[5:7])
