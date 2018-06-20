@@ -18,7 +18,7 @@ def initialize_output_files():
 	f.close()
 	# points file
 	f = open(config.output_points_file, "w")
-	f.write('user_id,lon,lat,weight,removed,interpolated,state\n')
+	f.write('user_id,lon,lat,weight,removed,interpolated,state,kde\n')
 	f.close()
 	# days file
 	f = open(config.output_days_file, "w")

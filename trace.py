@@ -91,14 +91,15 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file,'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points :
-				f.write( "{},{},{},{},{},{},{}\n".format(
-					self.id,					# user_id
-					point.longitude,		# lon 
-					point.latitude,		# lat
-					point.weight,			# weight
-					point.discarded,		# removed
-					point.synthetic,		# interpolated
-					point.state				# state
+				f.write( "{},{},{},{},{},{},{},{}\n".format(
+					self.id,
+					point.longitude,
+					point.latitude,
+					point.weight,
+					point.discarded,
+					point.synthetic,
+					point.state,
+					point.kde_p
 				) )
 		# output day summary file for Steve
 		days = self.get_days()
@@ -231,6 +232,9 @@ class Trace(object):
 		Wvector = [ p.weight for p in self.all_interpolated_points ]
 		# run the KDE
 		estimates, locations = kde(Xvector,Yvector,Wvector)
+		# assign probability estimates to points
+		for point, prob in zip( self.all_interpolated_points, estimates ):
+			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(
@@ -383,6 +387,7 @@ class Trace(object):
 			raise Exception('distance matrix will be too large')
 		# now calculate a distance-based connectivity matrix between all these points
 		neighbs = []
+		# neighbs is an n x n boolean connectivity list
 		for i,(x1,y1) in enumerate(locations):
 			neighbs.append([])
 			for j,(x2,y2) in enumerate(locations):
