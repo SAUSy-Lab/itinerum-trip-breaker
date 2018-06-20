@@ -3,6 +3,7 @@
 #
 
 import math, config
+from geopy.distance import great_circle
 
 def min_peak(GPS_error_sd,total_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
@@ -130,15 +131,16 @@ def parse_ts(timestamp):
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 
-def distance(point1,point2):
+def distance(point1,point2,euclid=False):
 	"""Gives the great circle distance between two point objects.
 		Returns meters."""
-	# import the function...
-	from geopy.distance import great_circle
-	# format the inputs
-	p1 = ( point1.latitude, point1.longitude )
-	p2 = ( point2.latitude, point2.longitude )
-	return great_circle( p1, p2 ).meters
+	if euclid:
+		return sqrt( (point1.X-point2.X)**2 + (point1.Y-point2.Y)**2 )
+	else:
+		# format the inputs
+		p1 = ( point1.latitude, point1.longitude )
+		p2 = ( point2.latitude, point2.longitude )
+		return great_circle( p1, p2 ).meters
 
 def gaussian(distance,bandwidth):
 	"""Calculate a probability that a point originated from a location, 
