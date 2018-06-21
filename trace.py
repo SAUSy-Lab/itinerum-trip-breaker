@@ -91,7 +91,7 @@ class Trace(object):
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
 				s = "{},{},{},{},{},{},{},{}\n"
-				fid = self.id,
+				fid = self.id
 				flg = point.longitude
 				flt = point.latitude
 				fwt = point.weight
@@ -99,7 +99,7 @@ class Trace(object):
 				fsc = point.synthetic
 				fst = point.state
 				fkd = point.kde_p
-				s.format(fid, flt, fwt, fdc, fsc, fst, fkd)
+				s.format(fid, flg, flt, fwt, fdc, fsc, fst, fkd)
 				f.write(s)
 		# output day summary file for Steve
 		days = self.get_days()

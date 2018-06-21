@@ -57,7 +57,7 @@ if __name__ == "__main__":
 			# Location(row['location_study_lon'], row['location_study_lat'])
 			school = None
 			survey_responses[row['uuid']] = [home, work, school]
-	print(len(user_ids), 'user(s) to clean')
+	print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
 	initialize_output_files()
 	# loop over users calling all the functions for each
