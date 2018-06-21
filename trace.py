@@ -254,8 +254,8 @@ class Trace(object):
 
 	def identify_locations(self):
 		"""Identify locations with user-provided home, work, school locations if 
-			possible."""
-		# TODO this algorithm was written in a hurry and needs to be made more robust
+			possible. This algorithm was written in a hurry and needs to be made 
+			much more robust. It is not currently called anywhere in the code. TODO """
 		if self.home:
 			for location in self.locations:
 				if distance( location, self.home ) <= 150: # meters 
