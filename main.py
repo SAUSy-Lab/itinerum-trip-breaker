@@ -28,7 +28,6 @@ def initialize_output_files():
 	f.close()
 	# days file
 	f = open(config.output_days_file, "w")
-	# TODO so much more to do here. What needs to be done?
 	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,')
 	f.write('unknown_time,home_time,work_time,school_time,home_count,')
 	f.write('work_count,school_count\n')

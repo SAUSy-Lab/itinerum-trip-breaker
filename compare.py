@@ -226,15 +226,15 @@ def display(locs, eps):
 	user_to_loc = {user: [excess, mean, med]
 		for (user, excess, mean, med) in locs}
 	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
-	rs = "user\t\t\t\t\texcess locations\tmean distance\t\tmedian distance" + \
+	rs = "user\texcess locations\tmean distance\t\tmedian distance" + \
 					"\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
 	for user in user_to_loc.keys():
 		excess = user_to_loc[user][0]
-		mean = user_to_loc[user][1]
-		median = user_to_loc[user][2]
+		mean = round(user_to_loc[user][1], 2)
+		median = round(user_to_loc[user][2], 2)
 		ciut = round(user_to_eps[user][0], 2)
 		mut = round(user_to_eps[user][1], 2)
-		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(user,
+		rs = rs + "{}:\t{}\t\t\t{}\t\t\t{}\t\t\t{}\t\t\t\t{}\n".format(user,
 						excess, mean, median, ciut, mut)
 	return rs
 
