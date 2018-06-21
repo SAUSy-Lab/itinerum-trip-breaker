@@ -29,7 +29,8 @@ def compare_locations(truth, compd):
 			# TODO exclude unused locations
 			headers = read_headers(truth)
 			distance_matrix(
-                            headers, users_to_matrix[user], true_locations[user], computed_locations[user])
+				headers, users_to_matrix[user],
+				true_locations[user], computed_locations[user])
 				# users_to_matrix[user][true_location][computed_location] = distance
 				# dictionary of dictionaries of dictionaries of distances
 			min_distances = []
@@ -39,30 +40,33 @@ def compare_locations(truth, compd):
 					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
 			for _ in range(num_to_match):
 				dist_list.sort()
-				best = dist_list.pop(0) # First in the list
-				min_distances.append(best[0]) # the distance entry
-				guess = best[1] 
+				best = dist_list.pop(0)  # First in the list
+				min_distances.append(best[0])  # the distance entry
+				guess = best[1]
 				loc = best[2]
 				for entry in dist_list:
-					if entry[1] == guess or entry[2] == loc: # if the guess or true location match
+					# if the guess or true location match
+					if entry[1] == guess or entry[2] == loc:
 						dist_list.remove(entry)
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
 			results.append((user, num_locations, mean_min_dis, med))
 	return results
-	
+
+
 def distance_matrix(h, matrix, truths, compds):
 	""" (dict, dict, dict, dict) -> None
 	Update matrix for user with a 2d matrix mapping true
 	locations and computed locations to their respective distances.
 	"""
 	for locus in truths:
-		matrix[locus[1]] = {} # what is this 1 value? TODO
+		matrix[locus[1]] = {}  # what is this 1 value? TODO
 		for guess in compds:
 			p1 = Point("", guess[h["lon"]], guess[h["lat"]], 0)
 			p2 = Point("", locus[h["lon"]], locus[h["lat"]], 0)
 			# Felipevh forgets if these need to be projected first
-			matrix[locus[1]][guess[1]] = distance(p1, p2) 
+			matrix[locus[1]][guess[1]] = distance(p1, p2)
+
 
 def get_locations(location_file, utl):
 	""" (str, dict) -> None
@@ -77,7 +81,8 @@ def get_locations(location_file, utl):
 			utl[loc[h["user_id"]]] = [loc]
 		else:
 			utl[loc[h["user_id"]]].append(loc)
-                    
+
+
 def compare_episodes(truth, guess):
 	""" (str, str) -> [str, float, float]
 	Return a list of users and their episode quality metrics.
@@ -88,23 +93,31 @@ def compare_episodes(truth, guess):
 	# True and computed unknown times
 	ht = read_headers(truth)
 	hg = read_headers(guess)
-	tut = find_unknown_time(truth_dict[ht["start_time"]], truth_dict[ht["unknown"]], truth_dict[ht["user_id"]])
-	cut = find_unknown_time(guess_dict[hg["start_time"]], guess_dict[hg["unknown"]], guess_dict[hg["user_id"]])
+	tut = find_unknown_time(
+		truth_dict[ht["start_time"]],
+		truth_dict[ht["unknown"]],
+		truth_dict[ht["user_id"]])
+	cut = find_unknown_time(
+		guess_dict[hg["start_time"]],
+		guess_dict[hg["unknown"]],
+		guess_dict[hg["user_id"]])
 	for user in tut.keys():
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
 		else:
-			result.append((user,compare_user(tut[user], cut[user])))
+			result.append((user, compare_user(tut[user], cut[user])))
 	return result
 
-def compare_user(truth, computed): # TODO refactor
+
+def compare_user(truth, computed):
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
 	Return the episode quality metrics for this user.
 	"""
 	start_time = max(truth[0][0], computed[0][0])
 	end_time = min(truth[-1][0], computed[-1][0])
-        # Time in minutes that the survey lasted, trimmed
-	total_time = (end_time - start_time).days * 24 * 60 + (end_time - start_time).seconds / 60	
+	# Time in minutes that the survey lasted, trimmed
+	total_time = (end_time - start_time).days * 24 * 60 + \
+			(end_time - start_time).seconds / 60
 	i, j = 0, 0
 	tut, ciut, mut = 0, 0, 0
 	# while both iterators haven't reached the end of the survey time
@@ -114,27 +127,30 @@ def compare_user(truth, computed): # TODO refactor
 			ee = min(truth[i+1][0], computed[j+1][0])
 			lb = max(truth[i][0], computed[j][0])
 			it = (ee - lb)
-			if truth[i][1] and computed[j][1]: # correctly identified unknown time 
+			if truth[i][1] and computed[j][1]:  # correctly identified unknown time
 				ciut += it.days * 24 * 60 + it.seconds / 60
-			if not truth[i][1] and computed[j][1]: # misidentified unknown time
-				mut += (ee - lb).days * 24 *60 + (ee - lb).seconds / 60
+			if not truth[i][1] and computed[j][1]:  # misidentified unknown time
+				mut += (ee - lb).days * 24 * 60 + (ee - lb).seconds / 60
 
-                # whichever episode ends first needs to be incremented
-		if truth[i+1][0] < computed[j+1][0]: #truth ep ends first
+		# whichever episode ends first needs to be incremented
+		if truth[i+1][0] < computed[j+1][0]:  # truth ep ends first
 			if truth[i][1]:
-				tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + (truth[i+1][0] - truth[i][0]).seconds / 60
+				tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + \
+				(truth[i+1][0] - truth[i][0]).seconds / 60
 			i += 1
-		else: # computed ep ends first
-			j += 1        
+		else:  # computed ep ends first
+			j += 1
 	pciut = ciut / tut
 	pmiut = mut / (total_time - tut)
 	return (pciut * 100, pmiut * 100)
+
 
 def overlaps(t1, t2, c1, c2):
 	""" (Datetime, Datetime, Datetime, Datetime) -> Bool
 	Return true iff the time gaps t2 - t1 and c2 - c1 overlap.
 	"""
 	return (t1 < c1 and t2 > c1) or (c1 < t1 and c2 > t1)
+
 
 def read_file(fname):
 	""" (str) -> {int : [str]}
@@ -143,7 +159,7 @@ def read_file(fname):
 	Drops the header line and strips whitespace.
 	"""
 	fd = open(fname, "r")
-	fd.readline() #header
+	fd.readline()  # header
 	d = {}
 	for line in fd:
 		cleaned = line.split(',')
@@ -153,6 +169,7 @@ def read_file(fname):
 			else:
 				d[i] = [cleaned[i].strip()]
 	return d
+
 
 def find_unknown_time(start_times, uflags, users):
 	""" ([str], [str]) -> [(timedelta, bool)]
@@ -166,9 +183,9 @@ def find_unknown_time(start_times, uflags, users):
 		user = users[i]
 		if start_times[i].strip().endswith("M"):
 			ts = parse_gt_ts(start_times[i])
-			lst.append((ts,literal_eval(uflags[i])))
+			lst.append((ts, literal_eval(uflags[i])))
 		elif start_times[i] == "":
-                        pass
+			pass
 		else:
 			ts, _ = parse_ts(start_times[i] + "-00:00")
 			lst.append((ts, literal_eval(uflags[i])))
@@ -178,7 +195,9 @@ def find_unknown_time(start_times, uflags, users):
 			result[user].extend(lst)
 	return result
 
-def parse_gt_ts(t): # TODO remove this once timestamps are standardized to epoch time
+
+# TODO remove this once timestamps are standardized to epoch time
+def parse_gt_ts(t):
 	""" (str) -> DateTime
 	'mm/dd/yyyy HH:mm XX'
 	'yyyy-mm-ddTHH:mm:ss-00:00'
@@ -191,8 +210,10 @@ def parse_gt_ts(t): # TODO remove this once timestamps are standardized to epoch
 	minute = t[12:14]
 	hour = t[9:11]
 	second = "01"
-	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(year, month, day, hour, minute, second)
+	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(
+		year, month, day, hour, minute, second)
 	return parse_ts(real_timestamp)[0]
+
 
 def literal_eval(string):
 	""" (str) -> Bool
@@ -205,14 +226,20 @@ def literal_eval(string):
 	else:
 		raise ValueError("Cannot convert {} to a boolean".format(string))
 
+
 def display(locs, eps):
-	user_to_loc = {user: [excess, mean, med] for (user, excess, mean, med) in locs}
+	user_to_loc = {user: [excess, mean, med]
+			for (user, excess, mean, med) in locs}
 	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
-	rs = "user\t\t\t\t\texcess locations\tmean distance\t\tmedian distance\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
+	rs = "user\t\t\t\t\texcess locations\tmean distance\t\tmedian distance" + \
+		"\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
 	for user in user_to_loc.keys():
 		excess, mean, median, ciut, mut =\
-			user_to_loc[user][0], user_to_loc[user][1], user_to_loc[user][2], round(user_to_eps[user][0], 2), round(user_to_eps[user][1], 2)
-		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(user, excess, mean, median, ciut, mut)
+			user_to_loc[user][0], user_to_loc[user][1],\
+			user_to_loc[user][2], round(user_to_eps[user][0], 2),\
+			round(user_to_eps[user][1], 2)
+		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(
+			user, excess, mean, median, ciut, mut)
 	return rs
 
 if __name__ == "__main__":

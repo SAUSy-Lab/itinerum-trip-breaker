@@ -6,3 +6,4 @@ __pycache__
 *.qgd
 *.qgd~
 new-coordinates.csv
+temp.txt

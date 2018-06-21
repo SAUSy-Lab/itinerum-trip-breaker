@@ -3,6 +3,7 @@ from datetime import timedelta
 from math import ceil
 import config
 
+
 class Point(object):
 	"""A location/time point ie GPS point."""
 
@@ -18,24 +19,24 @@ class Point(object):
 		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
 		# these  get set later... just defining them here
-		self.d_ante = None	# distance to previous point
-		self.d_post = None	# distance to next point
-		self.angle = None		# angle between this and adjacent points
-		self.inter = False	# point shares location with both neighbors?
-		self.error_index = 0	# measure used during point cleaning
-		self.weight = 0		# time-based weight for KDE function
-		self.emit_p = []		# emission probabilities for set of travel + locations
-		self.state = None		# HMM state classification
-		self.kde_p = None		# estimated PDF at this point
+		self.d_ante = None  # distance to previous point
+		self.d_post = None  # distance to next point
+		self.angle = None  # angle between this and adjacent points
+		self.inter = False  # point shares location with both neighbors?
+		self.error_index = 0  # measure used during point cleaning
+		self.weight = 0  # time-based weight for KDE function
+		self.emit_p = []  # emission probabilities for set of travel + locations
+		self.state = None  # HMM state classification
+		self.kde_p = None  # estimated PDF at this point
 		# for diagnostic output
-		self.discarded = False	# will be true if point tossed in cleaning
-		self.synthetic = False	# was this point generated e.g. by interpolation? 
-		
+		self.discarded = False  # will be true if point tossed in cleaning
+		self.synthetic = False  # was this point generated e.g. by interpolation?
+
 	@property
 	def geom(self):
 		"""Used basically to check location uniqueness."""
-		return (self.latitude,self.longitude)
-        
+		return (self.latitude, self.longitude)
+
 	@property
 	def epoch(self):
 		"""Return the time in seconds since the epoch."""
@@ -44,19 +45,20 @@ class Point(object):
 	@property
 	def x(self):
 		"""Return the projected X value."""
-		if not self.X: self.project()
+		if not self.X:
+			self.project()
 		return self.X
 
 	@property
 	def y(self):
 		"""Return the projected Y value."""
-		if not self.Y: self.project()
+		if not self.Y:
+			self.project()
 		return self.Y
-			
+
 	def project(self):
 		"""Set projected x,y values from lon,lat."""
-		self.X, self.Y = project(self.longitude,self.latitude)
-		
+		self.X, self.Y = project(self.longitude, self.latitude)
 
 	def __repr__(self):
 		return str(project(self.longitude, self.latitude))
@@ -68,14 +70,14 @@ class Point(object):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
 	def pair_interpolation(self, other_point):
-		"""Given this and one other Point object, attempts to supply a list of 
-			interpolated points between the two such that gaps between the points 
+		"""Given this and one other Point object, attempts to supply a list of
+			interpolated points between the two such that gaps between the points
 			are never greater than config.interpolation_distance."""
-		new_points = [self.copy()] # Why is this copied?
+		new_points = [self.copy()]  # TODO Why is this copied?
 		dist = distance(self, other_point)
 		if dist > config.interpolation_distance:
 			time_dif = (other_point.time - self.time).seconds
-			n_segs = ceil( dist / config.interpolation_distance )
+			n_segs = ceil(dist / config.interpolation_distance)
 			seg_len = dist // n_segs
 			x1, y1 = project(self.longitude, self.latitude)
 			x2, y2 = project(other_point.longitude, other_point.latitude)
@@ -93,6 +95,5 @@ class Point(object):
 
 	def add_weight(self, weight):
 		"""Assigns time-based weight value."""
-		assert weight >= 0 # we may want negative weights eventually
+		assert weight >= 0  # we may want negative weights eventually
 		self.weight = weight
-

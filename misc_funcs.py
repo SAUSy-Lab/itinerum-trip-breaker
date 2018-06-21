@@ -2,33 +2,37 @@
 # This file defines functions not associated with object classes
 #
 
-import math, config
+import math
+import config
 
-def min_peak(GPS_error_sd,total_time):
+
+def min_peak(GPS_error_sd, total_time):
 	"""Estimate minimum peak height given time threshold and variance parameters.
-		We assume that the volume under the total KDE PDF ~= 1. 
+		We assume that the volume under the total KDE PDF ~= 1.
 		-	total_time is the sum of the time weights used in the KDE.
 		-	threshold_time is the minimum activity time.
 		Times are given in seconds"""
 	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
 	peak_height = multivariate_normal.pdf(
-		[0.5,0.5],	# quantiles (center)
-		[0,0],		# center 
-		[total_variance,total_variance]	# covariance matrix 
+		[0.5, 0.5],  # quantiles (center)
+		[0, 0],  # center
+		[total_variance, total_variance]  # covariance matrix
 	)
-	# this is the peak height if we have no movement and 
+	# this is the peak height if we have no movement and
 	# total_time == threshold_time
 	assert total_time > config.minimum_activity_time
 	rv = peak_height * (float(config.minimum_activity_time) / total_time)
 	return rv
 
-def kde(x_vector,y_vector,weights):
+
+def kde(x_vector, y_vector, weights):
 	"""Do weighted 2d KDE in R KS package, returning python results.
 		Returns two lists: P estimates and estimate locations as x,y tuples."""
-	# Another possible way of doing this is with 
-	# http://pysal.readthedocs.io/en/latest/users/tutorials/smoothing.html#non-parametric-smoothing ???
-	# or with 
+	# Another possible way of doing this is with
+	# http://pysal.readthedocs.io/en/latest/users/tutorials/
+	# smoothing.html#non-parametric-smoothing ???
+	# or with
 	# http://scikit-learn.org/stable/modules/density.html
 	# check the inputs
 	assert len(x_vector) == len(y_vector)
@@ -36,7 +40,7 @@ def kde(x_vector,y_vector,weights):
 	# normalize the weights to the sample size
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
-		weights = [ w * adjust_factor for w in weights ]
+		weights = [w * adjust_factor for w in weights]
 	# get the ks package with kde function
 	from rpy2.robjects.packages import importr
 	ks = importr('ks')
@@ -47,50 +51,50 @@ def kde(x_vector,y_vector,weights):
 	# R data type conversion
 	from rpy2.robjects import FloatVector
 	# do the KDE
-	print( '\tRunning KDE on',len(x_vector),'points' )
-	point_matrix = cbind( FloatVector(x_vector), FloatVector(y_vector) )
+	print('\tRunning KDE on', len(x_vector), 'points')
+	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
 	surface = ks.kde(
 		# points and evaluation points are the same
-		x = point_matrix,
-		eval_points = point_matrix,
+		x=point_matrix,
+		eval_points=point_matrix,
 		# weights
-		w = FloatVector( weights ),
+		w=FloatVector(weights),
 		# bandwidth / covariance matrix
-		H = diag( FloatVector( [ bandwidth**2, bandwidth**2 ] ) )
+		H=diag(FloatVector([bandwidth**2, bandwidth**2]))
 	)
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')
-	# turn these into more pythonish objects so that the rpy2 syntax doesn't 
+	# turn these into more pythonish objects so that the rpy2 syntax doesn't
 	# have to leave this function
 	eva, est = [], []
-	for i in range(1,len(weights)+1):
+	for i in range(1, len(weights)+1):
 		# insert estimate values
 		est.append(estimates.rx(i)[0])
 		# insert location tuples
-		eva.append( ( eval_points.rx(i,True)[0], eval_points.rx(i,True)[1] ) )
+		eva.append((eval_points.rx(i, True)[0], eval_points.rx(i, True)[1]))
 	# these are now vectors (python lists) giving estimated probabilities
 	# and locations as x,y tuples
 	return est, eva
 
 
-def project(longitude,latitude,projection_string='epsg:3347'):
+def project(longitude, latitude, projection_string='epsg:3347'):
 	"""Project lat-lon values. Default of 3347 is StatsCan Lambert.
 		Units in meters."""
 	from pyproj import Proj, transform
-	inProj = Proj( init = 'epsg:4326' )
-	outProj = Proj( init = projection_string )
-	x,y = transform( inProj, outProj, longitude, latitude )
-	return x,y
+	inProj = Proj(init='epsg:4326')
+	outProj = Proj(init=projection_string)
+	x, y = transform(inProj, outProj, longitude, latitude)
+	return x, y
 
 
-def unproject(x,y,from_projection_string='epsg:3347'):
+def unproject(x, y, from_projection_string='epsg:3347'):
 	"""Unproject to lat-lon values. Default of 3347 is StatsCan Lambert."""
 	from pyproj import Proj, transform
-	inProj = Proj( init = from_projection_string )
-	outProj = Proj( init = 'epsg:4326' )
-	longitude,latitude = transform( inProj, outProj, x, y )
-	return longitude,latitude
+	inProj = Proj(init=from_projection_string)
+	outProj = Proj(init='epsg:4326')
+	longitude, latitude = transform(inProj, outProj, x, y)
+	return longitude, latitude
 
 
 def ts_str(ts, tz):
@@ -98,22 +102,22 @@ def ts_str(ts, tz):
 	Return a properly formatted timestamp string from a datetime
 	object and a timezone string.
 
-	inverts parse_ts 
+	inverts parse_ts
 	"""
 	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
 	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
 	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
-	mi = str(ts.minute) if ts.minute > 9  else "0"+str(ts.minute)
+	mi = str(ts.minute) if ts.minute > 9 else "0"+str(ts.minute)
 	s = str(ts.second) if ts.second > 9 else "0"+str(ts.second)
 	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
 
 
 def parse_ts(timestamp):
 	"""
-	Return a datetime object and a timezone string given a 
+	Return a datetime object and a timezone string given a
 	properly formatted timestamp string.
 	Formatted according to itinerum output.
-	
+
 	inverts ts_str
 	"""
 	if timestamp == "":
@@ -130,31 +134,32 @@ def parse_ts(timestamp):
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 
-def distance(point1,point2):
+def distance(point1, point2):
 	"""Gives the great circle distance between two point objects.
 		Returns meters."""
 	# import the function...
 	from geopy.distance import great_circle
 	# format the inputs
-	p1 = ( point1.latitude, point1.longitude )
-	p2 = ( point2.latitude, point2.longitude )
-	return great_circle( p1, p2 ).meters
+	p1 = (point1.latitude, point1.longitude)
+	p2 = (point2.latitude, point2.longitude)
+	return great_circle(p1, p2).meters
 
-def gaussian(distance,bandwidth):
-	"""Calculate a probability that a point originated from a location, 
+
+def gaussian(distance, bandwidth):
+	"""Calculate a probability that a point originated from a location,
 		given the distance."""
 	# https://en.wikipedia.org/wiki/Gaussian_function
-	a = 1 # height
-	b = 0 # mean
+	a = 1  # height
+	b = 0  # mean
 	c = bandwidth
 	x = distance
-	return a * math.exp( -( (x-b)**2 / (2*c**2) ) )
-	
+	return a * math.exp(-((x-b)**2 / (2*c**2)))
 
-def inner_angle_sphere(point1,point2,point3):
+
+def inner_angle_sphere(point1, point2, point3):
 	"""Given three point objects, calculate      p1
 		the smaller of the two angles formed by    \    a
-		the sequence using great circles.           \  
+		the sequence using great circles.           \
 		Returns degrees.                             p2------p3
 		Latitude and Longitude attributes must be available (in degrees).
 	"""
@@ -165,19 +170,23 @@ def inner_angle_sphere(point1,point2,point3):
 	lat2 = math.radians(point2.latitude)
 	diffLong = math.radians(point1.longitude - point2.longitude)
 	x = math.sin(diffLong) * math.cos(lat1)
-	y = math.cos(lat2) * math.sin(lat1) - (math.sin(lat2) * math.cos(lat1) * math.cos(diffLong))
-	bearing1 = (math.degrees(math.atan2(x, y))+360) % 360 
+	y = math.cos(lat2) * math.sin(lat1) - (math.sin(lat2) *
+		math.cos(lat1) * math.cos(diffLong))
+	bearing1 = (math.degrees(math.atan2(x, y))+360) % 360
 	# second compass bearing from 2 -> 3
 	lat2 = math.radians(point2.latitude)
 	lat3 = math.radians(point3.latitude)
 	diffLong = math.radians(point3.longitude - point2.longitude)
 	x = math.sin(diffLong) * math.cos(lat3)
-	y = math.cos(lat2) * math.sin(lat3) - (math.sin(lat2) * math.cos(lat3) * math.cos(diffLong))
+	y = math.cos(lat2) * math.sin(lat3) -\
+		(math.sin(lat2) * math.cos(lat3) * math.cos(diffLong))
 	bearing2 = (math.degrees(math.atan2(x, y))+360) % 360
 	# we want the smaller of the two angles
-	degree_difference = min( abs(bearing1-bearing2), (360 - abs(bearing1-bearing2)) )
+	degree_difference = min(abs(bearing1-bearing2),
+				(360 - abs(bearing1-bearing2)))
 	assert degree_difference <= 180
 	return degree_difference
+
 
 def read_headers(fname):
 	"""
