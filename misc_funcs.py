@@ -7,15 +7,17 @@ import config
 
 
 def min_peak(GPS_error_sd, total_time):
-	"""Estimate minimum peak height given time threshold and variance parameters.
-		We assume that the volume under the total KDE PDF ~= 1.
-		-	total_time is the sum of the time weights used in the KDE.
-		-	threshold_time is the minimum activity time.
-		Times are given in seconds"""
+	"""
+	Estimate minimum peak height given time threshold and variance parameters.
+	We assume that the volume under the total KDE PDF ~= 1.
+	-	total_time is the sum of the time weights used in the KDE.
+	-	threshold_time is the minimum activity time.
+	Times are given in seconds
+	"""
 	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
 	peak_height = multivariate_normal.pdf([0.5, 0.5], [0, 0],
-						[total_variance, total_variance])
+					[total_variance, total_variance])
 	# this is the peak height if we have no movement and
 	# total_time == threshold_time
 	assert total_time > config.minimum_activity_time
@@ -24,8 +26,10 @@ def min_peak(GPS_error_sd, total_time):
 
 
 def kde(x_vector, y_vector, weights):
-	"""Do weighted 2d KDE in R KS package, returning python results.
-		Returns two lists: P estimates and estimate locations as x,y tuples."""
+	"""
+	Do weighted 2d KDE in R KS package, returning python results.
+	Returns two lists: P estimates and estimate locations as x,y tuples.
+	"""
 	# Another possible way of doing this is with
 	# http://pysal.readthedocs.io/en/latest/users/tutorials/
 	# smoothing.html#non-parametric-smoothing ???
@@ -51,8 +55,9 @@ def kde(x_vector, y_vector, weights):
 	print('\tRunning KDE on', len(x_vector), 'points')
 	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
-	surface = ks.kde(x=point_matrix, eval_points=point_matrix, w=FloatVector(weights),
-		H=diag(FloatVector([bandwidth**2, bandwidth**2])))
+	surface = ks.kde(x=point_matrix, eval_points=point_matrix,
+		w=FloatVector(weights), H=diag(FloatVector([bandwidth**2,
+								bandwidth**2])))
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't
@@ -69,8 +74,10 @@ def kde(x_vector, y_vector, weights):
 
 
 def project(longitude, latitude, projection_string='epsg:3347'):
-	"""Project lat-lon values. Default of 3347 is StatsCan Lambert.
-		Units in meters."""
+	"""
+	Project lat-lon values. Default of 3347 is StatsCan Lambert.
+	Units in meters.
+	"""
 	from pyproj import Proj, transform
 	inProj = Proj(init='epsg:4326')
 	outProj = Proj(init=projection_string)
@@ -79,7 +86,9 @@ def project(longitude, latitude, projection_string='epsg:3347'):
 
 
 def unproject(x, y, from_projection_string='epsg:3347'):
-	"""Unproject to lat-lon values. Default of 3347 is StatsCan Lambert."""
+	"""
+	Unproject to lat-lon values. Default of 3347 is StatsCan Lambert.
+	"""
 	from pyproj import Proj, transform
 	inProj = Proj(init=from_projection_string)
 	outProj = Proj(init='epsg:4326')
@@ -125,8 +134,10 @@ def parse_ts(timestamp):
 
 
 def distance(point1, point2):
-	"""Gives the great circle distance between two point objects.
-		Returns meters."""
+	"""
+	Gives the great circle distance between two point objects.
+	Returns meters.
+	"""
 	# import the function...
 	from geopy.distance import great_circle
 	# format the inputs
@@ -147,11 +158,12 @@ def gaussian(distance, bandwidth):
 
 
 def inner_angle_sphere(point1, point2, point3):
-	"""Given three point objects, calculate      p1
-		the smaller of the two angles formed by    \    a
-		the sequence using great circles.           \
-		Returns degrees.                             p2------p3
-		Latitude and Longitude attributes must be available (in degrees).
+	"""
+	Given three point objects, calculate      p1
+	the smaller of the two angles formed by    \    a
+	the sequence using great circles.           \
+	Returns degrees.                             p2------p3
+	Latitude and Longitude attributes must be available (in degrees).
 	"""
 	# be sure there IS an angle to measure
 	assert point1 != point2 and point2 != point3

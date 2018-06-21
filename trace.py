@@ -18,8 +18,10 @@ class Trace(object):
 	"""
 
 	def __init__(self, user_id, raw_data, raw_survey):
-		"""Construct the user object by pulling all data pertaining to this user.
-		Identified by ID"""
+		"""
+		Construct the user object by pulling all data pertaining to this user.
+		Identified by ID
+		"""
 		self.id = user_id
 		# There are many lists of points. The first is the set of original
 		# input points, minus any that get cleaned out. Those are moved to
@@ -64,7 +66,8 @@ class Trace(object):
 		All writing to files should be done here if possible. Any data that
 		needs to ultimately find it's way here should be stored as a property.
 		All Trace's call this at the end, and the files are initialized in main
-		so we only append rows here."""
+		so we only append rows here.
+		"""
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
@@ -100,16 +103,27 @@ class Trace(object):
 		with open(config.output_days_file, 'a') as f:
 			for date in days:
 				#print( days[date] )
-				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
-				.format(self.id, date, date.weekday(), sum(days[date]['total']),
-				len(days[date]['travel']), sum(days[date]['travel']),
-				sum(days[date]['unknown']), sum(days[date]['home']),
-				sum(days[date]['work']), sum(days[date]['school']),
-				len(days[date]['home']), len(days[date]['work']),
-				len(days[date]['school'])))
+				s = "{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
+				fid = self.id
+				fdt = date
+				fwd = date.weekday()
+				ftt = sum(days[date]['total'])
+				flt = len(days[date]['travel'])
+				fst = sum(days[date]['travel'])
+				fsu = sum(days[date]['unknown'])
+				fsh = sum(days[date]['home'])
+				fsw = sum(days[date]['work'])
+				fss = sum(days[date]['school'])
+				flh = len(days[date]['home'])
+				flw = len(days[date]['work'])
+				fls = len(days[date]['school'])
+				s.format(fid, fdt, fwd, ftt, flt, fst, fsu, fsh, fsw, fss, flh, flw, fls)
+				f.write(s)
 
 	def get_days(self):
-		"""Repartition episodes into day units."""
+		"""
+		Repartition episodes into day units.
+		"""
 		day_offset = timedelta(hours=3)
 		days = {}
 		# for each episode except the last (always compare to next)
@@ -153,9 +167,11 @@ class Trace(object):
 		return days
 
 	def interpolate_segment(self, segment):
-		"""Takes a known subset (a list of ordered points) and interpolates
-			linearly between them such that the distance between new points
-			is never greater than a value specified in config, e.g. 30m."""
+		"""
+		Takes a known subset (a list of ordered points) and interpolates
+		linearly between them such that the distance between new points
+		is never greater than a value specified in config, e.g. 30m.
+		"""
 		new_points = []
 		# For each point bu the last
 		for i in range(0, len(segment) - 1):
@@ -199,8 +215,10 @@ class Trace(object):
 		print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def get_activity_locations(self):
-		"""Get activity locations for this trace. ( Create inputs for a KDE
-			function and find peaks in the surface. )"""
+		"""
+		Get activity locations for this trace. ( Create inputs for a KDE
+		function and find peaks in the surface. )
+		"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
 			interpolated_subset = self.interpolate_segment(subset)
@@ -231,8 +249,10 @@ class Trace(object):
 		return self.locations
 
 	def identify_locations(self):
-		"""Identify locations with user-provided home, work, school locations if
-			possible."""
+		"""
+		Identify locations with user-provided home, work, school locations if
+		possible.
+		"""
 		# TODO this function was written in a hurry and should be made more robust
 		if self.home:
 			for location in self.locations:
@@ -248,10 +268,12 @@ class Trace(object):
 					location.identify('school')
 
 	def break_trips(self):  # TODO refactor
-		"""Use a Hidden Markov Model to classify all points as deriving from
-			either time spent travelling or time spent at one of the potential
-			activity locations. Allocate time to these sequences of activities
-			accordingly."""
+		"""
+		Use a Hidden Markov Model to classify all points as deriving from
+		either time spent travelling or time spent at one of the potential
+		activity locations. Allocate time to these sequences of activities
+		accordingly.
+		"""
 		for point in self.all_interpolated_points:
 			# get first-pass emission probabilities from all locations
 			dists = [distance(loc, point) for loc in self.locations]
@@ -345,11 +367,13 @@ class Trace(object):
 		print('\tFound', len(self.episodes), 'activities/trips')
 
 	def find_peaks(self, estimates, locations, threshold):
-		"""PDF was estimated at a selection of points, which are here given as a
-			list of P values (estimates) and a list of (x,y) locations. The idea
-			is to toss out any values below the threshold and identify spatial
-			clusters among those that remain. In each such cluster, the highest
-			value is the activity location."""
+		"""
+		PDF was estimated at a selection of points, which are here given as a
+		list of P values (estimates) and a list of (x,y) locations. The idea
+		is to toss out any values below the threshold and identify spatial
+		clusters among those that remain. In each such cluster, the highest
+		value is the activity location.
+		"""
 		assert len(estimates) == len(locations)
 		# drop values below the threshold
 		locations = [(x, y) for (x, y), est in zip(locations,
@@ -408,10 +432,11 @@ class Trace(object):
 		return potential_activity_locations
 
 	def weight_points(self, segment):
-		"""Assign time-based weights to a series of sequential points.
-			Values are in seconds, and are split between neighboring points.
-			e.g.  |--p2-time---|
-			p1----|----p2------|------p3
+		"""
+		Assign time-based weights to a series of sequential points.
+		Values are in seconds, and are split between neighboring points.
+		e.g.  |--p2-time---|
+		p1----|----p2------|------p3
 		"""
 		assert len(segment) > 1
 		# set weights of middle points
@@ -432,12 +457,14 @@ class Trace(object):
 					l.time_at += p.weight
 
 	#
-	# CLEANING FUNCTIONS BELOW
+	# CLEANING METHODS BELOW
 	#
 
 	def pop_point(self, key):
-		"""Pop a point off the current list and add it to the discard bin.
-			Then update it's former neighbors in the list."""
+		"""
+		Pop a point off the current list and add it to the discard bin.
+		Then update it's former neighbors in the list.
+		"""
 		# pop and append
 		point = self.points.pop(key)
 		point.discarded = True
@@ -448,7 +475,9 @@ class Trace(object):
 		self.observe_neighbors([i_ante, i_post])
 
 	def find_duplicates(self):
-		"""find any repeated point locations"""
+		"""
+		Find any repeated point locations.
+		"""
 		# dictionary of unique locations, with a coordinate string as key
 		# containing a list of points with that exact location
 		locations = {}
@@ -463,9 +492,11 @@ class Trace(object):
 				print(k, locations[k])
 
 	def observe_neighbors(self, indices=[]):
-		"""Get angle and distance measurements to and from adjacent points.
-			Store in the point object. Operates on points, the inices of which
-			are given in a list referring to the current point list."""
+		"""
+		Get angle and distance measurements to and from adjacent points.
+		Store in the point object. Operates on points, the inices of which
+		are given in a list referring to the current point list.
+		"""
 		# for each point, except those first and last
 		for i in indices:
 			# skip first and last points
@@ -502,7 +533,9 @@ class Trace(object):
 				point.inter = True
 
 	def remove_sequential_duplicates(self):
-		"""remove points where both neighbors have identical locations"""
+		"""
+		Remove points where both neighbors have identical locations.
+		"""
 		to_remove = []
 		for i, point in enumerate(self.points):
 			# if there is no distance between this and neighboring points
@@ -514,7 +547,9 @@ class Trace(object):
 		print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
-		"""remove points reporting positional error beyond a given limit (meters)"""
+		"""
+		Remove points reporting positional error beyond a given limit (meters).
+		"""
 		to_remove = []
 		for i, point in enumerate(self.points):
 			if point.accuracy > error_limit:
@@ -525,7 +560,9 @@ class Trace(object):
 		print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
-		"""use angle/distance based cleaning rules"""
+		"""
+		Use angle/distance based cleaning rules.
+		"""
 		i = self.find_error_index()
 		count = 0
 		while i:
@@ -535,7 +572,9 @@ class Trace(object):
 		print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
-		"""returns the index of the craziest point"""
+		"""
+		Returns the index of the craziest point.
+		"""
 		# check first for angle == 0, as these are all obviously crazy
 		for i, point in enumerate(self.points):
 			if point.angle == 0:

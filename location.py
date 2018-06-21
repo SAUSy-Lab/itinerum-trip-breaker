@@ -1,5 +1,7 @@
 class Location(object):
-	"""A location point"""
+	"""
+	A location point
+	"""
 
 	def __init__(self, longitude, latitude, id_num=None):
 		# set initially:
@@ -13,10 +15,14 @@ class Location(object):
 		self.name = ''
 
 	def add_time(self, seconds):
-		"""Add seconds spent at this location."""
+		"""
+		Add seconds spent at this location.
+		"""
 		assert seconds >= 0
 		self.total_time_at += seconds
 
 	def identify(self, name):
-		"""Name this location ('home','work','school')."""
+		"""
+		Name this location ('home','work','school').
+		"""
 		self.name = name

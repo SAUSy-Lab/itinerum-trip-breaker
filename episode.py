@@ -1,6 +1,8 @@
 class Episode(object):
-	"""An activity episode. May be stationary or travel. May have associated
-		locations and definitely has a start and end time."""
+	"""
+	An activity episode. May be stationary or travel. May have associated
+	locations and definitely has a start and end time.
+	"""
 
 	def __init__(self, start_time, location, unknown):
 		# set initially:
@@ -12,13 +14,17 @@ class Episode(object):
 
 	@property
 	def location_id(self):
-		"""Return the id of the location if any, otherwise None."""
+		"""
+		Return the id of the location if any, otherwise None.
+		"""
 		return self.location.id if self.location else None
 
 	@property
 	def e_type(self):
-		"""What kind of activity episode is this?
-			['trip','home','work','school','other']"""
+		"""
+		What kind of activity episode is this?
+		['trip','home','work','school','other']
+		"""
 		# TODO Not yet fully developed.
 		# Waiting for full user location integration
 		if self.unknown:
@@ -30,7 +36,9 @@ class Episode(object):
 
 	@property
 	def a_type(self):
-		"""What type of activity is this?"""
+		"""
+		What type of activity is this?
+		"""
 		assert self.e_type == 'activity'
 		if self.location.name == '':
 			return None

@@ -11,7 +11,9 @@ import config
 
 
 def initialize_output_files():
-	"""Open files for accepting output through script execution."""
+	"""
+	Open files for accepting output through script execution.
+	"""
 	# episodes file
 	f = open(config.output_episodes_file, "w")
 	f.write('user_id,sequence,location_id,mode,unknown,start_time\n')

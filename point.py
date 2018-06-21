@@ -5,7 +5,9 @@ import config
 
 
 class Point(object):
-	"""A location/time point ie GPS point."""
+	"""
+	A location/time point ie GPS point.
+	"""
 
 	def __init__(self, timestamp, longitude, latitude, accuracy_meters):
 		# set initially:
@@ -34,30 +36,40 @@ class Point(object):
 
 	@property
 	def geom(self):
-		"""Used basically to check location uniqueness."""
+		"""
+		Used basically to check location uniqueness.
+		"""
 		return (self.latitude, self.longitude)
 
 	@property
 	def epoch(self):
-		"""Return the time in seconds since the epoch."""
+		"""
+		Return the time in seconds since the epoch.
+		"""
 		return self.time.timestamp()
 
 	@property
 	def x(self):
-		"""Return the projected X value."""
+		"""
+		Return the projected X value.
+		"""
 		if not self.X:
 			self.project()
 		return self.X
 
 	@property
 	def y(self):
-		"""Return the projected Y value."""
+		"""
+		Return the projected Y value.
+		"""
 		if not self.Y:
 			self.project()
 		return self.Y
 
 	def project(self):
-		"""Set projected x,y values from lon,lat."""
+		"""
+		Set projected x,y values from lon,lat.
+		"""
 		self.X, self.Y = project(self.longitude, self.latitude)
 
 	def __repr__(self):
@@ -70,9 +82,11 @@ class Point(object):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
 	def pair_interpolation(self, other_point):
-		"""Given this and one other Point object, attempts to supply a list of
-			interpolated points between the two such that gaps between the points
-			are never greater than config.interpolation_distance."""
+		"""
+		Given this and one other Point object, attempts to supply a list of
+		interpolated points between the two such that gaps between the points
+		are never greater than config.interpolation_distance.
+		"""
 		new_points = [self.copy()]  # TODO Why is this copied?
 		dist = distance(self, other_point)
 		if dist > config.interpolation_distance:
@@ -94,6 +108,8 @@ class Point(object):
 		return new_points
 
 	def add_weight(self, weight):
-		"""Assigns time-based weight value."""
+		"""
+		Assigns time-based weight value.
+		"""
 		assert weight >= 0  # we may want negative weights eventually
 		self.weight = weight
