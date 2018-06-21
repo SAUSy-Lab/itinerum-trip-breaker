@@ -386,7 +386,6 @@ def indentation(logical_line, previous_logical, indent_char,
         yield 0, "E113 unexpected indentation"
 
 
-
 def continuation_line_indentation(logical_line, tokens, indent_level, verbose):
     r"""
     Continuation lines should align wrapped elements either vertically using

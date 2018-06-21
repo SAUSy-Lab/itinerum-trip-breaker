@@ -4,7 +4,7 @@ from point import Point
 from episode import Episode
 from location import Location
 from misc_funcs import distance, inner_angle_sphere, kde,\
-        min_peak, gaussian, ts_str, unproject, read_headers
+min_peak, gaussian, ts_str, unproject, read_headers
 from datetime import timedelta, datetime
 from math import sqrt
 
@@ -52,13 +52,10 @@ class Trace(object):
 
 		for row in raw_data:
 			self.points.append(
-				Point(
-					row['timestamp'],
-					float(row['longitude']),
-					float(row['latitude']),
-					float(row['h_accuracy'])
-				)
-			)
+				Point(row['timestamp'],
+				float(row['longitude']),
+				float(row['latitude']),
+				float(row['h_accuracy'])))
 		# sort the list by time
 		self.points.sort(key=lambda x: x.epoch)
 		# measure to and from neighbors
@@ -81,8 +78,7 @@ class Trace(object):
 					location.longitude,
 					location.latitude,
 					location.name,  # description
-					location.visited  # whether it was used or not
-				))
+					location.visited))  # whether it was used or not
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
@@ -92,8 +88,7 @@ class Trace(object):
 					episode.location_id,  # location_id
 					'',  # mode
 					episode.unknown,  # unknown
-					episode.start  # start_time
-				))
+					episode.start))  # start_time
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
@@ -105,8 +100,7 @@ class Trace(object):
 					point.weight,  # weight
 					point.discarded,  # removed
 					point.synthetic,  # interpolated
-					point.state  # state
-				))
+					point.state))  # state
 		# output day summary file for Steve
 		# Just for Steve? TODO
 		days = self.get_days()
@@ -126,8 +120,7 @@ class Trace(object):
 					sum(days[date]['school']),  # school_time
 					len(days[date]['home']),  # home count
 					len(days[date]['work']),  # work count
-					len(days[date]['school'])  # school count
-				))
+					len(days[date]['school'])))  # school count
 
 	def get_days(self):
 		"""Repartition episodes into day units."""
@@ -146,8 +139,7 @@ class Trace(object):
 				if date not in days:
 					days[date] = {
 						'home': [], 'work': [], 'school': [], 'other': [],
-						'travel': [], 'unknown': [], 'total': []
-					}
+						'travel': [], 'unknown': [], 'total': []}
 				# how much of this activity occured on this date?
 				# first limit start_time to start of this day
 				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
@@ -205,8 +197,7 @@ class Trace(object):
 				# distance over 1 km?
 				distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
-				self.points[i].epoch - self.points[i-1].epoch > 1*3600
-			):
+				self.points[i].epoch - self.points[i-1].epoch > 1 * 3600):
 				# append point to next segment
 				known_segments.append(segment)
 				segment = [self.points[i]]
@@ -221,8 +212,8 @@ class Trace(object):
 				# at least one point
 				len(segment) > 1 and
 				# sufficient time between last and first points
-				segment[-1].epoch - segment[0].epoch > 3600
-			):  # mininum time length of segment?
+				segment[-1].epoch - segment[0].epoch > 3600):
+				# mininum time length of segment?
 				self.known_subsets.append(segment)
 		print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
@@ -249,13 +240,11 @@ class Trace(object):
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(
 			sum([p.accuracy**2 for p in self.points])
-			/ len(self.points)
-		)
+			/ len(self.points))
 		# estimate peak threshold value
 		threshold = min_peak(
 			mean_accuracy,		# mean sd of GPS accuracy for user
-			sum(Wvector),		# total seconds entering KDE
-		)
+			sum(Wvector))		# total seconds entering KDE
 		# Find peaks in the density surface
 		locations = self.find_peaks(estimates, locations, threshold)
 		# store the result
@@ -352,8 +341,7 @@ class Trace(object):
 				points[0].time,  # start_time
 				# location, if any
 				None if state_path[0] == 0 else self.locations[state_path[0]-1],
-				False  # unknown_time
-			))
+				False))  # unknown_time
 			prev_state = state_path[0]
 			start_time = points[0].epoch
 			# store state classification for debugging, etc
@@ -371,15 +359,14 @@ class Trace(object):
 						points[i].time,  # start_time
 						# location, if any
 						None if state_path[i] == 0 else self.locations[state_path[i]-1],
-						False  # unknown_time
-					))
+						False))  # unknown_time
 					prev_state = state_path[i]
 			# now record the first activity episode
 			self.episodes.append(Episode(
 				points[-1].time,  # start_time
 				None,  # no location
-				True  # unknown time ends every segment
-			))
+				True))  # unknown time ends every segment
+
 		print('\tFound', len(self.episodes), 'activities/trips')
 
 	def find_peaks(self, estimates, locations, threshold):
@@ -438,14 +425,14 @@ class Trace(object):
 				# if this is the highest point
 				if estimates[i] == peak_height:
 					x, y = locations[i]
-					lon, lat = unproject(x,y)
+					lon, lat = unproject(x, y)
 					# create a location and append to the list
 					location = Location(lon, lat, cluster_index)
 					potential_activity_locations.append(location)
 					break
 		return potential_activity_locations
 
-	def weight_points(self,segment):
+	def weight_points(self, segment):
 		"""Assign time-based weights to a series of sequential points.
 			Values are in seconds, and are split between neighboring points.
 			e.g.  |--p2-time---|
@@ -458,8 +445,10 @@ class Trace(object):
 			w2 = (segment[i+1].time - segment[i].time).total_seconds() / 2
 			segment[i].add_weight(w1 + w2)
 		# set weights of first and last points
-		segment[0].add_weight((segment[1].time - segment[0].time).total_seconds() / 2)
-		segment[-1].add_weight((segment[-1].time - segment[-2].time).total_seconds() / 2)
+		segment[0].add_weight((
+			segment[1].time - segment[0].time).total_seconds() / 2)
+		segment[-1].add_weight((
+			segment[-1].time - segment[-2].time).total_seconds() / 2)
 
 	def time_at_loc(self, locations, inted):
 		for p in inted:
@@ -469,19 +458,19 @@ class Trace(object):
 
 	#
 	# CLEANING FUNCTIONS BELOW
-	# 
+	#
 
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
-		# pop and append 
+		# pop and append
 		point = self.points.pop(key)
 		point.discarded = True
 		self.discarded_points.append(point)
-		# now using the (former) key, update the (former) neighbors 
-		i_ante = key-1
-		i_post = key # has already shifted over
-		self.observe_neighbors( [i_ante,i_post] )
+		# now using the (former) key, update the (former) neighbors
+		i_ante = key - 1
+		i_post = key  # has already shifted over
+		self.observe_neighbors([i_ante, i_post])
 
 	def find_duplicates(self):
 		"""find any repeated point locations"""
@@ -491,49 +480,51 @@ class Trace(object):
 		for point in self.points:
 			key = str(point.geom)
 			if key not in locations:
-				locations[key] = [ point ]
+				locations[key] = [point]
 			else:
-				locations[key].append( point )
+				locations[key].append(point)
 		for k in locations.keys():
 			if len(locations[k]) > 1:
-				print( k,locations[k] )
-		
-	def observe_neighbors(self,indices=[]):
+				print(k, locations[k])
+
+	def observe_neighbors(self, indices=[]):
 		"""Get angle and distance measurements to and from adjacent points.
-			Store in the point object. Operates on points, the inices of which 
+			Store in the point object. Operates on points, the inices of which
 			are given in a list referring to the current point list."""
 		# for each point, except those first and last
 		for i in indices:
 			# skip first and last points
-			if i <= 0 or i >= len(self.points)-1: 
+			if i <= 0 or i >= len(self.points)-1:
 				continue
 			point = self.points[i]
 			# Find the nearest DIFFERENT geometries
 			# first walk backwards to the next different point
 			i_ante = i-1
 			while point.geom == self.points[i_ante].geom:
-				if i_ante <= 0: break
+				if i_ante <= 0:
+					break
 				i_ante -= 1
 			# then forward to the next different point
 			i_post = i+1
 			while point.geom == self.points[i_post].geom:
-				if i_post >= len(self.points)-1: break
+				if i_post >= len(self.points) - 1:
+					break
 				i_post += 1
 			# distance to previous point
-			point.d_ante = distance(point,self.points[i_ante])
+			point.d_ante = distance(point, self.points[i_ante])
 			# distance to next point
-			point.d_post = distance(point,self.points[i_post])
+			point.d_post = distance(point, self.points[i_post])
 			# if either distance is zero, this is an end point and has no angle
 			if point.d_ante * point.d_post == 0:
-				point.angle = 180 
+				point.angle = 180
 			else:
 				# calculate the inner angle
-				point.angle = inner_angle_sphere( self.points[i_ante], point, self.points[i_post] )
+				point.angle = inner_angle_sphere(
+					self.points[i_ante], point, self.points[i_post])
 			# is point is identical with both neighbors?
 			if (
-				point.geom == self.points[i-1].geom and 
-				point.geom == self.points[i+1].geom 
-			): 
+				point.geom == self.points[i-1].geom and
+				point.geom == self.points[i+1].geom):
 				point.inter = True
 
 	def remove_sequential_duplicates(self):
@@ -546,9 +537,9 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print( '\t',len(to_remove),'points removed as duplicate' )
+		print('\t', len(to_remove), 'points removed as duplicate')
 
-	def remove_known_error(self,error_limit):
+	def remove_known_error(self, error_limit):
 		"""remove points reporting positional error beyond a given limit (meters)"""
 		to_remove = []
 		for i, point in enumerate(self.points):
@@ -557,7 +548,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print( '\t',len(to_remove),'points removed as high stated error' )
+		print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
 		"""use angle/distance based cleaning rules"""
@@ -567,7 +558,7 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		print( '\t',count, 'points removed by positional cleaning' )
+		print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
 		"""returns the index of the craziest point"""
@@ -580,11 +571,11 @@ class Trace(object):
 		errors = {}
 		for i, point in enumerate(self.points):
 			# all but first and last
-			if i == 0 or i == len(self.points)-1: 
+			if i == 0 or i == len(self.points) - 1:
 				continue
-			nearest = min( point.d_ante, point.d_post )
-			if point.angle < 15 and nearest > 100:				
-				error_index = 1 / ( point.angle / nearest )
+			nearest = min(point.d_ante, point.d_post)
+			if point.angle < 15 and nearest > 100:
+				error_index = 1 / (point.angle / nearest)
 				errors[error_index] = i
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
