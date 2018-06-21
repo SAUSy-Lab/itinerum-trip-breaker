@@ -71,7 +71,8 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
 					location.id,  # location_id
 					location.longitude,
 					location.latitude,
@@ -80,7 +81,8 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
 					i,  # activity sequence
 					episode.location_id,  # location_id
 					'',  # mode
@@ -90,17 +92,16 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				s = "{},{},{},{},{},{},{},{}\n"
-				fid = self.id
-				flg = point.longitude
-				flt = point.latitude
-				fwt = point.weight
-				fdc = point.discarded
-				fsc = point.synthetic
-				fst = point.state
-				fkd = point.kde_p
-				s.format(fid, flg, flt, fwt, fdc, fsc, fst, fkd)
-				f.write(s)
+				f.write("{},{},{},{},{},{},{},{}\n".format(
+					self.id,
+					point.longitude,
+					point.latitude,
+					point.weight,
+					point.discarded,
+					point.synthetic,
+					point.state,
+					point.kde_p
+				))
 		# output day summary file for Steve
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
