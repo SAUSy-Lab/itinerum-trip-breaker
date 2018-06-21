@@ -88,17 +88,19 @@ class Trace(object):
 					episode.start))  # start_time
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
-		with open(config.output_points_file, 'a') as f:
-			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{}\n".format(self.id,  # user_id
-					point.longitude,  # lon
-					point.latitude,  # lat
-					point.weight,  # weight
-					point.discarded,  # removed
-					point.synthetic,  # interpolated
-					point.state))  # state
+		with open(config.output_points_file,'a') as f:
+			for point in self.discarded_points + self.all_interpolated_points :
+				f.write( "{},{},{},{},{},{},{},{}\n".format(
+					self.id,
+					point.longitude,
+					point.latitude,
+					point.weight,
+					point.discarded,
+					point.synthetic,
+					point.state,
+					point.kde_p
+				))
 		# output day summary file for Steve
-		# Just for Steve? TODO
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
 			for date in days:
@@ -234,7 +236,10 @@ class Trace(object):
 		Yvector = [p.y for p in self.all_interpolated_points]
 		Wvector = [p.weight for p in self.all_interpolated_points]
 		# run the KDE
-		estimates, locations = kde(Xvector, Yvector, Wvector)
+		estimates, locations = kde(Xvector,Yvector,Wvector)
+		# assign probability estimates to points
+		for point, prob in zip( self.all_interpolated_points, estimates ):
+			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points])
@@ -243,17 +248,17 @@ class Trace(object):
 		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
 			sum(Wvector))  # total seconds entering KDE
 		# Find peaks in the density surface
-		locations = self.find_peaks(estimates, locations, threshold)
+		locations = self.find_peaks(threshold)
 		# store the result
 		self.locations.extend(locations)
 		return self.locations
 
 	def identify_locations(self):
 		"""
-		Identify locations with user-provided home, work, school locations if
-		possible.
+		Identify locations with user-provided home, work, school locations if 
+		possible. This algorithm was written in a hurry and needs to be made 
+		much more robust. It is not currently called anywhere in the code. TODO
 		"""
-		# TODO this function was written in a hurry and should be made more robust
 		if self.home:
 			for location in self.locations:
 				if distance(location, self.home) <= 150:  # meters
@@ -267,11 +272,11 @@ class Trace(object):
 				if distance(location, self.school) <= 150:  # meters
 					location.identify('school')
 
-	def break_trips(self):  # TODO refactor
+	def break_trips(self): # TODO refactor Viterbi algorithm into a separate function
 		"""
-		Use a Hidden Markov Model to classify all points as deriving from
-		either time spent travelling or time spent at one of the potential
-		activity locations. Allocate time to these sequences of activities
+		Use a Hidden Markov Model to classify all points as deriving from 
+		either time spent travelling or time spent at one of the potential 
+		activity locations. Allocate time to these sequences of activities 
 		accordingly.
 		"""
 		for point in self.all_interpolated_points:
@@ -366,69 +371,30 @@ class Trace(object):
 
 		print('\tFound', len(self.episodes), 'activities/trips')
 
-	def find_peaks(self, estimates, locations, threshold):
+	def find_peaks(self,threshold):
 		"""
-		PDF was estimated at a selection of points, which are here given as a
-		list of P values (estimates) and a list of (x,y) locations. The idea
-		is to toss out any values below the threshold and identify spatial
-		clusters among those that remain. In each such cluster, the highest
-		value is the activity location.
+		Detect peaks in the KDE surface which are above the time-spent
+		threshold. KDE values are stored in self.points.
 		"""
-		assert len(estimates) == len(locations)
-		# drop values below the threshold
-		locations = [(x, y) for (x, y), est in zip(locations,
-			estimates) if est >= threshold]
-		estimates = [est for est in estimates if est >= threshold]
-		assert len(estimates) == len(locations)
-		print('\tClustering', len(estimates), 'points above', threshold, 'threshold')
-		if len(estimates) > 5000:
-			raise Exception('distance matrix will be too large')
-		# now calculate a distance-based connectivity matrix between all these points
-		neighbs = []
-		for i, (x1, y1) in enumerate(locations):
-			neighbs.append([])
-			for j, (x2, y2) in enumerate(locations):
-				# use euclidian distance since this is already projected
-				connection = sqrt((x1-x2)**2 + (y1-y2)**2) < config.cluster_distance
-				neighbs[i].append(connection)
-		# clusters will be a list of disjoint sets
-		clusters = []
-		# now for each point, check for cluster membership and add and merge clusters
-		for i in range(0, len(neighbs)):
-			# get a set of neighbor indices within distance,
-			# including this point itself ( dist = 0 )
-			neighbors = set([j for j, n in enumerate(neighbs[i]) if n])
-			# create list to keep track of clusters this set belongs to
-			member_cluster_indices = []
-			for i, cluster in enumerate(clusters):
-				# check each cluster for overlap with this set
-				if not cluster.isdisjoint(neighbors):
-					member_cluster_indices.append(i)
-			if len(member_cluster_indices) == 0:
-				#  we have no overlap, so this becomes a new cluster
-				clusters.append(neighbors)
-			elif len(member_cluster_indices) > 0:
-				# we have one or more matching clusters
-				for i in reversed(member_cluster_indices):
-					# add everyhting together in a new cluster and
-					# drop off the old clusters which are now merged in the new one
-					neighbors = neighbors | clusters.pop(i)
-					# add the new cluster
-				clusters.append(neighbors)
-		print('\tFound', len(clusters), 'activity locations')
+		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
+		print('\tClustering',len(points),'points above',threshold,'threshold')
+		# For each point:
+		#   for every other point within cluster distance:
+		#      if comparison point has higher KDE value, this is not the peak
 		potential_activity_locations = []
-		# find the maximum estimate and a location with that value
-		for cluster_index, cluster in enumerate(clusters):
-			peak_height = max([estimates[i] for i in cluster])
-			for i in cluster:
-				# if this is the highest point
-				if estimates[i] == peak_height:
-					x, y = locations[i]
-					lon, lat = unproject(x, y)
-					# create a location and append to the list
-					location = Location(lon, lat, cluster_index)
-					potential_activity_locations.append(location)
-					break
+		loc_num = 1
+		for point in points:
+			is_peak = True # starting assumption
+			for neighbor in points:
+				if distance(point,neighbor) > config.location_distance:
+					continue  # TODO should not use continue or break
+				if point.kde_p < neighbor.kde_p:
+					is_peak = False # assumption proven false if anything else higher
+					break  # TODO should not use continue or break
+			if is_peak:
+				location = Location(point.longitude,point.latitude,loc_num)
+				potential_activity_locations.append(location)
+				loc_num += 1
 		return potential_activity_locations
 
 	def weight_points(self, segment):
@@ -437,6 +403,7 @@ class Trace(object):
 		Values are in seconds, and are split between neighboring points.
 		e.g.  |--p2-time---|
 		p1----|----p2------|------p3
+
 		"""
 		assert len(segment) > 1
 		# set weights of middle points
@@ -459,6 +426,25 @@ class Trace(object):
 	#
 	# CLEANING METHODS BELOW
 	#
+
+	def remove_repeated_points(self):
+		"""There are some records in the coordinates table that are simply 
+			reapeted verbatim. Points are already sorted by time, so to find 
+			these we just need to loop through and compare adjacent points."""
+		unique_points = []
+		to_remove = []
+		for i, point in enumerate(self.points):
+			uid = str(point.latitude)+str(point.longitude)+str(point.ts)
+			# if this is the first we've seen this exact record
+			if uid not in unique_points:
+				unique_points.append(uid)
+			else: # we've already seen this exact point
+				to_remove.append(i)
+		# remove the points from the main list to the recycling bin
+		for i in reversed(to_remove):
+			self.pop_point(i)
+		print( '\t',len(to_remove),'points removed as exact duplicate' )
+			
 
 	def pop_point(self, key):
 		"""

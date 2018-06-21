@@ -1,10 +1,11 @@
 #
 # This file defines functions not associated with object classes
 #
-
-import math
-import config
-
+import math, config, datetime
+from geopy.distance import great_circle
+from pyproj import Proj, transform
+from scipy.stats import multivariate_normal
+from scipy.stats import multivariate_normal
 
 def min_peak(GPS_error_sd, total_time):
 	"""
@@ -14,7 +15,6 @@ def min_peak(GPS_error_sd, total_time):
 	-	threshold_time is the minimum activity time.
 	Times are given in seconds
 	"""
-	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
 	peak_height = multivariate_normal.pdf([0.5, 0.5], [0, 0],
 					[total_variance, total_variance])
@@ -121,7 +121,6 @@ def parse_ts(timestamp):
 	"""
 	if timestamp == "":
 		return "", ""
-	import datetime
 	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
 	year = int(timestamp[:4])
 	month = int(timestamp[5:7])
@@ -133,17 +132,18 @@ def parse_ts(timestamp):
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 
-def distance(point1, point2):
+def distance(point1,point2,euclid=False):
 	"""
 	Gives the great circle distance between two point objects.
 	Returns meters.
 	"""
-	# import the function...
-	from geopy.distance import great_circle
-	# format the inputs
-	p1 = (point1.latitude, point1.longitude)
-	p2 = (point2.latitude, point2.longitude)
-	return great_circle(p1, p2).meters
+	if euclid:
+		return sqrt( (point1.X-point2.X)**2 + (point1.Y-point2.Y)**2 )
+	else:
+		# format the inputs
+		p1 = ( point1.latitude, point1.longitude )
+		p2 = ( point2.latitude, point2.longitude )
+		return great_circle( p1, p2 ).meters
 
 
 def gaussian(distance, bandwidth):
@@ -191,8 +191,10 @@ def inner_angle_sphere(point1, point2, point3):
 
 
 def read_headers(fname):
-	"""
-	Return a dictionary mapping header names to column indices/
+	""" (str) -> dict
+	Return a dictionary mapping header names to column indices. 
+	
+	Removes the need to hard coding column numbers when reading files. 
 	"""
 	fd = open(fname)
 	d = {}

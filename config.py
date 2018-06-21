@@ -27,14 +27,29 @@ minimum_activity_time = 10*60
 # Spatial kernel bandwidth in meters (standard deviation of gaussian kernel)
 kernel_bandwidth = 25
 
+<<<<<<< HEAD
 # minimum distance between separate clusters
-# (parameter for activity location detection)
-cluster_distance = 50
-
+=======
 # what is the limit of stated h_accuracy which will be acceptable?
 # (standard deviation in meters of a normal distribution?)
 min_accuracy = 100
 
+# minimum distance between separate clusters 
+>>>>>>> d4b03e744d60c7a10f3f5878b8c8a922dabf3cf6
+# (parameter for activity location detection)
+cluster_distance = 50
+
+location_distance = 150 # meters
+
+<<<<<<< HEAD
 # interpolation distance parameter (meters). maximum length of segment to
 # remain uninterpolated for linear spatial interpolations
 interpolation_distance = 50
+=======
+# interpolation distance parameter (meters). maximum length of segment to 
+# remain uninterpolated for linear spatial interpolations. 
+# For reasonable results, this must be < cluster_distance
+interpolation_distance = 30
+
+assert cluster_distance > interpolation_distance
+>>>>>>> d4b03e744d60c7a10f3f5878b8c8a922dabf3cf6
