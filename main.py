@@ -34,7 +34,7 @@ if __name__ == "__main__":
 		reader = csv.DictReader(f)
 		for row in reader:
 			if row['uuid'] not in user_ids:
-                        	user_ids[row['uuid']] = [row]
+				user_ids[row['uuid']] = [row]
 			else:
 				user_ids[row['uuid']].append(row)
 	survey_responses = {}
