@@ -422,6 +422,25 @@ class Trace(object):
 	# CLEANING FUNCTIONS BELOW
 	# 
 
+	def remove_repeated_points(self):
+		"""There are some records in the coordinates table that are simply 
+			reapeted verbatim. Points are already sorted by time, so to find 
+			these we just need to loop through and compare adjacent points."""
+		unique_points = []
+		to_remove = []
+		for i, point in enumerate(self.points):
+			uid = str(point.latitude)+str(point.longitude)+str(point.ts)
+			# if this is the first we've seen this exact record
+			if uid not in unique_points:
+				unique_points.append(uid)
+			else: # we've already seen this exact point
+				to_remove.append(i)
+		# remove the points from the main list to the recycling bin
+		for i in reversed(to_remove):
+			self.pop_point(i)
+		print( '\t',len(to_remove),'points removed as exact duplicate' )
+			
+
 	def pop_point(self, key):
 		"""Pop a point off the current list and add it to the discard bin.
 			Then update it's former neighbors in the list."""
@@ -451,7 +470,7 @@ class Trace(object):
 		
 	def observe_neighbors(self,indices=[]):
 		"""Get angle and distance measurements to and from adjacent points.
-			Store in the point object. Operates on points, the inices of which 
+			Store in the point object. Operates on points, the indices of which 
 			are given in a list referring to the current point list."""
 		# for each point, except those first and last
 		for i in indices:

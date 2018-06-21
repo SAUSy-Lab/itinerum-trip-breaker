@@ -55,7 +55,8 @@ if __name__ == "__main__":
 		user = Trace( user_id, data, survey_responses[user_id] )
 		if len(user.points) < 100: continue
 		# remove GPS points believed to be in error
-		print("User",user_id,'has',len(user.points),'coordinates')
+		print("User",user_id,'starts with',len(user.points),'coordinates')
+		user.remove_repeated_points()
 		user.remove_known_error( config.min_accuracy )
 		user.remove_sequential_duplicates()
 		user.remove_positional_error()
