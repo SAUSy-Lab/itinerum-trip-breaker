@@ -37,7 +37,7 @@ def initialize_output_files():
 
 if __name__ == "__main__":
 	# Get all the coordinates data in a big list per user so that we only
-	# have to read this file once. 
+	# have to read this file once.
 	user_data = {}
 	# get a list of all users in the coordinates file
 	with open(config.input_coordinates_file, newline='') as f:
@@ -63,8 +63,9 @@ if __name__ == "__main__":
 	# loop over users calling all the functions for each
 	for user_id, data in user_data.items():
 		# create trace object for this user
-		user = Trace( user_id, data, survey_responses[user_id] )
-		if len(user.points) < 100: continue
+		user = Trace(user_id, data, survey_responses[user_id])
+		if len(user.points) < 100:
+			continue  # TODO shouldn't use continue or break
 		# remove GPS points believed to be in error
 		print("User", user_id, 'starts with', len(user.points), 'coordinates')
 		user.remove_repeated_points()

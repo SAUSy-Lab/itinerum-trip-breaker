@@ -1,11 +1,14 @@
 #
 # This file defines functions not associated with object classes
 #
-import math, config, datetime
+import math
+import config
+import datetime
 from geopy.distance import great_circle
 from pyproj import Proj, transform
 from scipy.stats import multivariate_normal
 from scipy.stats import multivariate_normal
+
 
 def min_peak(GPS_error_sd, total_time):
 	"""
@@ -132,18 +135,18 @@ def parse_ts(timestamp):
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 
-def distance(point1,point2,euclid=False):
+def distance(point1, point2, euclid=False):
 	"""
 	Gives the great circle distance between two point objects.
 	Returns meters.
 	"""
 	if euclid:
-		return sqrt( (point1.X-point2.X)**2 + (point1.Y-point2.Y)**2 )
+		return sqrt((point1.X-point2.X)**2 + (point1.Y-point2.Y)**2)
 	else:
 		# format the inputs
-		p1 = ( point1.latitude, point1.longitude )
-		p2 = ( point2.latitude, point2.longitude )
-		return great_circle( p1, p2 ).meters
+		p1 = (point1.latitude, point1.longitude)
+		p2 = (point2.latitude, point2.longitude)
+		return great_circle(p1, p2).meters
 
 
 def gaussian(distance, bandwidth):
@@ -192,9 +195,9 @@ def inner_angle_sphere(point1, point2, point3):
 
 def read_headers(fname):
 	""" (str) -> dict
-	Return a dictionary mapping header names to column indices. 
-	
-	Removes the need to hard coding column numbers when reading files. 
+	Return a dictionary mapping header names to column indices.
+
+	Removes the need to hard coding column numbers when reading files.
 	"""
 	fd = open(fname)
 	d = {}

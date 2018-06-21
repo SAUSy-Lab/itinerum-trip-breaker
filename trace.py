@@ -88,18 +88,19 @@ class Trace(object):
 					episode.start))  # start_time
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
-		with open(config.output_points_file,'a') as f:
-			for point in self.discarded_points + self.all_interpolated_points :
-				f.write( "{},{},{},{},{},{},{},{}\n".format(
-					self.id,
-					point.longitude,
-					point.latitude,
-					point.weight,
-					point.discarded,
-					point.synthetic,
-					point.state,
-					point.kde_p
-				))
+		with open(config.output_points_file, 'a') as f:
+			for point in self.discarded_points + self.all_interpolated_points:
+				s = "{},{},{},{},{},{},{},{}\n"
+				fid = self.id,
+				flg = point.longitude
+				flt = point.latitude
+				fwt = point.weight
+				fdc = point.discarded
+				fsc = point.synthetic
+				fst = point.state
+				fkd = point.kde_p
+				s.format(fid, flt, fwt, fdc, fsc, fst, fkd)
+				f.write(s)
 		# output day summary file for Steve
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
@@ -236,9 +237,9 @@ class Trace(object):
 		Yvector = [p.y for p in self.all_interpolated_points]
 		Wvector = [p.weight for p in self.all_interpolated_points]
 		# run the KDE
-		estimates, locations = kde(Xvector,Yvector,Wvector)
+		estimates, locations = kde(Xvector, Yvector, Wvector)
 		# assign probability estimates to points
-		for point, prob in zip( self.all_interpolated_points, estimates ):
+		for point, prob in zip(self.all_interpolated_points, estimates):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
@@ -255,8 +256,8 @@ class Trace(object):
 
 	def identify_locations(self):
 		"""
-		Identify locations with user-provided home, work, school locations if 
-		possible. This algorithm was written in a hurry and needs to be made 
+		Identify locations with user-provided home, work, school locations if
+		possible. This algorithm was written in a hurry and needs to be made
 		much more robust. It is not currently called anywhere in the code. TODO
 		"""
 		if self.home:
@@ -272,11 +273,12 @@ class Trace(object):
 				if distance(location, self.school) <= 150:  # meters
 					location.identify('school')
 
-	def break_trips(self): # TODO refactor Viterbi algorithm into a separate function
+	# TODO refactor Viterbi algorithm into a separate function
+	def break_trips(self):
 		"""
-		Use a Hidden Markov Model to classify all points as deriving from 
-		either time spent travelling or time spent at one of the potential 
-		activity locations. Allocate time to these sequences of activities 
+		Use a Hidden Markov Model to classify all points as deriving from
+		either time spent travelling or time spent at one of the potential
+		activity locations. Allocate time to these sequences of activities
 		accordingly.
 		"""
 		for point in self.all_interpolated_points:
@@ -371,28 +373,29 @@ class Trace(object):
 
 		print('\tFound', len(self.episodes), 'activities/trips')
 
-	def find_peaks(self,threshold):
+	def find_peaks(self, threshold):
 		"""
 		Detect peaks in the KDE surface which are above the time-spent
 		threshold. KDE values are stored in self.points.
 		"""
-		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
-		print('\tClustering',len(points),'points above',threshold,'threshold')
+		points = [point for point in
+			self.all_interpolated_points if point.kde_p >= threshold]
+		print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
 		#   for every other point within cluster distance:
 		#      if comparison point has higher KDE value, this is not the peak
 		potential_activity_locations = []
 		loc_num = 1
 		for point in points:
-			is_peak = True # starting assumption
+			is_peak = True  # starting assumption
 			for neighbor in points:
-				if distance(point,neighbor) > config.location_distance:
+				if distance(point, neighbor) > config.location_distance:
 					continue  # TODO should not use continue or break
 				if point.kde_p < neighbor.kde_p:
-					is_peak = False # assumption proven false if anything else higher
+					is_peak = False  # assumption proven false if anything else higher
 					break  # TODO should not use continue or break
 			if is_peak:
-				location = Location(point.longitude,point.latitude,loc_num)
+				location = Location(point.longitude, point.latitude, loc_num)
 				potential_activity_locations.append(location)
 				loc_num += 1
 		return potential_activity_locations
@@ -428,9 +431,10 @@ class Trace(object):
 	#
 
 	def remove_repeated_points(self):
-		"""There are some records in the coordinates table that are simply 
-			reapeted verbatim. Points are already sorted by time, so to find 
-			these we just need to loop through and compare adjacent points."""
+		"""There are some records in the coordinates table that are simply
+		reapeted verbatim. Points are already sorted by time, so to find
+		these we just need to loop through and compare adjacent points.
+		"""
 		unique_points = []
 		to_remove = []
 		for i, point in enumerate(self.points):
@@ -438,13 +442,12 @@ class Trace(object):
 			# if this is the first we've seen this exact record
 			if uid not in unique_points:
 				unique_points.append(uid)
-			else: # we've already seen this exact point
+			else:  # we've already seen this exact point
 				to_remove.append(i)
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print( '\t',len(to_remove),'points removed as exact duplicate' )
-			
+		print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
 		"""
