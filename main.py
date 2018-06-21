@@ -26,10 +26,10 @@ def initialize_output_files():
 	f.close()
 	# days file
 	f = open(config.output_days_file, "w")
-	# TODO so much more to do here
-	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,' +
-		'unknown_time,home_time,work_time,school_time,home_count,' +
-		'work_count,school_count\n')
+	# TODO so much more to do here. What?
+	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,')
+	f.write('unknown_time,home_time,work_time,school_time,home_count,')
+	f.write('work_count,school_count\n')
 	f.close()
 
 # Standard format so we can import this module elsewhere.

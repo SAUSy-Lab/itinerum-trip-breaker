@@ -3,8 +3,8 @@ import csv
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import distance, inner_angle_sphere, kde,\
-min_peak, gaussian, ts_str, unproject, read_headers
+from misc_funcs import (distance, inner_angle_sphere, kde,
+	min_peak, gaussian, ts_str, unproject, read_headers)
 from datetime import timedelta, datetime
 from math import sqrt
 
@@ -31,7 +31,6 @@ class Trace(object):
 		# preceding, containing all real and interpolated points in one place.
 		# This one gets used for KDE etc.
 		self.raw = raw_data
-		h = read_headers()
 		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 data
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
@@ -51,11 +50,8 @@ class Trace(object):
 		# right now only using a few fields
 
 		for row in raw_data:
-			self.points.append(
-				Point(row['timestamp'],
-				float(row['longitude']),
-				float(row['latitude']),
-				float(row['h_accuracy'])))
+			self.points.append(Point(row['timestamp'],
+				float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
 		# sort the list by time
 		self.points.sort(key=lambda x: x.epoch)
 		# measure to and from neighbors
@@ -72,8 +68,7 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
 					location.id,  # location_id
 					location.longitude,
 					location.latitude,
@@ -82,8 +77,7 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
 					i,  # activity sequence
 					episode.location_id,  # location_id
 					'',  # mode
@@ -93,8 +87,7 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
+				f.write("{},{},{},{},{},{},{}\n".format(self.id,  # user_id
 					point.longitude,  # lon
 					point.latitude,  # lat
 					point.weight,  # weight
@@ -107,20 +100,13 @@ class Trace(object):
 		with open(config.output_days_file, 'a') as f:
 			for date in days:
 				#print( days[date] )
-				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
-					self.id,		# user_id
-					date,
-					date.weekday(),
-					sum(days[date]['total']),  # total minutes
-					len(days[date]['travel']),  # trip count
-					sum(days[date]['travel']),  # travel time
-					sum(days[date]['unknown']),  # unknown time
-					sum(days[date]['home']),  # home_time
-					sum(days[date]['work']),  # work_time
-					sum(days[date]['school']),  # school_time
-					len(days[date]['home']),  # home count
-					len(days[date]['work']),  # work count
-					len(days[date]['school'])))  # school count
+				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
+				.format(self.id, date, date.weekday(), sum(days[date]['total']),
+				len(days[date]['travel']), sum(days[date]['travel']),
+				sum(days[date]['unknown']), sum(days[date]['home']),
+				sum(days[date]['work']), sum(days[date]['school']),
+				len(days[date]['home']), len(days[date]['work']),
+				len(days[date]['school'])))
 
 	def get_days(self):
 		"""Repartition episodes into day units."""
@@ -137,9 +123,8 @@ class Trace(object):
 				date = start_date + timedelta(days=offset)
 				# initialize the date the first time we see it
 				if date not in days:
-					days[date] = {
-						'home': [], 'work': [], 'school': [], 'other': [],
-						'travel': [], 'unknown': [], 'total': []}
+					days[date] = {'home': [], 'work': [], 'school': [],
+					'other': [], 'travel': [], 'unknown': [], 'total': []}
 				# how much of this activity occured on this date?
 				# first limit start_time to start of this day
 				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
@@ -193,9 +178,7 @@ class Trace(object):
 		# iterate over all points (except the first). Test each point to see
 		# whether we add it to the current segment or the one after.
 		for i in range(1, len(self.points)):
-			if (
-				# distance over 1 km?
-				distance(self.points[i], self.points[i-1]) > 1000 and
+			if (distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
 				self.points[i].epoch - self.points[i-1].epoch > 1 * 3600):
 				# append point to next segment
@@ -208,9 +191,7 @@ class Trace(object):
 			known_segments.append(segment)
 		# check these segments for plausibility and append to the global property
 		for segment in known_segments:
-			if (
-				# at least one point
-				len(segment) > 1 and
+			if (len(segment) > 1 and
 				# sufficient time between last and first points
 				segment[-1].epoch - segment[0].epoch > 3600):
 				# mininum time length of segment?
@@ -238,13 +219,11 @@ class Trace(object):
 		estimates, locations = kde(Xvector, Yvector, Wvector)
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = sqrt(
-			sum([p.accuracy**2 for p in self.points])
+		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points])
 			/ len(self.points))
 		# estimate peak threshold value
-		threshold = min_peak(
-			mean_accuracy,		# mean sd of GPS accuracy for user
-			sum(Wvector))		# total seconds entering KDE
+		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
+			sum(Wvector))  # total seconds entering KDE
 		# Find peaks in the density surface
 		locations = self.find_peaks(estimates, locations, threshold)
 		# store the result
@@ -324,8 +303,7 @@ class Trace(object):
 				V.append({})
 				newpath = {}
 				for s1 in states:
-					(prob, state) = max(
-						[(V[t-1][s0] * trans_p[s0][s1] *
+					(prob, state) = max([(V[t-1][s0] * trans_p[s0][s1] *
 						points[t].emit_p[s1], s0) for s0 in states])
 					V[t][s1] = prob
 					newpath[s1] = path[state] + [s1]
@@ -337,8 +315,7 @@ class Trace(object):
 			for visited_id in set([s-1 for s in state_path if s != 0]):
 				self.locations[visited_id].visited = True
 			# now record the first activity episode
-			self.episodes.append(Episode(
-				points[0].time,  # start_time
+			self.episodes.append(Episode(points[0].time,  # start_time
 				# location, if any
 				None if state_path[0] == 0 else self.locations[state_path[0]-1],
 				False))  # unknown_time
@@ -355,15 +332,13 @@ class Trace(object):
 					transition_time = points[i-1].time + (points[i].time-points[i-1].time)/2
 					# output start of this new state
 					# now record the first activity episode
-					self.episodes.append(Episode(
-						points[i].time,  # start_time
+					self.episodes.append(Episode(points[i].time,  # start_time
 						# location, if any
 						None if state_path[i] == 0 else self.locations[state_path[i]-1],
 						False))  # unknown_time
 					prev_state = state_path[i]
 			# now record the first activity episode
-			self.episodes.append(Episode(
-				points[-1].time,  # start_time
+			self.episodes.append(Episode(points[-1].time,  # start_time
 				None,  # no location
 				True))  # unknown time ends every segment
 
@@ -445,10 +420,10 @@ class Trace(object):
 			w2 = (segment[i+1].time - segment[i].time).total_seconds() / 2
 			segment[i].add_weight(w1 + w2)
 		# set weights of first and last points
-		segment[0].add_weight((
-			segment[1].time - segment[0].time).total_seconds() / 2)
-		segment[-1].add_weight((
-			segment[-1].time - segment[-2].time).total_seconds() / 2)
+		segment[0].add_weight((segment[1].time - segment[0].time)
+		.total_seconds() / 2)
+		segment[-1].add_weight((segment[-1].time - segment[-2].time)
+		.total_seconds() / 2)
 
 	def time_at_loc(self, locations, inted):
 		for p in inted:
@@ -519,11 +494,10 @@ class Trace(object):
 				point.angle = 180
 			else:
 				# calculate the inner angle
-				point.angle = inner_angle_sphere(
-					self.points[i_ante], point, self.points[i_post])
+				point.angle = inner_angle_sphere(self.points[i_ante],
+					point, self.points[i_post])
 			# is point is identical with both neighbors?
-			if (
-				point.geom == self.points[i-1].geom and
+			if (point.geom == self.points[i-1].geom and
 				point.geom == self.points[i+1].geom):
 				point.inter = True
 

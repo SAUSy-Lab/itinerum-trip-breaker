@@ -14,10 +14,8 @@ def min_peak(GPS_error_sd, total_time):
 		Times are given in seconds"""
 	from scipy.stats import multivariate_normal
 	total_variance = GPS_error_sd**2 + config.kernel_bandwidth**2
-	peak_height = multivariate_normal.pdf(
-		[0.5, 0.5],  # quantiles (center)
-		[0, 0],  # center
-		[total_variance, total_variance])  # covariance matrix
+	peak_height = multivariate_normal.pdf([0.5, 0.5], [0, 0],
+						[total_variance, total_variance])
 	# this is the peak height if we have no movement and
 	# total_time == threshold_time
 	assert total_time > config.minimum_activity_time
@@ -53,13 +51,7 @@ def kde(x_vector, y_vector, weights):
 	print('\tRunning KDE on', len(x_vector), 'points')
 	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
-	surface = ks.kde(
-		# points and evaluation points are the same
-		x=point_matrix,
-		eval_points=point_matrix,
-		# weights
-		w=FloatVector(weights),
-		# bandwidth / covariance matrix
+	surface = ks.kde(x=point_matrix, eval_points=point_matrix, w=FloatVector(weights),
 		H=diag(FloatVector([bandwidth**2, bandwidth**2])))
 	eval_points = surface.rx2('eval.points')
 	estimates = surface.rx2('estimate')

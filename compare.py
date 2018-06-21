@@ -27,10 +27,9 @@ def compare_locations(truth, compd):
 			num_to_match = min(len(computed_locations[user]), len(true_locations[user]))
 			users_to_matrix[user] = {}
 			# TODO exclude unused locations
-			headers = read_headers(truth)
-			distance_matrix(
-				headers, users_to_matrix[user],
-				true_locations[user], computed_locations[user])
+			h = read_headers(truth)
+			distance_matrix(h, users_to_matrix[user],
+					true_locations[user], computed_locations[user])
 				# users_to_matrix[user][true_location][computed_location] = distance
 				# dictionary of dictionaries of dictionaries of distances
 			min_distances = []
@@ -93,14 +92,10 @@ def compare_episodes(truth, guess):
 	# True and computed unknown times
 	ht = read_headers(truth)
 	hg = read_headers(guess)
-	tut = find_unknown_time(
-		truth_dict[ht["start_time"]],
-		truth_dict[ht["unknown"]],
-		truth_dict[ht["user_id"]])
-	cut = find_unknown_time(
-		guess_dict[hg["start_time"]],
-		guess_dict[hg["unknown"]],
-		guess_dict[hg["user_id"]])
+	tut = find_unknown_time(truth_dict[ht["start_time"]],
+				truth_dict[ht["unknown"]], truth_dict[ht["user_id"]])
+	cut = find_unknown_time(guess_dict[hg["start_time"]],
+				guess_dict[hg["unknown"]], guess_dict[hg["user_id"]])
 	for user in tut.keys():
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
@@ -117,7 +112,7 @@ def compare_user(truth, computed):
 	end_time = min(truth[-1][0], computed[-1][0])
 	# Time in minutes that the survey lasted, trimmed
 	total_time = (end_time - start_time).days * 24 * 60 + \
-			(end_time - start_time).seconds / 60
+	(end_time - start_time).seconds / 60
 	i, j = 0, 0
 	tut, ciut, mut = 0, 0, 0
 	# while both iterators haven't reached the end of the survey time
@@ -135,8 +130,8 @@ def compare_user(truth, computed):
 		# whichever episode ends first needs to be incremented
 		if truth[i+1][0] < computed[j+1][0]:  # truth ep ends first
 			if truth[i][1]:
-				tut += (truth[i+1][0] - truth[i][0]).days * 24 * 60 + \
-				(truth[i+1][0] - truth[i][0]).seconds / 60
+				tut += ((truth[i+1][0] - truth[i][0]).days * 24 * 60 +
+					(truth[i+1][0] - truth[i][0]).seconds / 60)
 			i += 1
 		else:  # computed ep ends first
 			j += 1
@@ -210,8 +205,8 @@ def parse_gt_ts(t):
 	minute = t[12:14]
 	hour = t[9:11]
 	second = "01"
-	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(
-		year, month, day, hour, minute, second)
+	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(year, month,
+							day, hour, minute, second)
 	return parse_ts(real_timestamp)[0]
 
 
@@ -229,17 +224,18 @@ def literal_eval(string):
 
 def display(locs, eps):
 	user_to_loc = {user: [excess, mean, med]
-			for (user, excess, mean, med) in locs}
+		for (user, excess, mean, med) in locs}
 	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
 	rs = "user\t\t\t\t\texcess locations\tmean distance\t\tmedian distance" + \
-		"\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
+					"\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
 	for user in user_to_loc.keys():
-		excess, mean, median, ciut, mut =\
-			user_to_loc[user][0], user_to_loc[user][1],\
-			user_to_loc[user][2], round(user_to_eps[user][0], 2),\
-			round(user_to_eps[user][1], 2)
-		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(
-			user, excess, mean, median, ciut, mut)
+		excess = user_to_loc[user][0]
+		mean = user_to_loc[user][1]
+		median = user_to_loc[user][2]
+		ciut = round(user_to_eps[user][0], 2)
+		mut = round(user_to_eps[user][1], 2)
+		rs = rs + "{}:\t{}\t\t\t{}\t{}\t{}\t\t\t\t{}\n".format(user,
+						excess, mean, median, ciut, mut)
 	return rs
 
 if __name__ == "__main__":
