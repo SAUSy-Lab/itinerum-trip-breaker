@@ -99,7 +99,7 @@ class Trace(object):
 				fsc = point.synthetic
 				fst = point.state
 				fkd = point.kde_p
-				s.format(fid, flt, fwt, fdc, fsc, fst, fkd)
+				s.format(fid, flg, flt, fwt, fdc, fsc, fst, fkd)
 				f.write(s)
 		# output day summary file for Steve
 		days = self.get_days()
