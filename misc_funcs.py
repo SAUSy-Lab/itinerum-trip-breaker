@@ -193,6 +193,74 @@ def inner_angle_sphere(point1, point2, point3):
 	return degree_difference
 
 
+# TODO document and fully understand this algorithm
+def viterbi(states,emission_probs,start_probs,transition_probs):
+	"""
+		states
+		emission_probs
+		start_probs
+		transition_probs
+	"""
+	V = [{}]
+	path = {}
+	for state in states:
+		# Initialize base cases (t == 0)
+		V[0][state] = start_probs[state] * emission_probs[0][state]
+		path[state] = [state]
+	for t in range(1, len(emission_probs)):	 # Run Viterbi for t > 0
+		V.append({})
+		newpath = {}
+		for s1 in states:
+			(prob, state) = max([(V[t-1][s0] * transition_probs[s0][s1] *
+				emission_probs[t][s1], s0) for s0 in states])
+			V[t][s1] = prob
+			newpath[s1] = path[state] + [s1]
+		path = newpath  # Don't need to remember the old paths
+	(prob, final_state) = max([(V[len(emission_probs)-1][s], s) for s in states])
+	# get the optimal sequence of states
+	return path[final_state]
+
+
+
+def state_transition_matrix(states=[]):
+	"""
+		Given a list of potential activity location id's, return a simple
+		transition probability matrix for use in the viterbi function.
+		Transition probs are currently hardcoded and returned as a list of lists. 
+		0 is the 'travel' state. E.g.: 
+		    0   1   2  ...
+		0  .8  .1  .1
+		1  .2  .8  .0
+		2  .2  .0  .8
+		...
+	"""
+	# define possible transition probabilities
+	travel_to_travel_prob = 0.8
+	travel_to_place_prob  = 0.2 / len(states)
+	place_to_travel_prob  = 0.2
+	place_to_itself_prob  = 0.8
+	teleport_prob         = 0.0  # impossible, in theory at least
+	# make sure travel is an option
+	if 0 not in states: states += [0]
+	trans_prob_matrix = []
+	for s0 in states:
+		assert type(s0) == int
+		trans_prob_matrix.append( [] )
+		for s1 in states:
+			if s0 + s1 == 0:  # travel -> travel
+				trans_prob_matrix[s0].append( travel_to_travel_prob )
+			elif s0 == 0:  # travel -> place
+				trans_prob_matrix[s0].append( travel_to_place_prob )
+			elif s1 == 0:  # place -> travel
+				trans_prob_matrix[s0].append( place_to_travel_prob )
+			elif s0 == s1:  # place -> same place
+				trans_prob_matrix[s0].append( place_to_itself_prob )
+			else:  # place -> place (no travel)
+				trans_prob_matrix[s0].append( teleport_prob )
+		# make sure row sums ~= 1 (floating point error)
+		assert abs( sum(trans_prob_matrix[s0]) - 1 ) < 0.02
+	return trans_prob_matrix
+
 def read_headers(fname):
 	""" (str) -> dict
 	Return a dictionary mapping header names to column indices.

@@ -4,7 +4,8 @@ from point import Point
 from episode import Episode
 from location import Location
 from misc_funcs import (distance, inner_angle_sphere, kde,
-	min_peak, gaussian, ts_str, unproject, read_headers)
+	min_peak, gaussian, ts_str, unproject, read_headers, state_transition_matrix,
+	viterbi)
 from datetime import timedelta, datetime
 from math import sqrt
 
@@ -274,7 +275,6 @@ class Trace(object):
 				if distance(location, self.school) <= 150:  # meters
 					location.identify('school')
 
-	# TODO refactor Viterbi algorithm into a separate function
 	def break_trips(self):
 		"""
 		Use a Hidden Markov Model to classify all points as deriving from
@@ -282,65 +282,34 @@ class Trace(object):
 		activity locations. Allocate time to these sequences of activities
 		accordingly.
 		"""
-		for point in self.all_interpolated_points:
-			# get first-pass emission probabilities from all locations
-			dists = [distance(loc, point) for loc in self.locations]
-			dists = [d - 100 for d in dists]
-			dists = [0 if d < 0 else d for d in dists]
-			point.emit_p = [gaussian(d, 100) for d in dists]
-			# standardize to one if necessary
-			if sum(point.emit_p) > 1:
-				point.emit_p = [p / sum(point.emit_p) for p in point.emit_p]
-			# prepend travel probability as the difference from 1 if there is any
-			point.emit_p = [1 - sum(point.emit_p)] + point.emit_p
-		# make a list of starting probabilities
-		# (50/50 start travelling, start stationary)
-		start_p = [0.5]+[(0.5/len(self.locations))]*len(self.locations)
 		# get list of potential state indices
 		# 0 is travel, others are then +1 from their list location
 		states = range(0, len(self.locations) + 1)
+		# initial_state probabilities: 50/50 travelling or stationary
+		start_probs = [0.5] + [ ( 0.5/len(states) ) ] * len(states)
 		# list of locations that actually get used
 		used_locations = set()
-		# simple transition probability matrix e.g.:
-		#     0   1   2
-		# 0  .8  .1  .1
-		# 1  .2  .8  .0
-		# 2  .2  .0  .8
-		trans_p = []
-		for s0 in states:
-			trans_p.append([])
-			for s1 in states:
-				if s0 + s1 == 0:  # travel -> travel
-					trans_p[s0].append(0.8)
-				elif s0 == 0:  # travel -> place
-					trans_p[s0].append(0.2 / len(self.locations))
-				elif s1 == 0:  # place -> travel
-					trans_p[s0].append(0.2)
-				elif s0 == s1:  # place -> same place
-					trans_p[s0].append(0.8)
-				else:  # place -> place (no travel)
-					trans_p[s0].append(0.0)
 		# run the viterbi algorithm on each known subset
 		for points in self.known_subsets_interpolated:
-			# VITERBI ALGORITHM
-			V = [{}]
-			path = {}
-			for state in states:
-				# Initialize base cases (t == 0)
-				V[0][state] = start_p[state] * points[0].emit_p[state]
-				path[state] = [state]
-			for t in range(1, len(points)):	 # Run Viterbi for t > 0
-				V.append({})
-				newpath = {}
-				for s1 in states:
-					(prob, state) = max([(V[t-1][s0] * trans_p[s0][s1] *
-						points[t].emit_p[s1], s0) for s0 in states])
-					V[t][s1] = prob
-					newpath[s1] = path[state] + [s1]
-				path = newpath  # Don't need to remember the old paths
-			(prob, final_state) = max([(V[len(points)-1][s], s) for s in states])
-			# get the optimal sequence of states
-			state_path = path[final_state]
+			emission_probs = []
+			for point in points:
+				# get emission probabilities from all locations
+				# with d < 100 as at location
+				dists = [ distance(loc, point)-100 for loc in self.locations ]
+				dists = [ 0 if d < 0 else d for d in dists ]
+				probs = [ gaussian(d, 100) for d in dists ]
+				# standardize to one if necessary
+				if sum(probs) > 1: probs = [p / sum(probs) for p in probs]
+				# prepend travel probability as the difference from 1 if there is any
+				probs = [1 - sum(probs)] + probs
+				emission_probs.append(probs)
+			# call viterbi on each subset
+			state_path = viterbi(
+				states,
+				emission_probs,
+				start_probs,
+				state_transition_matrix( states )
+			)
 			# note which locations have been used TODO move this elsewhere
 			for visited_id in set([s-1 for s in state_path if s != 0]):
 				self.locations[visited_id].visited = True
