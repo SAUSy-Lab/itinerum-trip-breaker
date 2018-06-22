@@ -5,7 +5,7 @@ from episode import Episode
 from location import Location
 from misc_funcs import (distance, inner_angle_sphere, kde,
 	min_peak, gaussian, ts_str, unproject, read_headers, state_transition_matrix,
-	viterbi)
+	viterbi, emission_probabilities)
 from datetime import timedelta, datetime
 from math import sqrt
 
@@ -293,16 +293,9 @@ class Trace(object):
 		for points in self.known_subsets_interpolated:
 			emission_probs = []
 			for point in points:
-				# get emission probabilities from all locations
-				# with d < 100 as at location
-				dists = [ distance(loc, point)-100 for loc in self.locations ]
-				dists = [ 0 if d < 0 else d for d in dists ]
-				probs = [ gaussian(d, 100) for d in dists ]
-				# standardize to one if necessary
-				if sum(probs) > 1: probs = [p / sum(probs) for p in probs]
-				# prepend travel probability as the difference from 1 if there is any
-				probs = [1 - sum(probs)] + probs
-				emission_probs.append(probs)
+				emission_probs.append( 
+					emission_probabilities(point,self.locations) 
+				)
 			# call viterbi on each subset
 			state_path = viterbi(
 				states,
@@ -340,8 +333,7 @@ class Trace(object):
 			self.episodes.append(Episode(points[-1].time,  # start_time
 				None,  # no location
 				True))  # unknown time ends every segment
-
-		print('\tFound', len(self.episodes), 'activities/trips')
+		print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):
 		"""

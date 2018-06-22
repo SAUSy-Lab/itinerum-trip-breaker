@@ -221,6 +221,23 @@ def viterbi(states,emission_probs,start_probs,transition_probs):
 	return path[final_state]
 
 
+def emission_probabilities(point,locations):
+	"""
+		Given a list of locations, provide the probability that the observed point
+		was emitted from none or any. Based on distance and essentially gaussian 
+		function. The first value in the returned list is the prob that the point 
+		came from some location not in the list. Right now we're using a guassian 
+		function that starts 100 meters out from the location. 
+	""" 
+	# with d < 100 as at location
+	dists = [ distance(loc, point) - 100 for loc in locations ]
+	dists = [ 0 if d < 0 else d for d in dists ]
+	probs = [ gaussian(d, 100) for d in dists ]
+	# standardize to one if necessary
+	if sum(probs) > 1: probs = [p / sum(probs) for p in probs]
+	# prepend travel probability as the difference from 1 if there is any
+	return [1 - sum(probs)] + probs
+
 
 def state_transition_matrix(states=[]):
 	"""
