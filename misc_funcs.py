@@ -194,7 +194,7 @@ def inner_angle_sphere(point1, point2, point3):
 
 
 # TODO document and fully understand this algorithm
-def viterbi(states,emission_probs,start_probs,transition_probs):
+def viterbi(states, emission_probs, start_probs, transition_probs):
 	"""
 		states
 		emission_probs
@@ -221,20 +221,21 @@ def viterbi(states,emission_probs,start_probs,transition_probs):
 	return path[final_state]
 
 
-def emission_probabilities(point,locations):
+def emission_probabilities(point, locations):
 	"""
 		Given a list of locations, provide the probability that the observed point
-		was emitted from none or any. Based on distance and essentially gaussian 
-		function. The first value in the returned list is the prob that the point 
-		came from some location not in the list. Right now we're using a guassian 
-		function that starts 100 meters out from the location. 
-	""" 
+		was emitted from none or any. Based on distance and essentially gaussian
+		function. The first value in the returned list is the prob that the point
+		came from some location not in the list. Right now we're using a guassian
+		function that starts 100 meters out from the location.
+	"""
 	# with d < 100 as at location
-	dists = [ distance(loc, point) - 100 for loc in locations ]
-	dists = [ 0 if d < 0 else d for d in dists ]
-	probs = [ gaussian(d, 100) for d in dists ]
+	dists = [distance(loc, point) - 100 for loc in locations]
+	dists = [0 if d < 0 else d for d in dists]
+	probs = [gaussian(d, 100) for d in dists]
 	# standardize to one if necessary
-	if sum(probs) > 1: probs = [p / sum(probs) for p in probs]
+	if sum(probs) > 1:
+		probs = [p / sum(probs) for p in probs]
 	# prepend travel probability as the difference from 1 if there is any
 	return [1 - sum(probs)] + probs
 
@@ -243,9 +244,9 @@ def state_transition_matrix(states=[]):
 	"""
 		Given a list of potential activity location id's, return a simple
 		transition probability matrix for use in the viterbi function.
-		Transition probs are currently hardcoded and returned as a list of lists. 
-		0 is the 'travel' state. E.g.: 
-		    0   1   2  ...
+		Transition probs are currently hardcoded and returned as a list of lists.
+		0 is the 'travel' state. E.g.:
+		____0   1   2  ...
 		0  .8  .1  .1
 		1  .2  .8  .0
 		2  .2  .0  .8
@@ -253,30 +254,32 @@ def state_transition_matrix(states=[]):
 	"""
 	# define possible transition probabilities
 	travel_to_travel_prob = 0.8
-	travel_to_place_prob  = 0.2 / len(states)
-	place_to_travel_prob  = 0.2
-	place_to_itself_prob  = 0.8
-	teleport_prob         = 0.0  # impossible, in theory at least
+	travel_to_place_prob = 0.2 / len(states)
+	place_to_travel_prob = 0.2
+	place_to_itself_prob = 0.8
+	teleport_prob = 0.0  # impossible, in theory at least
 	# make sure travel is an option
-	if 0 not in states: states += [0]
+	if 0 not in states:
+		states += [0]
 	trans_prob_matrix = []
 	for s0 in states:
 		assert type(s0) == int
-		trans_prob_matrix.append( [] )
+		trans_prob_matrix.append([])
 		for s1 in states:
 			if s0 + s1 == 0:  # travel -> travel
-				trans_prob_matrix[s0].append( travel_to_travel_prob )
+				trans_prob_matrix[s0].append(travel_to_travel_prob)
 			elif s0 == 0:  # travel -> place
-				trans_prob_matrix[s0].append( travel_to_place_prob )
+				trans_prob_matrix[s0].append(travel_to_place_prob)
 			elif s1 == 0:  # place -> travel
-				trans_prob_matrix[s0].append( place_to_travel_prob )
+				trans_prob_matrix[s0].append(place_to_travel_prob)
 			elif s0 == s1:  # place -> same place
-				trans_prob_matrix[s0].append( place_to_itself_prob )
+				trans_prob_matrix[s0].append(place_to_itself_prob)
 			else:  # place -> place (no travel)
-				trans_prob_matrix[s0].append( teleport_prob )
+				trans_prob_matrix[s0].append(teleport_prob)
 		# make sure row sums ~= 1 (floating point error)
-		assert abs( sum(trans_prob_matrix[s0]) - 1 ) < 0.02
+		assert abs(sum(trans_prob_matrix[s0]) - 1) < 0.02
 	return trans_prob_matrix
+
 
 def read_headers(fname):
 	""" (str) -> dict

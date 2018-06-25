@@ -297,23 +297,20 @@ class Trace(object):
 		# 0 is travel, others are then +1 from their list location
 		states = range(0, len(self.locations) + 1)
 		# initial_state probabilities: 50/50 travelling or stationary
-		start_probs = [0.5] + [ ( 0.5/len(states) ) ] * len(states)
+		start_probs = [0.5] + [(0.5/len(states))] * len(states)
 		# list of locations that actually get used
 		used_locations = set()
 		# run the viterbi algorithm on each known subset
 		for points in self.known_subsets_interpolated:
 			emission_probs = []
 			for point in points:
-				emission_probs.append( 
-					emission_probabilities(point,self.locations) 
-				)
+				emission_probs.append(emission_probabilities(point,
+					self.locations))
 			# call viterbi on each subset
-			state_path = viterbi(
-				states,
+			state_path = viterbi(states,
 				emission_probs,
 				start_probs,
-				state_transition_matrix( states )
-			)
+				state_transition_matrix(states))
 			# note which locations have been used TODO move this elsewhere
 			for visited_id in set([s-1 for s in state_path if s != 0]):
 				self.locations[visited_id].visited = True
