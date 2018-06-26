@@ -93,10 +93,12 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{}\n".format(
+				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
 					self.id,
 					point.longitude,
 					point.latitude,
+					point.x,
+					point.y,
 					point.weight,
 					point.discarded,
 					point.synthetic,
