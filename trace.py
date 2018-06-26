@@ -398,6 +398,7 @@ class Trace(object):
 		.total_seconds() / 2)
 
 	def time_at_loc(self, locations, inted):
+		# TODO documentation badly needed
 		for p in inted:
 			for l in locations:
 				if not p.far_from(l):
