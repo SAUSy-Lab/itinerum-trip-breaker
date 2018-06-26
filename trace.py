@@ -240,8 +240,8 @@ class Trace(object):
 		Xvector = [p.x for p in self.all_interpolated_points]
 		Yvector = [p.y for p in self.all_interpolated_points]
 		Wvector = [p.weight for p in self.all_interpolated_points]
-		# run the KDE
-		estimates, locations = kde(Xvector, Yvector, Wvector)
+		# run the KDE, returning density estimates at the input points
+		estimates = kde(Xvector, Yvector, Wvector)
 		# assign probability estimates to points
 		for point, prob in zip(self.all_interpolated_points, estimates):
 			point.kde_p = prob
