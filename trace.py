@@ -61,34 +61,32 @@ class Trace(object):
 		all_indices = [i for i, p in enumerate(self.points)]
 		self.observe_neighbors(all_indices)
 
-	def flush(self):  # TODO refactor
-		"""
-		After everything is finished write all the output from this trace.
-		All writing to files should be done here if possible. Any data that
-		needs to ultimately find it's way here should be stored as a property.
-		All Trace's call this at the end, and the files are initialized in main
-		so we only append rows here.
-		"""
+	def write_activities(self):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
-					location.id,  # location_id
+					self.id,          # user_id
+					location.id,      # location_id
 					location.longitude,
 					location.latitude,
-					location.name,  # description
-					location.visited))  # whether it was used or not
+					location.name,    # description
+					location.visited  # whether it was used or not
+			))
+
+	def write_episodes(self):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
 				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
-					i,  # activity sequence
+					self.id,              # user_id
+					i,                    # activity sequence
 					episode.location_id,  # location_id
-					'',  # mode
-					episode.unknown,  # unknown
-					episode.start))  # start_time
+					'',                   # mode (not currently used)
+					episode.unknown,      # unknown
+					episode.start))       # start_time
+
+	def write_points(self):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
@@ -105,6 +103,8 @@ class Trace(object):
 					point.state,
 					point.kde_p
 				))
+
+	def write_summary(self):
 		# output day summary file for Steve
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
@@ -126,6 +126,19 @@ class Trace(object):
 				fls = len(days[date]['school'])
 				s.format(fid, fdt, fwd, ftt, flt, fst, fsu, fsh, fsw, fss, flh, flw, fls)
 				f.write(s)
+
+	def flush(self):
+		"""
+		After everything is finished write all the output from this trace.
+		All writing to files should be done here if possible. Any data that
+		needs to ultimately find it's way here should be stored as a property.
+		All Trace's call this at the end, and the files are initialized in main
+		so we only append rows here.
+		"""
+		self.write_activities()
+		self.write_episodes()
+		self.write_points()
+		self.write_summary()
 
 	def get_days(self):
 		"""
