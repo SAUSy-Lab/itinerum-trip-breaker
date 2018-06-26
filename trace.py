@@ -65,34 +65,30 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(
-					self.id,          # user_id
-					location.id,      # location_id
+				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+					location.id,  # location_id
 					location.longitude,
 					location.latitude,
-					location.name,    # description
-					location.visited  # whether it was used or not
-			))
+					location.name,  # description
+					location.visited))  # whether it was used or not
 
 	def write_episodes(self):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(
-					self.id,              # user_id
-					i,                    # activity sequence
+				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+					i,  # activity sequence
 					episode.location_id,  # location_id
-					'',                   # mode (not currently used)
-					episode.unknown,      # unknown
-					episode.start))       # start_time
+					'',  # mode (not currently used)
+					episode.unknown,  # unknown
+					episode.start))  # start_time
 
 	def write_points(self):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
-					self.id,
+				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(self.id,
 					point.longitude,
 					point.latitude,
 					point.x,
@@ -101,8 +97,7 @@ class Trace(object):
 					point.discarded,
 					point.synthetic,
 					point.state,
-					point.kde_p
-				))
+					point.kde_p))
 
 	def write_summary(self):
 		# output day summary file for Steve

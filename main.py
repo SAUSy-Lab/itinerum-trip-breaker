@@ -34,6 +34,7 @@ def initialize_output_files():
 	f.write('work_count,school_count\n')
 	f.close()
 
+
 def analyze_user(tup):
 	user_id = tup[0]
 	data = tup[1]
