@@ -46,5 +46,5 @@ interpolation_distance = 30
 # Number of worker processes on which to run main.py and compary.py
 #
 num_pro = os.cpu_count()
-
+multi_process = True
 assert cluster_distance > interpolation_distance
