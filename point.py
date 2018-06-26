@@ -14,8 +14,8 @@ class Point(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
-		self.X = None
-		self.Y = None
+		self.X = None  # do not access this directly
+		self.Y = None  # do not access this directly
 		# a string representation of a timestampt
 		self.ts = timestamp
 		# datetime representation of the same timestamp
