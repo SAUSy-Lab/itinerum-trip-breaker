@@ -7,6 +7,7 @@ import rpy2
 from point import Point
 from trace import Trace
 from location import Location
+from multiprocessing import Pool
 import config
 
 
@@ -32,6 +33,29 @@ def initialize_output_files():
 	f.write('unknown_time,home_time,work_time,school_time,home_count,')
 	f.write('work_count,school_count\n')
 	f.close()
+
+def analyze_user(tup):
+	user_id = tup[0]
+	data = tup[1]
+	survey = tup[2]
+	user = Trace(user_id, data, survey)
+	if len(user.points) > 100:
+		print("User", user_id, 'starts with', len(user.points), 'coordinates')
+		user.remove_repeated_points()
+		user.remove_known_error(config.min_accuracy)
+		user.remove_sequential_duplicates()
+		user.remove_positional_error()
+		# this is actually necessary again after positional cleaning
+		# ( some angles == 0 )
+		user.remove_sequential_duplicates()
+		# identify gaps in the data
+		user.make_known_subsets()
+		# find locations with the cleaned data
+		user.get_activity_locations()
+		# allocate time
+		user.break_trips()
+		# write the output
+		user.flush()
 
 
 if __name__ == "__main__":
@@ -60,6 +84,14 @@ if __name__ == "__main__":
 	# loop over users calling all the functions for each
 	initialize_output_files()
 	# loop over users calling all the functions for each
+
+	list_of_users = []
+	for uid, data in user_data.items():
+		list_of_users.append((uid, data, survey_responses[uid]))
+	
+	with Pool(config.num_pro) as p:
+		p.map(analyze_user, list_of_users)
+"""
 	for user_id, data in user_data.items():
 		# create trace object for this user
 		user = Trace(user_id, data, survey_responses[user_id])
@@ -82,3 +114,4 @@ if __name__ == "__main__":
 		user.break_trips()
 		# write the output
 		user.flush()
+"""

@@ -1,6 +1,7 @@
 #
 # Configuration parameters
 #
+import os
 
 # coordinates.csv file as from Itinerum
 input_coordinates_file = './inputs/coordinates.csv'
@@ -41,5 +42,9 @@ location_distance = 150  # meters
 # remain uninterpolated for linear spatial interpolations.
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
+
+# Number of worker processes on which to run main.py and compary.py
+#
+num_pro = os.cpu_count()
 
 assert cluster_distance > interpolation_distance
