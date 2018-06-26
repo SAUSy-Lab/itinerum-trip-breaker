@@ -65,40 +65,44 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
-					location.id,  # location_id
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,          # user_id
+					location.id,      # location_id
 					location.longitude,
 					location.latitude,
-					location.name,  # description
-					location.visited))  # whether it was used or not
+					location.name,    # description
+					location.visited  # whether it was used or not
+			))
 
 	def write_episodes(self):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
-					i,  # activity sequence
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,              # user_id
+					i,                    # activity sequence
 					episode.location_id,  # location_id
-					'',  # mode
-					episode.unknown,  # unknown
-					episode.start))  # start_timex
+					'',                   # mode (not currently used)
+					episode.unknown,      # unknown
+					episode.start))       # start_time
 
 	def write_points(self):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				s = "{},{},{},{},{},{},{},{}\n"
-				fid = self.id,
-				flg = point.longitude
-				flt = point.latitude
-				fwt = point.weight
-				fdc = point.discarded
-				fsc = point.synthetic
-				fst = point.state
-				fkd = point.kde_p
-				s.format(fid, flg, flt, fwt, fdc, fsc, fst, fkd)
-				f.write(s)
+				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
+					self.id,
+					point.longitude,
+					point.latitude,
+					point.x,
+					point.y,
+					point.weight,
+					point.discarded,
+					point.synthetic,
+					point.state,
+					point.kde_p
+				))
 
 	def write_summary(self):
 		# output day summary file for Steve
@@ -123,7 +127,7 @@ class Trace(object):
 				s.format(fid, fdt, fwd, ftt, flt, fst, fsu, fsh, fsw, fss, flh, flw, fls)
 				f.write(s)
 
-	def flush(self):  # TODO refactor
+	def flush(self):
 		"""
 		After everything is finished write all the output from this trace.
 		All writing to files should be done here if possible. Any data that
@@ -249,8 +253,8 @@ class Trace(object):
 		Xvector = [p.x for p in self.all_interpolated_points]
 		Yvector = [p.y for p in self.all_interpolated_points]
 		Wvector = [p.weight for p in self.all_interpolated_points]
-		# run the KDE
-		estimates, locations = kde(Xvector, Yvector, Wvector)
+		# run the KDE, returning density estimates at the input points
+		estimates = kde(Xvector, Yvector, Wvector)
 		# assign probability estimates to points
 		for point, prob in zip(self.all_interpolated_points, estimates):
 			point.kde_p = prob
@@ -391,6 +395,7 @@ class Trace(object):
 		.total_seconds() / 2)
 
 	def time_at_loc(self, locations, inted):
+		# TODO documentation badly needed
 		for p in inted:
 			for l in locations:
 				if not p.far_from(l):

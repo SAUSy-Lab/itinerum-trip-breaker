@@ -32,48 +32,44 @@ def kde(x_vector, y_vector, weights):
 	"""
 	Do weighted 2d KDE in R KS package, returning python results.
 	Returns two lists: P estimates and estimate locations as x,y tuples.
+
+	Another possible way of doing KDE (in Python) is with
+	http://pysal.readthedocs.io/en/latest/users/tutorials/
+	smoothing.html#non-parametric-smoothing ?
+	or with http://scikit-learn.org/stable/modules/density.html ?
 	"""
-	# Another possible way of doing this is with
-	# http://pysal.readthedocs.io/en/latest/users/tutorials/
-	# smoothing.html#non-parametric-smoothing ???
-	# or with
-	# http://scikit-learn.org/stable/modules/density.html
-	# check the inputs
+	from rpy2.robjects.packages import importr  # for importing packages
+	from rpy2.robjects import r, FloatVector  # variable names
+	# ensure all inputs are vectors of the same length
 	assert len(x_vector) == len(y_vector)
 	assert len(weights) == len(x_vector)
 	# normalize the weights to the sample size
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
 		weights = [w * adjust_factor for w in weights]
-	# get the ks package with kde function
-	from rpy2.robjects.packages import importr
+	# load the ks package (making kde function available)
 	ks = importr('ks')
 	# get basic R functions into Python
-	from rpy2.robjects import r
-	cbind = r['cbind']
-	diag = r['diag']
-	# R data type conversion
-	from rpy2.robjects import FloatVector
+	cbind, diag = r['cbind'], r['diag']
 	# do the KDE
 	print('\tRunning KDE on', len(x_vector), 'points')
 	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
-	surface = ks.kde(x=point_matrix, eval_points=point_matrix,
-		w=FloatVector(weights), H=diag(FloatVector([bandwidth**2,
-								bandwidth**2])))
-	eval_points = surface.rx2('eval.points')
+	surface = ks.kde(
+		x=point_matrix, 
+		eval_points=point_matrix,
+		w=FloatVector(weights), 
+		H=diag(FloatVector( [bandwidth**2,bandwidth**2] ))
+	)
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't
 	# have to leave this function
-	eva, est = [], []
+	est = []
 	for i in range(1, len(weights)+1):
 		# insert estimate values
 		est.append(estimates.rx(i)[0])
-		# insert location tuples
-		eva.append((eval_points.rx(i, True)[0], eval_points.rx(i, True)[1]))
-	# these are now vectors (python lists) giving estimated probabilities
-	# and locations as x,y tuples
-	return est, eva
+	# this is now a vector (python list)
+	return est
 
 
 def project(longitude, latitude, projection_string='epsg:3347'):
@@ -81,7 +77,6 @@ def project(longitude, latitude, projection_string='epsg:3347'):
 	Project lat-lon values. Default of 3347 is StatsCan Lambert.
 	Units in meters.
 	"""
-	from pyproj import Proj, transform
 	inProj = Proj(init='epsg:4326')
 	outProj = Proj(init=projection_string)
 	x, y = transform(inProj, outProj, longitude, latitude)
@@ -92,7 +87,6 @@ def unproject(x, y, from_projection_string='epsg:3347'):
 	"""
 	Unproject to lat-lon values. Default of 3347 is StatsCan Lambert.
 	"""
-	from pyproj import Proj, transform
 	inProj = Proj(init=from_projection_string)
 	outProj = Proj(init='epsg:4326')
 	longitude, latitude = transform(inProj, outProj, x, y)
