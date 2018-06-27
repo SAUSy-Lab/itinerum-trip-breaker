@@ -389,13 +389,6 @@ class Trace(object):
 		segment[-1].add_weight((segment[-1].time - segment[-2].time)
 		.total_seconds() / 2)
 
-	def time_at_loc(self, locations, inted):
-		# TODO documentation badly needed
-		for p in inted:
-			for l in locations:
-				if not p.far_from(l):
-					l.time_at += p.weight
-
 	#
 	# CLEANING METHODS BELOW
 	#
