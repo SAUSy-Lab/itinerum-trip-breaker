@@ -126,6 +126,7 @@ def parse_ts(timestamp):
 	return datetime.datetime(year, month, day, hour, minutes, second), tz
 
 
+# TODO this should be in the Point class
 def distance(point1, point2, euclid=False):
 	"""
 	Gives the great circle distance between two point objects.

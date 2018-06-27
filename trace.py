@@ -236,7 +236,7 @@ class Trace(object):
 		"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
-			interpolated_subset = self.interpolate_segment(subset)
+			interpolated_subset = subset  # self.interpolate_segment(subset)
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
 		# get all (real & interpolated) points in one big list
@@ -380,8 +380,11 @@ class Trace(object):
 		assert len(segment) > 1
 		# set weights of middle points
 		for i in range(1, len(segment)-1):
-			w1 = (segment[i].time - segment[i-1].time).total_seconds() / 2
-			w2 = (segment[i+1].time - segment[i].time).total_seconds() / 2
+			# Felipevh doesn't know if this needs to be projected
+			d = distance(segment[i], segment[i+1]) + 1
+			t = (segment[i+1].time - segment[i].time).total_seconds()
+			w1 = segment[i].weight_decimal(d / t) * t
+			w2 = (1 - segment[i].weight_decimal(d / t)) * t
 			segment[i].add_weight(w1 + w2)
 		# set weights of first and last points
 		segment[0].add_weight((segment[1].time - segment[0].time)

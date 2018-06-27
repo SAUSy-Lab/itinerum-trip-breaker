@@ -107,6 +107,10 @@ class Point(object):
 				new_points.append(new_point)
 		return new_points
 
+	def weight_decimal(self, param):
+		assert param > 0
+		return (-1) / (param + 2) + 1
+        
 	def add_weight(self, weight):
 		"""
 		Assigns time-based weight value.
