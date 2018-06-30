@@ -242,7 +242,7 @@ def state_transition_matrix(states=[]):
 		transition probability matrix for use in the viterbi function.
 		Transition probs are currently hardcoded and returned as a list of lists.
 		0 is the 'travel' state. E.g.:
-		____0   1   2  ...
+		    0   1   2  ...
 		0  .8  .1  .1
 		1  .2  .8  .0
 		2  .2  .0  .8
@@ -272,8 +272,8 @@ def state_transition_matrix(states=[]):
 				trans_prob_matrix[s0].append(place_to_itself_prob)
 			else:  # place -> place (no travel)
 				trans_prob_matrix[s0].append(teleport_prob)
-		# TODO I'd like to assert that the rows sum to one, but there 
-		# is an annoying amount of floating point error
+	# the rows should sum to one but there's not a fantastic way to assert this
+	# because of floating point precision errors
 	return trans_prob_matrix
 
 
