@@ -189,13 +189,15 @@ def inner_angle_sphere(point1, point2, point3):
 	return degree_difference
 
 
-# TODO document and fully understand this algorithm
 def viterbi(states, emission_probs, start_probs, transition_probs):
 	"""
-		states
-		emission_probs
-		start_probs
-		transition_probs
+		'states' is a list of integer ID's for the possible states with length 'S'
+		'emission_probs' is a list of length O (number of observations) by S
+		    each sublist should ~ sum to one.
+		'start_probs' length S list summing to one defining prop of initial state
+		'transition_probs' is an SxS matrix of state transition probabilities
+		    first index is from state, second index is to state
+		See https://en.wikipedia.org/wiki/Viterbi_algorithm for background
 	"""
 	V = [{}]
 	path = {}
@@ -203,7 +205,7 @@ def viterbi(states, emission_probs, start_probs, transition_probs):
 		# Initialize base cases (t == 0)
 		V[0][state] = start_probs[state] * emission_probs[0][state]
 		path[state] = [state]
-	for t in range(1, len(emission_probs)):	 # Run Viterbi for t > 0
+	for t in range(1, len(emission_probs)):  # Run Viterbi for t > 0
 		V.append({})
 		newpath = {}
 		for s1 in states:
