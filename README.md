@@ -2,17 +2,16 @@
 This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itinerum-android) travel survey data into a more standard travel survey format, showing trips, activity locations, modes of travel and times of arrival/departure, etc. 
 
 ## How to run the scripts
-
 1. Clone or download the repo.
 2. Place you Itinerum output csv files in the imput directory
 - The scripts require 3 input files: coordinates.csv, survey_reponses.csv, and prompt_responses.csv
 - If your output/input file names do not match these then change them, or modify the corresponding names in config.py
-3. If you have ground truth data for generating quality metric, place them in the outputs directory, titled episodes_ground_truth.csv and locations_ground_truth.csv respectively
+3. If you have ground truth data for generating quality metrics, place them in the outputs directory, titled episodes_ground_truth.csv and locations_ground_truth.csv respectively.
 - You can also change the corresponding names in config.py for ground truth data.
 4. Ensure you have the correct dependencies, which are located below.
 5. In you shell of choice, run "python3 main.py" to generate episodes and locations files.
 6. If you have ground truth data, run "python3 compare.py" to generate quality metrics.
-7. Other settings can be modified in config.py at your own discretion
+7. Other settings can be modified in config.py at your own discretion.
 
 ## Algorithm
 For each user:
