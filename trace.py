@@ -306,12 +306,10 @@ class Trace(object):
 				emission_probs.append(emission_probabilities(point,
 					self.locations))
 			# call viterbi on each subset
-			state_path = viterbi(
-				states,
+			state_path = viterbi(states,
 				emission_probs,
 				start_probs,
-				state_transition_matrix(states)
-			)
+				state_transition_matrix(states))
 			# note which locations have been used TODO move this elsewhere
 			for visited_id in set([s-1 for s in state_path if s != 0]):
 				self.locations[visited_id].visited = True

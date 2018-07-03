@@ -1,5 +1,6 @@
 outputs/*.csv
 __pycache__
+\#*\#
 *.pyc
 *.qgs
 *.qgs~

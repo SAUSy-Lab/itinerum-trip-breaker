@@ -55,13 +55,9 @@ def kde(x_vector, y_vector, weights):
 	print('\tRunning KDE on', len(x_vector), 'points')
 	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
-	surface = ks.kde(
-		x=point_matrix,
-		eval_points=point_matrix,
-		w=FloatVector(weights), 
-		H=diag(FloatVector([bandwidth**2, bandwidth**2])),
-		binned=False
-	)
+	surface = ks.kde(x=point_matrix, eval_points=point_matrix,
+			w=FloatVector(weights), H=diag(FloatVector([bandwidth**2, bandwidth**2])),
+binned=False)
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't
 	# have to leave this function
@@ -193,10 +189,10 @@ def viterbi(states, emission_probs, start_probs, transition_probs):
 	"""
 		'states' is a list of integer ID's for the possible states with length 'S'
 		'emission_probs' is a list of length O (number of observations) by S
-		    each sublist should ~ sum to one.
+		each sublist should ~ sum to one.
 		'start_probs' length S list summing to one defining prop of initial state
 		'transition_probs' is an SxS matrix of state transition probabilities
-		    first index is from state, second index is to state
+		first index is from state, second index is to state
 		See https://en.wikipedia.org/wiki/Viterbi_algorithm for background
 	"""
 	V = [{}]
@@ -244,7 +240,7 @@ def state_transition_matrix(states=[]):
 		transition probability matrix for use in the viterbi function.
 		Transition probs are currently hardcoded and returned as a list of lists.
 		0 is the 'travel' state. E.g.:
-		    0   1   2  ...
+		    0   1   2  ...
 		0  .8  .1  .1
 		1  .2  .8  .0
 		2  .2  .0  .8
