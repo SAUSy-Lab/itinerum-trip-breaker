@@ -4,7 +4,7 @@ This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itiner
 ## Algorithm
 For each user:
 
-### Data cleaning
+### Data cleaning:
 The basic idea in the cleaning phase to remove points not based on decent GPS data. Many points may be derived from cell-towers, wifi networks, etc. The phone is a black box in this regard. Such points often repeat a location precisely, which is unlikely with a GPS reading or they may suddenly appear very far away from their temporal neighbors. 
 
 1. Remove points with high known error (h_accuracy > x meters) 
