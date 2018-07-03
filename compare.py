@@ -6,7 +6,25 @@ from datetime import timedelta, datetime
 from misc_funcs import parse_ts, read_headers
 
 
-# TODO this should be refactored
+def compare_user_locations(distances, num_to_match):
+	min_distances = []
+	dist_list = []
+	for loc in distances:
+		for guess in distances[loc]:
+			dist_list.append((distances[loc][guess], guess, loc))
+	for _ in range(num_to_match):
+		dist_list.sort()
+		best = dist_list.pop(0)  # First in the list
+		min_distances.append(best[0])  # the distance entry
+		guess = best[1]
+		loc = best[2]
+		for entry in dist_list:
+			# if the guess or true location match
+			if entry[1] == guess or entry[2] == loc:
+				dist_list.remove(entry)
+	return min_distances
+
+
 def compare_locations(truth, compd):
 	""" (str, str) -> [(str, int, float, float)]
 	Compare ground truth locations to the computed locations,
@@ -30,23 +48,10 @@ def compare_locations(truth, compd):
 			h = read_headers(truth)
 			distance_matrix(h, users_to_matrix[user],
 					true_locations[user], computed_locations[user])
-				# users_to_matrix[user][true_location][computed_location] = distance
-				# dictionary of dictionaries of dictionaries of distances
-			min_distances = []
-			dist_list = []
-			for loc in users_to_matrix[user]:
-				for guess in users_to_matrix[user][loc]:
-					dist_list.append((users_to_matrix[user][loc][guess], guess, loc))
-			for _ in range(num_to_match):
-				dist_list.sort()
-				best = dist_list.pop(0)  # First in the list
-				min_distances.append(best[0])  # the distance entry
-				guess = best[1]
-				loc = best[2]
-				for entry in dist_list:
-					# if the guess or true location match
-					if entry[1] == guess or entry[2] == loc:
-						dist_list.remove(entry)
+			# users_to_matrix[user][true_location][computed_location] = distance
+			# dictionary of dictionaries of dictionaries of distances
+
+			min_distances = compare_user_locations(users_to_matrix[user], num_to_match)
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
 			results.append((user, num_locations, mean_min_dis, med))
@@ -100,11 +105,11 @@ def compare_episodes(truth, guess):
 		if user not in cut.keys():
 			print("user {} not in computed data".format(user))
 		else:
-			result.append((user, compare_user(tut[user], cut[user])))
+			result.append((user, compare_user_eps(tut[user], cut[user])))
 	return result
 
 
-def compare_user(truth, computed):
+def compare_user_eps(truth, computed):
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
 	Return the episode quality metrics for this user.
 	"""
