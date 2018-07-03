@@ -222,23 +222,24 @@ def literal_eval(string):
 		raise ValueError("Cannot convert {} to a boolean".format(string))
 
 
-def display(locs, eps):
+def write_data(locs, eps):
 	user_to_loc = {user: [excess, mean, med]
 		for (user, excess, mean, med) in locs}
 	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
-	rs = "user\texcess locations\tmean distance\t\tmedian distance" + \
-					"\t\tidentified unknowntime %\tmisidentified unknowntime %\n"
+	rs = "user,excess_locations,mean_distance,median distance" + \
+					",identified_unknowntime,misidentified_unknowntime\n"
 	for user in user_to_loc.keys():
 		excess = user_to_loc[user][0]
 		mean = round(user_to_loc[user][1], 2)
 		median = round(user_to_loc[user][2], 2)
 		ciut = round(user_to_eps[user][0], 2)
 		mut = round(user_to_eps[user][1], 2)
-		rs = rs + "{}:\t{}\t\t\t{}\t\t\t{}\t\t\t{}\t\t\t\t{}\n".format(user,
+		rs = rs + "{},{},{},{},{},{}\n".format(user,
 						excess, mean, median, ciut, mut)
-	return rs
+	fd = open(output_compare_file, "w")
+	fd.write(rs)
 
 if __name__ == "__main__":
 	loc = compare_locations(locations_gt, output_locations_file)
 	eps = compare_episodes(activities_gt, output_episodes_file)
-	print(display(loc, eps))
+	write_data(loc, eps)
