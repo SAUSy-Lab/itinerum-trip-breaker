@@ -96,25 +96,5 @@ if __name__ == "__main__":
 		with Pool(config.num_pro) as p:
 			p.map(analyze_user, list_of_users)
 	else:
-		for user_id, data in user_data.items():
-			# create trace object for this user
-			user = Trace(user_id, data, survey_responses[user_id])
-			if len(user.points) < 100:
-				continue  # TODO shouldn't use continue or break
-			# remove GPS points believed to be in error
-			print("User", user_id, 'starts with', len(user.points), 'coordinates')
-			user.remove_repeated_points()
-			user.remove_known_error(config.min_accuracy)
-			user.remove_sequential_duplicates()
-			user.remove_positional_error()
-			# this is actually necessary again after positional cleaning
-			# ( some angles == 0 )
-			user.remove_sequential_duplicates()
-			# identify gaps in the data
-			user.make_known_subsets()
-			# find locations with the cleaned data
-			user.get_activity_locations()
-			# allocate time
-			user.break_trips()
-			# write the output
-			user.flush()
+		for t in list_of_users:
+			analyze_user(t)
