@@ -79,7 +79,8 @@ if __name__ == "__main__":
 			home = Location(row['location_home_lon'], row['location_home_lat'])
 			work = Location(row['location_work_lon'], row['location_work_lat'])
 			if row['location_study_lon'].strip() and row['location_study_lat'].strip():
-				school = Location(row['location_study_lon'].strip(), row['location_study_lat'].strip())
+				school = Location(row['location_study_lon'].strip(),
+				row['location_study_lat'].strip())
 			else:
 				school = None
 			survey_responses[row['uuid']] = [home, work, school]

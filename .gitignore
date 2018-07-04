@@ -1,4 +1,5 @@
 outputs/*.csv
+inputs/SEC*.csv
 __pycache__
 \#*\#
 *.pyc
