@@ -1,5 +1,3 @@
-
-
 in_fd = "../inputs/SECcoordinates.csv"
 user = "73fcaa05-20af-434b-a8d2-7d079ba35a51"
 out = "../inputs/SECiso-coordinates.csv"
