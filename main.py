@@ -100,4 +100,4 @@ if __name__ == "__main__":
 	else:
 		for t in list_of_users:
 			analyze_user(t)
-	print("Done!\7")
+	print("Done!\7", file=sys.stderr)
