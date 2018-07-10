@@ -1,4 +1,4 @@
-# Issue 55: add episode identification metrics to compare.py; should be structured the same as unknown time identification metrics.
+# Issue 55: add episode identification metrics to compare.py -- should be structured the same as unknown time identification metrics.
 
 ## Introduction
 This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itinerum-android) travel survey data into a more standard travel survey format, showing trips, activity locations, modes of travel and times of arrival/departure, etc. 
