@@ -1,3 +1,3 @@
-cat config.py | grep multi_process > main_output.txt;
-git show -q >> main_output.txt;
-{ time python3 main.py >> main_output.txt & } 2>> main_output.txt; 
+cat config.py | grep multi_process > out_main.txt;
+git show -q >> out_main.txt;
+{ time python3 main.py >> out_main.txt & } 2>> out_main.txt; 
