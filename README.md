@@ -1,4 +1,4 @@
-# Issue 53: Improve accuracy of unknown time detection.
+# Issue 53: Improve accuracy (precision? reliability) of unknown time detection
 
 ## Introduction
 This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itinerum-android) travel survey data into a more standard travel survey format, showing trips, activity locations, modes of travel and times of arrival/departure, etc. 
