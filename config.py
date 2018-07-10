@@ -42,8 +42,10 @@ location_distance = 150  # meters
 # remain uninterpolated for linear spatial interpolations.
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
+# Flag for debugging outputs
+db_out = True
 
-# Number of worker processes on which to run main.py and compare.py
+# Number of worker processes on which to run main.py
 #
 num_pro = os.cpu_count()
 multi_process = True
