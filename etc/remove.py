@@ -12,6 +12,6 @@ def no_users(users, line):
       return False
   return True
 
-:for l in fd:
+for l in fd:
   if no_users(users, l):
     out_fd.write(l)
