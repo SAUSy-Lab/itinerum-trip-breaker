@@ -226,7 +226,7 @@ class Trace(object):
 				segment[-1].epoch - segment[0].epoch > 3600):
 				# mininum time length of segment?
 				self.known_subsets.append(segment)
-		if db_out:
+		if config.db_out:
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def get_activity_locations(self):
@@ -340,7 +340,7 @@ class Trace(object):
 			self.episodes.append(Episode(points[-1].time,  # start_time
 				None,  # no location
 				True))  # unknown time ends every segment
-		if db_out:
+		if config.db_out:
 			print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):
@@ -350,7 +350,7 @@ class Trace(object):
 		"""
 		points = [point for point in
 			self.all_interpolated_points if point.kde_p >= threshold]
-		if db_out:
+		if config.db_out:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
 		#   for every other point within cluster distance:
@@ -415,7 +415,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if db_out:
+		if config.db_out:
 			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
@@ -447,7 +447,7 @@ class Trace(object):
 				locations[key].append(point)
 		for k in locations.keys():
 			if len(locations[k]) > 1:
-				if db_out:
+				if config.db_out:
 					print(k, locations[k])
 
 	def observe_neighbors(self, indices=[]):
@@ -503,7 +503,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if db_out:
+		if config.db_out:
 			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
@@ -517,7 +517,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if db_out:
+		if config.db_out:
 			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
@@ -530,7 +530,7 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		if db_out:
+		if config.db_out:
 			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):

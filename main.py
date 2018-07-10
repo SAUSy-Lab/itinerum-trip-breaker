@@ -41,7 +41,7 @@ def analyze_user(tup):
 	survey = tup[2]
 	user = Trace(user_id, data, survey)
 	if len(user.points) > 100:
-		if db_out:
+		if config.db_out:
 			print("User", user_id, 'starts with', len(user.points), 'coordinates')
 		user.remove_repeated_points()
 		user.remove_known_error(config.min_accuracy)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
 			else:
 				school = None
 			survey_responses[row['uuid']] = [home, work, school]
-	if db_out:
+	if config.db_out:
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
 	initialize_output_files()
