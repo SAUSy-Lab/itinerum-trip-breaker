@@ -44,7 +44,7 @@ location_distance = 150  # meters
 interpolation_distance = 30
 
 # Flag for debugging outputs
-db_out = False
+db_out = True
 
 # Number of worker processes on which to run main.py
 #
