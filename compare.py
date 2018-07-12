@@ -87,9 +87,9 @@ def get_locations(location_file, utl):
 			utl[loc[h["user_id"]]].append(loc)
 
 
-def compare_episodes(truth, guess):
+def compare_unknown_time(truth, guess):
 	""" (str, str) -> [str, float, float]
-	Return a list of users and their episode quality metrics.
+	Return a list of users and their unknown time quality metrics.
 	"""
 	result = []
 	truth_dict = read_file(truth)
@@ -111,7 +111,7 @@ def compare_episodes(truth, guess):
 
 def compare_user_eps(truth, computed):
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
-	Return the episode quality metrics for this user.
+	Return the unknown time quality metrics for this user.
 	"""
 	start_time = max(truth[0][0], computed[0][0])
 	end_time = min(truth[-1][0], computed[-1][0])
@@ -226,11 +226,20 @@ def literal_eval(string):
 	else:
 		raise ValueError("Cannot convert {} to a boolean".format(string))
 
+def compare_activities(truth, compd):
+	act_metrics = []
+        for user in _:
+                ciat = 0
+                mat = 0
+		act_metric.append((user, (ciat, mat)))
+	return act_metrics
 
-def write_data(locs, eps):
+
+def write_data(locs, eps, act):
 	user_to_loc = {user: [excess, mean, med]
 		for (user, excess, mean, med) in locs}
 	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
+	user_to_act = {user: [ciat, mat] for (user, (ciat, mat)) in act}
 	rs = "user,excess_locations,mean_distance,median distance" + \
 					",identified_unknowntime,misidentified_unknowntime\n"
 	for user in user_to_loc.keys():
@@ -246,5 +255,6 @@ def write_data(locs, eps):
 
 if __name__ == "__main__":
 	loc = compare_locations(locations_gt, output_locations_file)
-	eps = compare_episodes(activities_gt, output_episodes_file)
-	write_data(loc, eps)
+	unk = compare_unknown_time(activities_gt, output_episodes_file)
+	act = compare_activities(activities_gt, output_episodes_file)
+	write_data(loc, unk, act)
