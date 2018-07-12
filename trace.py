@@ -263,7 +263,7 @@ class Trace(object):
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
-		self.locations.extend(locations)
+		locations = self.locations.extend(locations)
 		return self.locations
 
 	def identify_locations(self):
@@ -560,3 +560,12 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
+
+	def remove_repeated_locations(self):
+		"""
+		"""
+		new_locations = []
+		for l in self.locations:
+			if l not in new_locations:
+				new_locations.append(l)
+		self.locations = new_locations

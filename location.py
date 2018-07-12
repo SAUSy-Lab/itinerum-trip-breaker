@@ -26,3 +26,11 @@ class Location(object):
 		Name this location ('home','work','school').
 		"""
 		self.name = name
+
+	def __str__(self):
+		return "{}, {}".format(self.latitude, self.longitude)
+
+	def __eq__(self, other):
+		return (type(other) == type(self) and
+			self.latitude == other.latitude and
+			self.longitude == other.longitude)
