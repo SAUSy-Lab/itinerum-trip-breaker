@@ -87,9 +87,9 @@ def get_locations(location_file, utl):
 			utl[loc[h["user_id"]]].append(loc)
 
 
-def compare_episodes(truth, guess):
+def compare_episode_time(truth, guess):
 	""" (str, str) -> [str, float, float]
-	Return a list of users and their episode quality metrics.
+	Return a list of users and their episode time quality metrics.
 	"""
 	result = []
 	truth_dict = read_file(truth)
@@ -111,15 +111,19 @@ def compare_episodes(truth, guess):
 
 def compare_user_eps(truth, computed):
 	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
-	Return the episode quality metrics for this user.
+	Return the episode time quality metrics for this user.
 	"""
 	start_time = max(truth[0][0], computed[0][0])
 	end_time = min(truth[-1][0], computed[-1][0])
 	# Time in minutes that the survey lasted, trimmed
-	total_time = (end_time - start_time).days * 24 * 60 + \
-	(end_time - start_time).seconds / 60
+	##total_time = ((end_time - start_time).days * 24 * 60 +
+	##(end_time - start_time).seconds / 60)
 	i, j = 0, 0
+	# total unknown time, correctly identified, misidentified
 	tut, ciut, mut = 0, 0, 0
+	# activity time
+	tat, ciat, mat = 1, 0, 0
+	total = 0
 	# while both iterators haven't reached the end of the survey time
 	while truth[i][0] < end_time and computed[j][0] < end_time:
 		if overlaps(truth[i][0], truth[i+1][0], computed[j][0], computed[j+1][0]):
@@ -127,22 +131,33 @@ def compare_user_eps(truth, computed):
 			ee = min(truth[i+1][0], computed[j+1][0])
 			lb = max(truth[i][0], computed[j][0])
 			it = (ee - lb)
-			if truth[i][1] and computed[j][1]:  # correctly identified unknown time
-				ciut += it.days * 24 * 60 + it.seconds / 60
-			if not truth[i][1] and computed[j][1]:  # misidentified unknown time
-				mut += (ee - lb).days * 24 * 60 + (ee - lb).seconds / 60
-
+			time = it.days * 24 *60 + it.seconds / 60
+			total += time
+			if truth[i][1] and computed[j][1]:  # correctly identified unknown time T-T
+				ciut += time
+			elif not truth[i][1] and computed[j][1]:  # misidentified unknown time F-T
+				mut += time
+			if not (truth[i][1] or computed[j][1]):  # correctly identified activity time F-F
+				ciat += time
+			if truth[i][1] and not computed[j][1]:  # misidentified unknown time T-F
+				mat += time
 		# whichever episode ends first needs to be incremented
 		if truth[i+1][0] < computed[j+1][0]:  # truth ep ends first
-			if truth[i][1]:
-				tut += ((truth[i+1][0] - truth[i][0]).days * 24 * 60 +
-					(truth[i+1][0] - truth[i][0]).seconds / 60)
 			i += 1
 		else:  # computed ep ends first
 			j += 1
-	pciut = ciut / tut
-	pmiut = mut / (total_time - tut)
-	return (pciut * 100, pmiut * 100)
+	# Each value as a percent of total time
+	if percent_total:
+		p_ciut = ciut / total
+		p_mut = mut / total
+		p_ciat = ciat / total
+		p_mat = mat / total
+	else: # As a percent of possible values
+		p_ciut = ciut / (ciut + mat)
+		p_mut = mut / (mut + ciat)
+		p_ciat = ciat / (ciat + mut)
+		p_mat = mat / (mat + ciut)
+	return (p_ciut * 100, p_mut * 100, p_ciat * 100, p_mat * 100)
 
 
 def overlaps(t1, t2, c1, c2):
@@ -230,21 +245,24 @@ def literal_eval(string):
 def write_data(locs, eps):
 	user_to_loc = {user: [excess, mean, med]
 		for (user, excess, mean, med) in locs}
-	user_to_eps = {user: [ciut, mut] for (user, (ciut, mut)) in eps}
-	rs = "user,excess_locations,mean_distance,median distance" + \
-					",identified_unknowntime,misidentified_unknowntime\n"
+	user_to_eps = {user: [ciut, mut, ciat, mat] for (user, (ciut, mut, ciat, mat)) in eps}
+	rs = ("user,excess_locations,mean_distance,median distance" +
+		",identified_unknowntime,misidentified_unknowntime" +
+		",identified_activitytime,misidentified_activitytime\n")
 	for user in user_to_loc.keys():
 		excess = user_to_loc[user][0]
 		mean = round(user_to_loc[user][1], 2)
 		median = round(user_to_loc[user][2], 2)
 		ciut = round(user_to_eps[user][0], 2)
 		mut = round(user_to_eps[user][1], 2)
-		rs = rs + "{},{},{},{},{},{}\n".format(user,
-						excess, mean, median, ciut, mut)
+		ciat = round(user_to_eps[user][2], 2)
+		mat = round(user_to_eps[user][3], 2)
+		rs = rs + "{},{},{},{},{},{},{},{}\n".format(user,
+		excess, mean, median, ciut, mut, ciat, mat)
 	fd = open(output_compare_file, "w")
 	fd.write(rs)
 
 if __name__ == "__main__":
 	loc = compare_locations(locations_gt, output_locations_file)
-	eps = compare_episodes(activities_gt, output_episodes_file)
+	eps = compare_episode_time(activities_gt, output_episodes_file)
 	write_data(loc, eps)

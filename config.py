@@ -43,8 +43,15 @@ location_distance = 150  # meters
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
 
+# weight coefficient
+weight_coef = 1
+assert (weight_coef > 0 and weight_coef <= 1)
+
 # Flag for debugging outputs
 db_out = True
+
+# What type of comparison output for episodes
+percent_total = False
 
 # Number of worker processes on which to run main.py
 #
