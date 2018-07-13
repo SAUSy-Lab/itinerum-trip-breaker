@@ -118,12 +118,12 @@ def compare_user_eps(truth, computed):
 	# Time in minutes that the survey lasted, trimmed
 	##total_time = ((end_time - start_time).days * 24 * 60 +
 	##(end_time - start_time).seconds / 60)
-	total_time = 0
 	i, j = 0, 0
 	# total unknown time, correctly identified, misidentified
 	tut, ciut, mut = 0, 0, 0
 	# activity time
 	tat, ciat, mat = 1, 0, 0
+	total = 0
 	# while both iterators haven't reached the end of the survey time
 	while truth[i][0] < end_time and computed[j][0] < end_time:
 		if overlaps(truth[i][0], truth[i+1][0], computed[j][0], computed[j+1][0]):
@@ -131,33 +131,33 @@ def compare_user_eps(truth, computed):
 			ee = min(truth[i+1][0], computed[j+1][0])
 			lb = max(truth[i][0], computed[j][0])
 			it = (ee - lb)
-			if truth[i][1] and computed[j][1]:  # correctly identified unknown time
-				ciut += it.days * 24 * 60 + it.seconds / 60
-			if not truth[i][1] and computed[j][1]:  # misidentified unknown time
-				mut += it.days * 24 * 60 + it.seconds / 60
-			if not (truth[i][1] or computed[j][1]):  # correctly identified activity time
-				ciat += it.days * 24 * 60 + it.seconds / 60
-			if truth[i][1] and not computed[j][1]:  # misidentified unknown time
-				mat += it.days * 24 * 60 + it.seconds / 60
+			time = it.days * 24 *60 + it.seconds / 60
+			total += time
+			if truth[i][1] and computed[j][1]:  # correctly identified unknown time T-T
+				ciut += time
+			elif not truth[i][1] and computed[j][1]:  # misidentified unknown time F-T
+				mut += time
+			if not (truth[i][1] or computed[j][1]):  # correctly identified activity time F-F
+				ciat += time
+			if truth[i][1] and not computed[j][1]:  # misidentified unknown time T-F
+				mat += time
 		# whichever episode ends first needs to be incremented
 		if truth[i+1][0] < computed[j+1][0]:  # truth ep ends first
-			t = ((truth[i+1][0] - truth[i][0]).days * 24 * 60 +
-			     (truth[i+1][0] - truth[i][0]).seconds / 60)
-			if truth[i][1]:
-				tut += t
-				total_time += t
-			else:
-				tat += t
-				total_time += t
 			i += 1
 		else:  # computed ep ends first
 			j += 1
-	pciut = ciut / tut
-	pmiut = mut / (total_time - tut)
-	print("ciat: {}, tat: {}, mat: {}, tot: {}".format(ciat, tat, mat, total_time))
-	pciat = ciat / tat
-	pmat = mat / (total_time - tat)
-	return (pciut * 100, pmiut * 100, pciat * 100, pmat * 100)
+	# Each value as a percent of total time
+	if percent_total:
+		p_ciut = ciut / total
+		p_mut = mut / total
+		p_ciat = ciat / total
+		p_mat = mat / total
+	else: # As a percent of possible values
+		p_ciut = ciut / (ciut + mat)
+		p_mut = mut / (mut + ciat)
+		p_ciat = ciat / (ciat + mut)
+		p_mat = mat / (mat + ciut)
+	return (p_ciut * 100, p_mut * 100, p_ciat * 100, p_mat * 100)
 
 
 def overlaps(t1, t2, c1, c2):

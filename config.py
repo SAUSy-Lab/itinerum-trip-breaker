@@ -50,6 +50,9 @@ assert (weight_coef > 0 and weight_coef <= 1)
 # Flag for debugging outputs
 db_out = True
 
+# What type of comparison output for episodes
+percent_total = False
+
 # Number of worker processes on which to run main.py
 #
 num_pro = os.cpu_count()
