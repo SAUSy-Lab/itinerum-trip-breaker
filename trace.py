@@ -4,7 +4,7 @@ from point import Point
 from episode import Episode
 from location import Location
 from misc_funcs import (distance, inner_angle_sphere, kde,
-	min_peak, gaussian, ts_str, unproject, read_headers, state_transition_matrix,
+	min_peak, state_transition_matrix,
 	viterbi, emission_probabilities)
 from datetime import timedelta, datetime
 from math import sqrt
@@ -303,43 +303,34 @@ class Trace(object):
 		for points in self.known_subsets_interpolated:
 			emission_probs = []
 			for point in points:
-				emission_probs.append(emission_probabilities(point,
-					self.locations))
-			# call viterbi on each subset
-			state_path = viterbi(states,
-				emission_probs,
-				start_probs,
-				state_transition_matrix(states))
-			# note which locations have been used TODO move this elsewhere
-			for visited_id in set([s-1 for s in state_path if s != 0]):
-				self.locations[visited_id].visited = True
-			# now record the first activity episode
-			self.episodes.append(Episode(points[0].time,  # start_time
-				# location, if any
-				None if state_path[0] == 0 else self.locations[state_path[0]-1],
-				False))  # unknown_time
-			prev_state = state_path[0]
-			start_time = points[0].epoch
-			# store state classification for debugging, etc
-			for i in range(0, len(state_path)):
-				points[i].state = state_path[i]
-			# for each point after the first
-			for i in range(1, len(state_path)):
-				# look for state changes
-				if prev_state != state_path[i]:
-					# assume the transition happens halfway between points
-					transition_time = points[i-1].time + (points[i].time-points[i-1].time)/2
-					# output start of this new state
-					# now record the first activity episode
-					self.episodes.append(Episode(points[i].time,  # start_time
-						# location, if any
-						None if state_path[i] == 0 else self.locations[state_path[i]-1],
-						False))  # unknown_time
-					prev_state = state_path[i]
-			# now record the first activity episode
-			self.episodes.append(Episode(points[-1].time,  # start_time
-				None,  # no location
-				True))  # unknown time ends every segment
+				emission_probs.append( emission_probabilities( point, self.locations ) )
+			# run viterbi on each subset
+			state_path = viterbi(
+				states, emission_probs, start_probs, state_transition_matrix(states)
+			)
+			# store state classification and location references with points
+			for i, state in enumerate(state_path):
+				points[i].state = state
+				points[i].location = None if state == 0 else self.locations[state-1]
+			# note which locations have actually been used
+			for location in set( [ p.location for p in points if p.location ] ):
+				location.visited = True
+			# iterate over points/states, creating episodes at transitions
+			for i, point in enumerate(points):
+				if i == 0:
+					# record first episode
+					self.episodes.append( Episode( point.time, point.location, False ) )
+				else:
+					# look for state changes
+					if prev_point.state != point.state:
+						# assume the transition happens halfway between points
+						transition_time = prev_point.time+(point.time-prev_point.time)/2
+						self.episodes.append( 
+							Episode( transition_time, point.location, False ) 
+						)
+				prev_point = point
+			# unknown time ends every known segment
+			self.episodes.append( Episode( points[-1].time, None, True ) )  
 		print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):

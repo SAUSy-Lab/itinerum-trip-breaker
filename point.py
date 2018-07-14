@@ -14,25 +14,27 @@ class Point(object):
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
-		self.X = None  # do not access this directly
-		self.Y = None  # do not access this directly
+		self.X = None           # do not access this directly
+		self.Y = None           # do not access this directly
 		# a string representation of a timestampt
 		self.ts = timestamp
 		# datetime representation of the same timestamp
 		self.time, self.tz = parse_ts(timestamp)
-		# these  get set later... just defining them here
-		self.d_ante = None  # distance to previous point
-		self.d_post = None  # distance to next point
-		self.angle = None  # angle between this and adjacent points
-		self.inter = False  # point shares location with both neighbors?
-		self.error_index = 0  # measure used during point cleaning
-		self.weight = 0  # time-based weight for KDE function
-		self.emit_p = []  # emission probabilities for set of travel + locations
-		self.state = None  # HMM state classification
-		self.kde_p = None  # estimated PDF at this point
+		# these get set later; just defining them here
+		self.d_ante = None      # distance to previous point
+		self.d_post = None      # distance to next point
+		self.angle = None       # angle between this and adjacent points
+		self.inter = False      # point shares location with both neighbors?
+		self.error_index = 0    # measure used during point cleaning
+		self.weight = 0         # time-based weight for KDE function
+		self.emit_p = []        # emission probabilities for set of travel + locations
+		self.state = None       # HMM state classification
+		self.location = None    # reference to location object point is at per state 
+		self.kde_p = None       # estimated PDF at this point
 		# for diagnostic output
 		self.discarded = False  # will be true if point tossed in cleaning
-		self.synthetic = False  # was this point generated e.g. by interpolation?
+		self.synthetic = False  # was this point synthesized e.g. by interpolation?
+
 
 	@property
 	def geom(self):
