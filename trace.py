@@ -201,7 +201,7 @@ class Trace(object):
 		where it seems like we have no data, but substantial movement; for
 		which trip and activity reconstruction would be impossible.
 		TODO: Eventually we will need some much stricter checking here
-		and eventually an explicit check foro subway trips.
+		and eventually an explicit check for subway trips.
 		"""
 		known_segments = []
 		segment = [self.points[0]]
