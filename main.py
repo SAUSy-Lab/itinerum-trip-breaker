@@ -1,5 +1,6 @@
 # standard modules
 import datetime
+import sys
 import csv
 import math
 import rpy2
@@ -41,7 +42,8 @@ def analyze_user(tup):
 	survey = tup[2]
 	user = Trace(user_id, data, survey)
 	if len(user.points) > 100:
-		print("User", user_id, 'starts with', len(user.points), 'coordinates')
+		if config.db_out:
+			print("User", user_id, 'starts with', len(user.points), 'coordinates')
 		user.remove_repeated_points()
 		user.remove_known_error(config.min_accuracy)
 		user.remove_sequential_duplicates()
@@ -53,6 +55,7 @@ def analyze_user(tup):
 		user.make_known_subsets()
 		# find locations with the cleaned data
 		user.get_activity_locations()
+		user.remove_repeated_locations()
 		# allocate time
 		user.break_trips()
 		# write the output
@@ -84,17 +87,19 @@ if __name__ == "__main__":
 			else:
 				school = None
 			survey_responses[row['uuid']] = [home, work, school]
-	print(len(user_data), 'user(s) to clean')
+	if config.db_out:
+		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
 	initialize_output_files()
 	# loop over users calling all the functions for each
 
 	list_of_users = []
 	for uid, data in user_data.items():
-		list_of_users.append((uid, data, survey_responses[uid]))
+		list_of_users.append((uid, data, (None, None, None)))  # survey_responses[uid]))
 	if config.multi_process:
 		with Pool(config.num_pro) as p:
 			p.map(analyze_user, list_of_users)
 	else:
 		for t in list_of_users:
 			analyze_user(t)
+	print("Done!\7", file=sys.stderr)

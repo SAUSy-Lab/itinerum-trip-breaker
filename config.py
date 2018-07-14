@@ -43,8 +43,11 @@ location_distance = 150  # meters
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
 
-# Number of worker processes on which to run main.py and compare.py
+# Flag for debugging outputs
+db_out = True
+
+# Number of worker processes on which to run main.py
 #
 num_pro = os.cpu_count()
-multi_process = True
+multi_process = False
 assert cluster_distance > interpolation_distance

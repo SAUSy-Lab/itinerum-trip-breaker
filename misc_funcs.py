@@ -52,7 +52,8 @@ def kde(x_vector, y_vector, weights):
 	# get basic R functions into Python
 	cbind, diag = r['cbind'], r['diag']
 	# do the KDE
-	print('\tRunning KDE on', len(x_vector), 'points')
+	if config.db_out:
+		print('\tRunning KDE on', len(x_vector), 'points')
 	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
 	bandwidth = config.kernel_bandwidth
 	surface = ks.kde(x=point_matrix, eval_points=point_matrix,

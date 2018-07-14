@@ -104,7 +104,6 @@ class Trace(object):
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
 			for date in days:
-				#print( days[date] )
 				s = "{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
 				fid = self.id
 				fdt = date
@@ -227,7 +226,8 @@ class Trace(object):
 				segment[-1].epoch - segment[0].epoch > 3600):
 				# mininum time length of segment?
 				self.known_subsets.append(segment)
-		print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
+		if config.db_out:
+			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def get_activity_locations(self):
 		"""
@@ -263,7 +263,7 @@ class Trace(object):
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
-		self.locations.extend(locations)
+		locations = self.locations.extend(locations)
 		return self.locations
 
 	def identify_locations(self):
@@ -330,8 +330,9 @@ class Trace(object):
 						)
 				prev_point = point
 			# unknown time ends every known segment
-			self.episodes.append( Episode( points[-1].time, None, True ) )  
-		print('\tFound', len(self.episodes), 'episodes')
+			self.episodes.append( Episode( points[-1].time, None, True ) )
+		if config.db_out:
+			print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):
 		"""
@@ -340,7 +341,8 @@ class Trace(object):
 		"""
 		points = [point for point in
 			self.all_interpolated_points if point.kde_p >= threshold]
-		print('\tClustering', len(points), 'points above', threshold, 'threshold')
+		if config.db_out:
+			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
 		#   for every other point within cluster distance:
 		#      if comparison point has higher KDE value, this is not the peak
@@ -374,8 +376,13 @@ class Trace(object):
 			# Felipevh doesn't know if this needs to be projected
 			d = distance(segment[i], segment[i+1]) + 1
 			t = (segment[i+1].time - segment[i].time).total_seconds()
-			w1 = segment[i].weight_decimal(d / t) * t
-			w2 = (1 - segment[i].weight_decimal(d / t)) * t
+			if t == 0:
+				print(self.id + " : FAILED")
+				w1 = 0.5
+				w2 = 0.5
+			else:
+				w1 = segment[i].weight_decimal(d / t) * t
+				w2 = (1 - segment[i].weight_decimal(d / t)) * t
 			segment[i].add_weight(w1 + w2)
 		# set weights of first and last points
 		segment[0].add_weight((segment[1].time - segment[0].time)
@@ -404,7 +411,8 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print('\t', len(to_remove), 'points removed as exact duplicate')
+		if config.db_out:
+			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
 		"""
@@ -435,7 +443,8 @@ class Trace(object):
 				locations[key].append(point)
 		for k in locations.keys():
 			if len(locations[k]) > 1:
-				print(k, locations[k])
+				if config.db_out:
+					print(k, locations[k])
 
 	def observe_neighbors(self, indices=[]):
 		"""
@@ -490,7 +499,8 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print('\t', len(to_remove), 'points removed as duplicate')
+		if config.db_out:
+			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
 		"""
@@ -503,7 +513,8 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		print('\t', len(to_remove), 'points removed as high stated error')
+		if config.db_out:
+			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
 		"""
@@ -515,7 +526,8 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		print('\t', count, 'points removed by positional cleaning')
+		if config.db_out:
+			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
 		"""
@@ -539,3 +551,12 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
+
+	def remove_repeated_locations(self):
+		"""
+		"""
+		new_locations = []
+		for l in self.locations:
+			if l not in new_locations:
+				new_locations.append(l)
+		self.locations = new_locations
