@@ -58,6 +58,8 @@ def analyze_user(tup):
 		user.remove_repeated_locations()
 		# allocate time
 		user.break_trips()
+		# TODO not sure where to print it so it doesn't get repeated
+		print("\t{} identical timestamps found".format(user.identical))
 		# write the output
 		user.flush()
 

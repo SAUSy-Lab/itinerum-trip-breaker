@@ -49,6 +49,8 @@ class Trace(object):
 		self.episodes = []
 		# records the number of activity records written so far
 		self.activity_count = 0
+		# number of identical timestamps for this user
+		self.identical = 0
 		# read in all time and location data for points
 		# right now only using a few fields
 
@@ -385,8 +387,8 @@ class Trace(object):
 			# Felipevh doesn't know if this needs to be projected
 			d = distance(segment[i], segment[i+1]) + 1
 			t = (segment[i+1].time - segment[i].time).total_seconds()
-			if t == 0:
-				print(self.id + " : FAILED")
+			if t == 0:  # occurs when there are identical timestamps
+				self.identical +=1
 				w1 = 0.5
 				w2 = 0.5
 			else:
