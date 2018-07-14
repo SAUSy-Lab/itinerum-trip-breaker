@@ -64,7 +64,7 @@ def distance_matrix(h, matrix, truths, compds):
 	locations and computed locations to their respective distances.
 	"""
 	for locus in truths:
-		matrix[locus[1]] = {}  # what is this 1 value? TODO
+		matrix[locus[1]] = {}  # TODO replace 1 with heading reference
 		for guess in compds:
 			p1 = Point("", guess[h["lon"]], guess[h["lat"]], 0)
 			p2 = Point("", locus[h["lon"]], locus[h["lat"]], 0)
@@ -131,13 +131,13 @@ def compare_user_eps(truth, computed):
 			ee = min(truth[i+1][0], computed[j+1][0])
 			lb = max(truth[i][0], computed[j][0])
 			it = (ee - lb)
-			time = it.days * 24 *60 + it.seconds / 60
+			time = it.days * 24 * 60 + it.seconds / 60
 			total += time
 			if truth[i][1] and computed[j][1]:  # correctly identified unknown time T-T
 				ciut += time
 			elif not truth[i][1] and computed[j][1]:  # misidentified unknown time F-T
 				mut += time
-			if not (truth[i][1] or computed[j][1]):  # correctly identified activity time F-F
+			if not (truth[i][1] or computed[j][1]):  # identified act time F-F
 				ciat += time
 			if truth[i][1] and not computed[j][1]:  # misidentified unknown time T-F
 				mat += time
@@ -152,7 +152,7 @@ def compare_user_eps(truth, computed):
 		p_mut = mut / total
 		p_ciat = ciat / total
 		p_mat = mat / total
-	else: # As a percent of possible values
+	else:  # As a percent of possible values
 		p_ciut = ciut / (ciut + mat)
 		p_mut = mut / (mut + ciat)
 		p_ciat = ciat / (ciat + mut)
@@ -245,7 +245,8 @@ def literal_eval(string):
 def write_data(locs, eps):
 	user_to_loc = {user: [excess, mean, med]
 		for (user, excess, mean, med) in locs}
-	user_to_eps = {user: [ciut, mut, ciat, mat] for (user, (ciut, mut, ciat, mat)) in eps}
+	user_to_eps = {user: [ciut, mut, ciat, mat]
+			for (user, (ciut, mut, ciat, mat)) in eps}
 	rs = ("user,excess_locations,mean_distance,median distance" +
 		",identified_unknowntime,misidentified_unknowntime" +
 		",identified_activitytime,misidentified_activitytime\n")

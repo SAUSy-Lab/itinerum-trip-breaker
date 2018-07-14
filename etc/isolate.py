@@ -1,5 +1,9 @@
-in_fd = "../inputs/SECcoordinates.csv"
-users = ["73fcaa05-20af-434b-a8d2-7d079ba35a51", "1EDF2943-E2C1-4608-8CD2-FA53A54C340E",  # 2016
+# Remove error generating users from 2016 or 2017 CFS data
+# According to hardcoded list of users
+in_fd = "../inputs/SECcoordinates.csv"  # 2016 or 2017 CFS data
+users = [
+"73fcaa05-20af-434b-a8d2-7d079ba35a51", 
+"1EDF2943-E2C1-4608-8CD2-FA53A54C340E",  # 2016
 "36142523-88F4-4E39-BF94-9F585B02EDD4",
 "d07acebc-74fa-4a2c-9f5c-28af439b6f94",
 "637D95FD-D4C9-48E4-B3D2-6771260CF69E",
@@ -92,10 +96,10 @@ users = ["73fcaa05-20af-434b-a8d2-7d079ba35a51", "1EDF2943-E2C1-4608-8CD2-FA53A5
 "5a734725-3747-48f1-9053-7e953ddd6cb6",
 "C56EEFEC-CDF5-4E53-823C-1884677DB29D",
 "946fa994-fb44-4371-86b4-a9e669224acd",
-"946fa994-fb44-4371-86b4-a9e669224acd"
-]
-out1 = "../inputs/SECiso-coordinates.csv"
-out2 = "../inputs/SECalm-coordinates.csv"
+"946fa994-fb44-4371-86b4-a9e669224acd"]
+
+out1 = "../inputs/SECiso-coordinates.csv"  # coordinate file including only error-prone users
+out2 = "../inputs/SECalm-coordinates.csv"  # coordinate file including no error-prone users
 fd = open(in_fd, "r")
 out1_fd = open(out1, "w")
 out2_fd = open(out2, "w")

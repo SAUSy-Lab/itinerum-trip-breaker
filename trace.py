@@ -231,8 +231,8 @@ class Trace(object):
 
 	def get_activity_locations(self):
 		"""
-		Get activity locations for this trace. ( Create inputs for a KDE
-		function and find peaks in the surface. )
+		Get activity locations for this trace. (Create inputs for a KDE
+		function and find peaks in the surface.)
 		"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
@@ -361,10 +361,10 @@ class Trace(object):
 			is_peak = True  # starting assumption
 			for neighbor in points:
 				if distance(point, neighbor) > config.location_distance:
-					continue  # TODO should not use continue or break
+					continue
 				if point.kde_p < neighbor.kde_p:
 					is_peak = False  # assumption proven false if anything else higher
-					break  # TODO should not use continue or break
+					break
 			if is_peak:
 				location = Location(point.longitude, point.latitude, loc_num)
 				potential_activity_locations.append(location)

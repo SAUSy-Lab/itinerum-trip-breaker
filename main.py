@@ -95,7 +95,8 @@ if __name__ == "__main__":
 
 	list_of_users = []
 	for uid, data in user_data.items():
-		list_of_users.append((uid, data, (None, None, None)))  # survey_responses[uid]))
+		# survey responses[ui] instead of (None, None, None)
+		list_of_users.append((uid, data, (None, None, None)))
 	if config.multi_process:
 		with Pool(config.num_pro) as p:
 			p.map(analyze_user, list_of_users)

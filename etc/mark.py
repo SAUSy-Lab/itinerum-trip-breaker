@@ -1,5 +1,7 @@
-od = open("isolate2.py", "w")
-fd = open("isolate.py", "r")
+# Mark any duplicate lines in a plaintext file
+
+od = open("isolate2.py", "w")  # Copy of input file with duplicate lines marked
+fd = open("isolate.py", "r")  # Input file
 lines = fd.readlines()
 fd.close()
 writen = []
