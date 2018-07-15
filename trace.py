@@ -375,15 +375,18 @@ class Trace(object):
 		assert len(segment) > 1
 		# set weights of middle points
 		for i in range(1, len(segment)-1):
-			# Felipevh doesn't know if this needs to be projected
+			# TODO Felipevh doesn't know if this needs to be projected
 			d = distance(segment[i], segment[i+1]) + 1
 			t = (segment[i+1].time - segment[i].time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
 				self.identical +=1
+				w1 = 0
+				w2 = 0
 			else:
-				w1 += segment[i].weight_decimal(config.weight_coef * d / t) * t
-				w2 += (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
-			segment[i].add_weight(w1 + w2)
+				w1 = segment[i].weight_decimal(config.weight_coef * d / t) * t
+				w2 = (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
+			segment[i].add_weight(w1)
+			segment[i + 1].add_weight(w2)
 		# set weights of first and last points
 		segment[0].add_weight((segment[1].time - segment[0].time)
 		.total_seconds() / 2)
