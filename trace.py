@@ -389,11 +389,9 @@ class Trace(object):
 			t = (segment[i+1].time - segment[i].time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
 				self.identical +=1
-				w1 = 0.5
-				w2 = 0.5
 			else:
-				w1 = segment[i].weight_decimal(config.weight_coef * d / t) * t
-				w2 = (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
+				w1 += segment[i].weight_decimal(config.weight_coef * d / t) * t
+				w2 += (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
 			segment[i].add_weight(w1 + w2)
 		# set weights of first and last points
 		segment[0].add_weight((segment[1].time - segment[0].time)
