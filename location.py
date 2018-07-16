@@ -28,7 +28,8 @@ class Location(object):
 		self.name = name
 
 	def __hash__(self):
-		return hash(id(self)) 
+		return hash(hex(id(self)))
+
 	def __str__(self):
 		return "{}, {}".format(self.latitude, self.longitude)
 
