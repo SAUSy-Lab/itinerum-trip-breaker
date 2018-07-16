@@ -1,7 +1,7 @@
 This data comes from one week of a SAUSy researcher using the Itinerum app and is provided for testing purposes only.
 
 *Please be very careful not to ever share any confidential data from survey participants here or elsewhere.*
-
+*As a precaution, git will ignore all .csv files in the outputs folder, other than those already present for testing*
 ## Output Files
 Output files generated will include:
 
