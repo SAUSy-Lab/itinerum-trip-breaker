@@ -364,7 +364,7 @@ class Trace(object):
 				loc_num += 1
 		return potential_activity_locations
 
-	def weight_points(self, segment):
+	def weight_points(self,segment):
 		"""
 		Assign time-based weights to a series of sequential points.
 		Values are in seconds, and are split between neighboring points.
@@ -373,22 +373,26 @@ class Trace(object):
 
 		"""
 		assert len(segment) > 1
-		# set weights of middle points
+		# iterate over middle points, i.e. skipping termini
 		for i in range(1, len(segment)-1):
-			# Felipevh doesn't know if this needs to be projected
-			d = distance(segment[i], segment[i+1]) + 1
-			t = (segment[i+1].time - segment[i].time).total_seconds()
+			this_point = segment[i]
+			next_point = segment[i+1]
+
+			d = distance(this_point, next_point) + 1
+			t = (next_point.time - this_point.time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
-				self.identical +=1
+				self.identical += 1
 			else:
-				w1 += segment[i].weight_decimal(config.weight_coef * d / t) * t
-				w2 += (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
-			segment[i].add_weight(w1 + w2)
+				w1 = this_point.weight_decimal( config.weight_coef * d / t ) * t
+				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
+			this_point.add_weight(w1 + w2)
 		# set weights of first and last points
-		segment[0].add_weight((segment[1].time - segment[0].time)
-		.total_seconds() / 2)
-		segment[-1].add_weight((segment[-1].time - segment[-2].time)
-		.total_seconds() / 2)
+		segment[0].add_weight(
+			(segment[1].time - segment[0].time).total_seconds() / 2 
+		)
+		segment[-1].add_weight(
+			(segment[-1].time - segment[-2].time).total_seconds() / 2 
+		)
 
 	#
 	# CLEANING METHODS BELOW
