@@ -53,13 +53,13 @@ def analyze_user(tup):
 		user.remove_sequential_duplicates()
 		# identify gaps in the data
 		user.make_known_subsets()
+		if config.db_out:
+			print("\t{} identical timestamps found.".format(user.identical))
 		# find locations with the cleaned data
 		user.get_activity_locations()
 		user.remove_repeated_locations()
 		# allocate time
 		user.break_trips()
-		# TODO not sure where to print it so it doesn't get repeated
-		print("\t{} identical timestamps found".format(user.identical))
 		# write the output
 		user.flush()
 
