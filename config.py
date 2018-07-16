@@ -42,11 +42,11 @@ location_distance = 150  # meters
 # remain uninterpolated for linear spatial interpolations.
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
-assert cluster_distance > interpolation_distance 
+assert cluster_distance > interpolation_distance
 
 # weight coefficient:
 # Affects the input to the weight distribution function,
-# which varies from 0.5 to 1 as the ratio of distance over time difference 
+# which varies from 0.5 to 1 as the ratio of distance over time difference
 # increases. Increasing this value over 1 scales up this ratio
 # while decreasing under 1 scales increases it.
 weight_coef = 1
@@ -55,10 +55,10 @@ assert (weight_coef > 0)
 # Flag for toggling debugging print statement on or off
 db_out = True
 
-# Flag for toggling different denominators in calculating episode detection metrics.
-# If on, the denominator consists of the total time for that user,
+# Flag for toggling different denominators in calculating episode detection
+# Metrics. If on, the denominator consists of the total time for that user,
 # If off, it consists of only the portions of episodes that could have affected
-# that particular metric, in particular: 
+# that particular metric, in particular:
 # correctly identified unknown time and activity time (not location dependent)
 # and misidentified unknown and activity time.
 percent_total = False

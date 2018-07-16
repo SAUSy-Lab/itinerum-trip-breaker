@@ -305,34 +305,32 @@ class Trace(object):
 		for points in self.known_subsets_interpolated:
 			emission_probs = []
 			for point in points:
-				emission_probs.append( emission_probabilities( point, self.locations ) )
+				emission_probs.append(emission_probabilities(point, self.locations))
 			# run viterbi on each subset
-			state_path = viterbi(
-				states, emission_probs, start_probs, state_transition_matrix(states)
-			)
+			state_path = viterbi(states, emission_probs, start_probs,
+					state_transition_matrix(states))
 			# store state classification and location references with points
 			for i, state in enumerate(state_path):
 				points[i].state = state
 				points[i].location = None if state == 0 else self.locations[state-1]
 			# note which locations have actually been used
-			for location in set( [ p.location for p in points if p.location ] ):
+			for location in set([p.location for p in points if p.location]):
 				location.visited = True
 			# iterate over points/states, creating episodes at transitions
 			for i, point in enumerate(points):
 				if i == 0:
 					# record first episode
-					self.episodes.append( Episode( point.time, point.location, False ) )
+					self.episodes.append(Episode(point.time, point.location, False))
 				else:
 					# look for state changes
 					if prev_point.state != point.state:
 						# assume the transition happens halfway between points
 						transition_time = prev_point.time+(point.time-prev_point.time)/2
-						self.episodes.append( 
-							Episode( transition_time, point.location, False ) 
-						)
+						self.episodes.append(Episode(transition_time,
+							point.location, False))
 				prev_point = point
 			# unknown time ends every known segment
-			self.episodes.append( Episode( points[-1].time, None, True ) )
+			self.episodes.append(Episode(points[-1].time, None, True))
 		if config.db_out:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -379,7 +377,7 @@ class Trace(object):
 			d = distance(segment[i], segment[i+1]) + 1
 			t = (segment[i+1].time - segment[i].time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
-				self.identical +=1
+				self.identical += 1
 				w1 = 0
 				w2 = 0
 			else:

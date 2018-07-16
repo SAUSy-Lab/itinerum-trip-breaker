@@ -27,14 +27,13 @@ class Point(object):
 		self.inter = False      # point shares location with both neighbors?
 		self.error_index = 0    # measure used during point cleaning
 		self.weight = 0         # time-based weight for KDE function
-		self.emit_p = []        # emission probabilities for set of travel + locations
+		self.emit_p = []        # emission probabilities for set of travel+locations
 		self.state = None       # HMM state classification
-		self.location = None    # reference to location object point is at per state 
+		self.location = None    # reference to location object point is at per state
 		self.kde_p = None       # estimated PDF at this point
 		# for diagnostic output
 		self.discarded = False  # will be true if point tossed in cleaning
 		self.synthetic = False  # was this point synthesized e.g. by interpolation?
-
 
 	@property
 	def geom(self):
