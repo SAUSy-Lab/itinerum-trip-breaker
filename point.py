@@ -80,6 +80,9 @@ class Point(object):
 	def __eq__(self, other):
 		return self.latitude == other.latitude and self.longitude == other.longitude
 
+	def __hash__(self):
+		return id(self)
+
 	def copy(self):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 

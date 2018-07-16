@@ -242,8 +242,7 @@ class Trace(object):
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
 		# get all (real & interpolated) points in one big list
-		self.all_interpolated_points = \
-			[p for s in self.known_subsets_interpolated for p in s]
+		self.all_interpolated_points = [p for s in self.known_subsets_interpolated for p in s]
 		if len(self.all_interpolated_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
@@ -257,11 +256,12 @@ class Trace(object):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points])
-			/ len(self.points))
+		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points]) / len(self.points))
 		# estimate peak threshold value
-		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
-			sum(Wvector))  # total seconds entering KDE
+		threshold = min_peak(
+			mean_accuracy,  # mean sd of GPS accuracy for user
+			sum(Wvector)  # total seconds entering KDE
+		) 
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
@@ -341,8 +341,7 @@ class Trace(object):
 		Detect peaks in the KDE surface which are above the time-spent
 		threshold. KDE values are stored in self.points.
 		"""
-		points = [point for point in
-			self.all_interpolated_points if point.kde_p >= threshold]
+		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
 		if config.db_out:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
@@ -358,7 +357,7 @@ class Trace(object):
 				if point.kde_p < neighbor.kde_p:
 					is_peak = False  # assumption proven false if anything else higher
 					break
-			if is_peak:
+			if is_peak and point not in potential_activity_locations:
 				location = Location(point.longitude, point.latitude, loc_num)
 				potential_activity_locations.append(location)
 				loc_num += 1
@@ -555,12 +554,3 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
-
-	def remove_repeated_locations(self):
-		"""
-		"""
-		new_locations = []
-		for l in self.locations:
-			if l not in new_locations:
-				new_locations.append(l)
-		self.locations = new_locations

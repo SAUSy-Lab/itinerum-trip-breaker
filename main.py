@@ -55,7 +55,6 @@ def analyze_user(tup):
 		user.make_known_subsets()
 		# find locations with the cleaned data
 		user.get_activity_locations()
-		user.remove_repeated_locations()
 		# allocate time
 		user.break_trips()
 		# TODO not sure where to print it so it doesn't get repeated
