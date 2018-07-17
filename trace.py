@@ -385,7 +385,7 @@ class Trace(object):
 				w1 = this_point.weight_decimal( config.weight_coef * d / t ) * t
 				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
 			this_point.add_weight(w1)
-			this_points.add_weight(w2)
+			next_point.add_weight(w2)
 		# set weights of first and last points
 		segment[0].add_weight(
 			(segment[1].time - segment[0].time).total_seconds() / 2 
