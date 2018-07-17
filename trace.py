@@ -372,20 +372,6 @@ class Trace(object):
 		assert len(segment) > 1
 		# iterate over middle points, i.e. skipping termini
 		for i in range(1, len(segment)-1):
-<<<<<<< HEAD
-			# TODO Felipevh doesn't know if this needs to be projected
-			d = distance(segment[i], segment[i+1]) + 1
-			t = (segment[i+1].time - segment[i].time).total_seconds()
-			if t == 0:  # occurs when there are identical timestamps
-				self.identical += 1
-				w1 = 0
-				w2 = 0
-			else:
-				w1 = segment[i].weight_decimal(config.weight_coef * d / t) * t
-				w2 = (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
-			segment[i].add_weight(w1)
-			segment[i + 1].add_weight(w2)
-=======
 			this_point = segment[i]
 			next_point = segment[i+1]
 
@@ -393,11 +379,13 @@ class Trace(object):
 			t = (next_point.time - this_point.time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
 				self.identical += 1
+				w1 = 0
+				w2 = 0
 			else:
 				w1 = this_point.weight_decimal( config.weight_coef * d / t ) * t
 				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
-			this_point.add_weight(w1 + w2)
->>>>>>> 9337df160e3ca1f176fb1dfae07b63d942939352
+			this_point.add_weight(w1)
+			this_points.add_weight(w2)
 		# set weights of first and last points
 		segment[0].add_weight(
 			(segment[1].time - segment[0].time).total_seconds() / 2 

@@ -30,7 +30,6 @@ class Location(object):
 	def __hash__(self):
 		return hash(hex(id(self)))
 
-<<<<<<< HEAD
 	def __str__(self):
 		return "{}, {}".format(self.latitude, self.longitude)
 
@@ -38,10 +37,3 @@ class Location(object):
 		return (type(other) == type(self) and
 			self.latitude == other.latitude and
 			self.longitude == other.longitude)
-=======
-	def __eq__(self, other):
-		return self.latitude == other.latitude and self.longitude == other.longitude
-
-	def __hash__(self):
-		return id(self)
->>>>>>> 9337df160e3ca1f176fb1dfae07b63d942939352
