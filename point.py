@@ -79,6 +79,9 @@ class Point(object):
 	def __eq__(self, other):
 		return self.latitude == other.latitude and self.longitude == other.longitude
 
+	def __hash__(self):
+		return id(self)
+
 	def copy(self):
 		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
 
@@ -108,6 +111,7 @@ class Point(object):
 				new_points.append(new_point)
 		return new_points
 
+	# TODO documentation needed
 	def weight_decimal(self, param):
 		assert param > 0
 		return (-1) / (param + 2) + 1
@@ -116,5 +120,5 @@ class Point(object):
 		"""
 		Assigns time-based weight value.
 		"""
-		assert weight >= 0  # we may want negative weights eventually
+		assert weight >= 0  # we may want negative weights eventually?
 		self.weight = weight

@@ -242,8 +242,7 @@ class Trace(object):
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
 		# get all (real & interpolated) points in one big list
-		self.all_interpolated_points = \
-			[p for s in self.known_subsets_interpolated for p in s]
+		self.all_interpolated_points = [p for s in self.known_subsets_interpolated for p in s]
 		if len(self.all_interpolated_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
@@ -257,11 +256,12 @@ class Trace(object):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points])
-			/ len(self.points))
+		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points]) / len(self.points))
 		# estimate peak threshold value
-		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
-			sum(Wvector))  # total seconds entering KDE
+		threshold = min_peak(
+			mean_accuracy,  # mean sd of GPS accuracy for user
+			sum(Wvector)  # total seconds entering KDE
+		) 
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
@@ -339,8 +339,7 @@ class Trace(object):
 		Detect peaks in the KDE surface which are above the time-spent
 		threshold. KDE values are stored in self.points.
 		"""
-		points = [point for point in
-			self.all_interpolated_points if point.kde_p >= threshold]
+		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
 		if config.db_out:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
@@ -356,13 +355,13 @@ class Trace(object):
 				if point.kde_p < neighbor.kde_p:
 					is_peak = False  # assumption proven false if anything else higher
 					break
-			if is_peak:
+			if is_peak and point not in potential_activity_locations:
 				location = Location(point.longitude, point.latitude, loc_num)
 				potential_activity_locations.append(location)
 				loc_num += 1
 		return potential_activity_locations
 
-	def weight_points(self, segment):
+	def weight_points(self,segment):
 		"""
 		Assign time-based weights to a series of sequential points.
 		Values are in seconds, and are split between neighboring points.
@@ -371,8 +370,9 @@ class Trace(object):
 
 		"""
 		assert len(segment) > 1
-		# set weights of middle points
+		# iterate over middle points, i.e. skipping termini
 		for i in range(1, len(segment)-1):
+<<<<<<< HEAD
 			# TODO Felipevh doesn't know if this needs to be projected
 			d = distance(segment[i], segment[i+1]) + 1
 			t = (segment[i+1].time - segment[i].time).total_seconds()
@@ -385,11 +385,26 @@ class Trace(object):
 				w2 = (1 - segment[i].weight_decimal(config.weight_coef * d / t)) * t
 			segment[i].add_weight(w1)
 			segment[i + 1].add_weight(w2)
+=======
+			this_point = segment[i]
+			next_point = segment[i+1]
+
+			d = distance(this_point, next_point) + 1
+			t = (next_point.time - this_point.time).total_seconds()
+			if t == 0:  # occurs when there are identical timestamps
+				self.identical += 1
+			else:
+				w1 = this_point.weight_decimal( config.weight_coef * d / t ) * t
+				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
+			this_point.add_weight(w1 + w2)
+>>>>>>> 9337df160e3ca1f176fb1dfae07b63d942939352
 		# set weights of first and last points
-		segment[0].add_weight((segment[1].time - segment[0].time)
-		.total_seconds() / 2)
-		segment[-1].add_weight((segment[-1].time - segment[-2].time)
-		.total_seconds() / 2)
+		segment[0].add_weight(
+			(segment[1].time - segment[0].time).total_seconds() / 2 
+		)
+		segment[-1].add_weight(
+			(segment[-1].time - segment[-2].time).total_seconds() / 2 
+		)
 
 	#
 	# CLEANING METHODS BELOW
@@ -552,12 +567,3 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
-
-	def remove_repeated_locations(self):
-		"""
-		"""
-		new_locations = []
-		for l in self.locations:
-			if l not in new_locations:
-				new_locations.append(l)
-		self.locations = new_locations

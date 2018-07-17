@@ -57,7 +57,6 @@ def analyze_user(tup):
 			print("\t{} identical timestamps found.".format(user.identical))
 		# find locations with the cleaned data
 		user.get_activity_locations()
-		user.remove_repeated_locations()
 		# allocate time
 		user.break_trips()
 		# write the output
