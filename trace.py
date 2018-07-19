@@ -212,7 +212,7 @@ class Trace(object):
 		for i in range(1, len(self.points)):
 			if (distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
-				self.points[i].epoch - self.points[i-1].epoch > 1 * 3600):
+				self.points[i].epoch - self.points[i-1].epoch > 2 * 3600):
 				# append point to next segment
 				known_segments.append(segment)
 				segment = [self.points[i]]
