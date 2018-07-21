@@ -68,7 +68,8 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
 					location.id,  # location_id
 					location.longitude,
 					location.latitude,
@@ -80,7 +81,8 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
 					i,  # activity sequence
 					episode.location_id,  # location_id
 					'',  # mode (not currently used)
@@ -93,7 +95,8 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(self.id,
+				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
+					self.id,
 					point.longitude,
 					point.latitude,
 					point.x,
@@ -108,23 +111,20 @@ class Trace(object):
 		"""Output daily summary to CSV."""
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
-			for date in days:
-				s = "{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
-				fid = self.id
-				fdt = date
-				fwd = date.weekday()
-				ftt = sum(days[date]['total'])
-				flt = len(days[date]['travel'])
-				fst = sum(days[date]['travel'])
-				fsu = sum(days[date]['unknown'])
-				fsh = sum(days[date]['home'])
-				fsw = sum(days[date]['work'])
-				fss = sum(days[date]['school'])
-				flh = len(days[date]['home'])
-				flw = len(days[date]['work'])
-				fls = len(days[date]['school'])
-				s.format(fid, fdt, fwd, ftt, flt, fst, fsu, fsh, fsw, fss, flh, flw, fls)
-				f.write(s)
+			for date, data in days.items():
+				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
+					self.id, date, date.weekday(),
+					sum(data['total']),
+					len(data['travel']),
+					sum(data['travel']),
+					sum(data['unknown']),
+					sum(data['home']),
+					sum(data['work']),
+					sum(data['school']),
+					len(data['home']),
+					len(data['work']),
+					len(data['school'])
+				))
 
 	def flush(self):
 		"""
