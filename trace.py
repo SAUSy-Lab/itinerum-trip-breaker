@@ -63,7 +63,8 @@ class Trace(object):
 		all_indices = [i for i, p in enumerate(self.points)]
 		self.observe_neighbors(all_indices)
 
-	def write_activities(self):
+	def write_locations(self):
+		""" Output activity locations to CSV."""
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
@@ -75,6 +76,7 @@ class Trace(object):
 					location.visited))  # whether it was used or not
 
 	def write_episodes(self):
+		""" Output episode data to CSV."""
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
@@ -86,6 +88,7 @@ class Trace(object):
 					episode.start))  # start_time
 
 	def write_points(self):
+		""" Output point attributes to CSV for debugging."""
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
@@ -101,8 +104,8 @@ class Trace(object):
 					point.state,
 					point.kde_p))
 
-	def write_summary(self):
-		# output day summary file for Steve
+	def write_day_summary(self):
+		"""Output daily summary to CSV."""
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
 			for date in days:
@@ -125,16 +128,16 @@ class Trace(object):
 
 	def flush(self):
 		"""
-		After everything is finished write all the output from this trace.
-		All writing to files should be done here if possible. Any data that
-		needs to ultimately find it's way here should be stored as a property.
-		All Trace's call this at the end, and the files are initialized in main
-		so we only append rows here.
+		After everything is finished, write all the output from this trace to CSV 
+		files defined in config. All writing to files should be done here if 
+		possible. Any data that needs to ultimately find it's way here should be 
+		stored as a property. All Trace objects call this at the end, and the 
+		files are initialized in main, so we only append rows here.
 		"""
-		self.write_activities()
+		self.write_locations()
 		self.write_episodes()
 		self.write_points()
-		self.write_summary()
+		self.write_day_summary()
 
 	def get_days(self):
 		"""
