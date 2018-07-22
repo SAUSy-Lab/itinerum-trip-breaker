@@ -3,14 +3,10 @@ import csv
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import (distance, inner_angle_sphere, kde,
-	min_peak, state_transition_matrix,
-	viterbi, emission_probabilities)
+from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
+	state_transition_matrix, viterbi, emission_probabilities)
 from datetime import timedelta, datetime
 from math import sqrt
-
-#TODO functions may need to be refactored or taken elsewhere
-
 
 class Trace(object):
 	"""
@@ -20,29 +16,26 @@ class Trace(object):
 
 	def __init__(self, user_id, raw_data, raw_survey):
 		"""
-		Construct the user object by pulling all data pertaining to this user.
-		Identified by ID
+		Construct the user object by pulling all data pertaining to this user, 
+		identified by ID.
 		"""
 		self.id = user_id
-		# There are many lists of points. The first is the set of original
-		# input points, minus any that get cleaned out. Those are moved to
-		# "discarded_points" where they are left to their own devices.
-		# "known_subsets" is a list of lists of points partitioned by gaps in
-		# the data where e.g. the phone has turned off inexplicably.
-		# "known_subsets_interpolated" are the subsets with points added in the
-		# middle. "all_interpolated_points" is the flattened version of the
-		# preceding, containing all real and interpolated points in one place.
-		# This one gets used for KDE etc.
 		self.raw = raw_data
 		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 data
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
-
+		# the set of original input points, minus any that get cleaned out. 
 		self.points = []
+		# points removed during cleaning
 		self.discarded_points = []
+		# "known_subsets" is a list of lists of points partitioned by gaps in
+		# the data where e.g. the phone has turned off inexplicably.
 		self.known_subsets = []
+		# "known_subsets_interpolated" are the subsets with points added in the
+		# middle. "all_interpolated_points" is the flattened version of the
+		# preceding, containing all real and interpolated points in one place.
+		# This one gets used for KDE etc.
 		self.known_subsets_interpolated = []
-		self.all_interpolated_points = []
 		# list of potential activity locations
 		self.locations = []
 		# dictionary of activity episodes?
@@ -53,7 +46,6 @@ class Trace(object):
 		self.identical = 0
 		# read in all time and location data for points
 		# right now only using a few fields
-
 		for row in raw_data:
 			self.points.append(Point(row['timestamp'],
 				float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
@@ -63,124 +55,10 @@ class Trace(object):
 		all_indices = [i for i, p in enumerate(self.points)]
 		self.observe_neighbors(all_indices)
 
-	def write_activities(self):
-		# write potential activity locations to file
-		with open(config.output_locations_file, "a") as f:
-			for location in self.locations:
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
-					location.id,  # location_id
-					location.longitude,
-					location.latitude,
-					location.name,  # description
-					location.visited))  # whether it was used or not
-
-	def write_episodes(self):
-		# write episodes file
-		with open(config.output_episodes_file, "a") as f:
-			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
-					i,  # activity sequence
-					episode.location_id,  # location_id
-					'',  # mode (not currently used)
-					episode.unknown,  # unknown
-					episode.start))  # start_time
-
-	def write_points(self):
-		# write preliminary points file
-		# 'user_id,lon,lat,removed,interpolated,state'
-		with open(config.output_points_file, 'a') as f:
-			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(self.id,
-					point.longitude,
-					point.latitude,
-					point.x,
-					point.y,
-					point.weight,
-					point.discarded,
-					point.synthetic,
-					point.state,
-					point.kde_p))
-
-	def write_summary(self):
-		# output day summary file for Steve
-		days = self.get_days()
-		with open(config.output_days_file, 'a') as f:
-			for date in days:
-				s = "{},{},{},{},{},{},{},{},{},{},{},{},{}\n"
-				fid = self.id
-				fdt = date
-				fwd = date.weekday()
-				ftt = sum(days[date]['total'])
-				flt = len(days[date]['travel'])
-				fst = sum(days[date]['travel'])
-				fsu = sum(days[date]['unknown'])
-				fsh = sum(days[date]['home'])
-				fsw = sum(days[date]['work'])
-				fss = sum(days[date]['school'])
-				flh = len(days[date]['home'])
-				flw = len(days[date]['work'])
-				fls = len(days[date]['school'])
-				s.format(fid, fdt, fwd, ftt, flt, fst, fsu, fsh, fsw, fss, flh, flw, fls)
-				f.write(s)
-
-	def flush(self):
-		"""
-		After everything is finished write all the output from this trace.
-		All writing to files should be done here if possible. Any data that
-		needs to ultimately find it's way here should be stored as a property.
-		All Trace's call this at the end, and the files are initialized in main
-		so we only append rows here.
-		"""
-		self.write_activities()
-		self.write_episodes()
-		self.write_points()
-		self.write_summary()
-
-	def get_days(self):
-		"""
-		Repartition episodes into day units.
-		"""
-		day_offset = timedelta(hours=3)
-		days = {}
-		# for each episode except the last (always compare to next)
-		for i in range(0, len(self.episodes) - 1):
-			# what date(s) did this occur on?
-			start_date = (self.episodes[i].start - day_offset).date()
-			end_date = (self.episodes[i+1].start - day_offset).date()
-			date_range = (end_date-start_date).days
-			# for each date touched by each activity
-			for offset in range(0, date_range + 1):
-				date = start_date + timedelta(days=offset)
-				# initialize the date the first time we see it
-				if date not in days:
-					days[date] = {'home': [], 'work': [], 'school': [],
-					'other': [], 'travel': [], 'unknown': [], 'total': []}
-				# how much of this activity occured on this date?
-				# first limit start_time to start of this day
-				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
-				st1 = slicer1 if self.episodes[i].start < slicer1 else\
-					self.episodes[i].start
-				# now limit end time to end of this day
-				slicer2 = datetime.combine(date + timedelta(days=1),
-					datetime.min.time()) + day_offset
-				st2 = slicer2 if self.episodes[i+1].start > slicer2 else\
-					self.episodes[i+1].start
-				# get duration in minutes from timedelta obj
-				duration = (st2-st1).total_seconds() / 60
-				# add activity duration to the total for this date
-				days[date]['total'].append(duration)
-				# now also add the duration to the appropriate category
-				if self.episodes[i].e_type == 'trip':
-					days[date]['travel'].append(duration)
-				elif self.episodes[i].e_type == 'unknown':
-					days[date]['unknown'].append(duration)
-				elif self.episodes[i].e_type == 'activity':
-					if self.episodes[i].a_type:
-						# activity location in ['home','work','school']
-						days[date][self.episodes[i].a_type].append(duration)
-					else:  # activity location not known
-						days[date]['other'].append(duration)
-		return days
+	@property
+	def all_interpolated_points(self):
+		"""Get all (real & interpolated) points in one big list"""
+		return [ p for s in self.known_subsets_interpolated for p in s ]
 
 	def interpolate_segment(self, segment):
 		"""
@@ -241,8 +119,6 @@ class Trace(object):
 			interpolated_subset = subset  # self.interpolate_segment(subset)
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
-		# get all (real & interpolated) points in one big list
-		self.all_interpolated_points = [p for s in self.known_subsets_interpolated for p in s]
 		if len(self.all_interpolated_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
@@ -387,10 +263,6 @@ class Trace(object):
 				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
 			this_point.add_weight(w1)
 			next_point.add_weight(w2)
-
-	#
-	# CLEANING METHODS BELOW
-	#
 
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply
@@ -549,3 +421,125 @@ class Trace(object):
 			if len(errors.keys()) > 0:
 				return errors[max(errors.keys())]
 		return False
+
+	def get_days(self):
+		"""
+		Repartition episodes into day units.
+		"""
+		day_offset = timedelta(hours=3)
+		days = {}
+		# for each episode except the last (always compare to next)
+		for i in range(0, len(self.episodes) - 1):
+			# what date(s) did this occur on?
+			start_date = (self.episodes[i].start - day_offset).date()
+			end_date = (self.episodes[i+1].start - day_offset).date()
+			date_range = (end_date-start_date).days
+			# for each date touched by each activity
+			for offset in range(0, date_range + 1):
+				date = start_date + timedelta(days=offset)
+				# initialize the date the first time we see it
+				if date not in days:
+					days[date] = {'home': [], 'work': [], 'school': [],
+					'other': [], 'travel': [], 'unknown': [], 'total': []}
+				# how much of this activity occured on this date?
+				# first limit start_time to start of this day
+				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
+				st1 = slicer1 if self.episodes[i].start < slicer1 else\
+					self.episodes[i].start
+				# now limit end time to end of this day
+				slicer2 = datetime.combine(date + timedelta(days=1),
+					datetime.min.time()) + day_offset
+				st2 = slicer2 if self.episodes[i+1].start > slicer2 else\
+					self.episodes[i+1].start
+				# get duration in minutes from timedelta obj
+				duration = (st2-st1).total_seconds() / 60
+				# add activity duration to the total for this date
+				days[date]['total'].append(duration)
+				# now also add the duration to the appropriate category
+				if self.episodes[i].e_type == 'trip':
+					days[date]['travel'].append(duration)
+				elif self.episodes[i].e_type == 'unknown':
+					days[date]['unknown'].append(duration)
+				elif self.episodes[i].e_type == 'activity':
+					if self.episodes[i].a_type:
+						# activity location in ['home','work','school']
+						days[date][self.episodes[i].a_type].append(duration)
+					else:  # activity location not known
+						days[date]['other'].append(duration)
+		return days
+
+	def flush(self):
+		"""
+		After everything is finished, write all the output from this trace to CSV 
+		files defined in config. All writing to files should be done here if 
+		possible. Any data that needs to ultimately find it's way here should be 
+		stored as a property. All Trace objects call this at the end, and the 
+		files are initialized in main, so we only append rows here.
+		"""
+		self.write_locations()
+		self.write_episodes()
+		self.write_points()
+		self.write_day_summary()
+
+	def write_locations(self):
+		""" Output activity locations to CSV."""
+		# write potential activity locations to file
+		with open(config.output_locations_file, "a") as f:
+			for location in self.locations:
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
+					location.id,  # location_id
+					location.longitude,
+					location.latitude,
+					location.name,  # description
+					location.visited))  # whether it was used or not
+
+	def write_episodes(self):
+		""" Output episode data to CSV."""
+		# write episodes file
+		with open(config.output_episodes_file, "a") as f:
+			for i, episode in enumerate(self.episodes):
+				f.write("{},{},{},{},{},{}\n".format(
+					self.id,  # user_id
+					i,  # activity sequence
+					episode.location_id,  # location_id
+					'',  # mode (not currently used)
+					episode.unknown,  # unknown
+					episode.start))  # start_time
+
+	def write_points(self):
+		""" Output point attributes to CSV for debugging."""
+		# write preliminary points file
+		# 'user_id,lon,lat,removed,interpolated,state'
+		with open(config.output_points_file, 'a') as f:
+			for point in self.discarded_points + self.all_interpolated_points:
+				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
+					self.id,
+					point.longitude,
+					point.latitude,
+					point.x,
+					point.y,
+					point.weight,
+					point.discarded,
+					point.synthetic,
+					point.state,
+					point.kde_p))
+
+	def write_day_summary(self):
+		"""Output daily summary to CSV."""
+		days = self.get_days()
+		with open(config.output_days_file, 'a') as f:
+			for date, data in days.items():
+				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
+					self.id, date, date.weekday(),
+					sum(data['total']),
+					len(data['travel']),
+					sum(data['travel']),
+					sum(data['unknown']),
+					sum(data['home']),
+					sum(data['work']),
+					sum(data['school']),
+					len(data['home']),
+					len(data['work']),
+					len(data['school'])
+				))
