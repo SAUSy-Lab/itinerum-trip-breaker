@@ -196,17 +196,16 @@ class Trace(object):
 			for i, point in enumerate(points):
 				if i == 0:
 					# record first episode
-					self.episodes.append(Episode(point.time, point.location, False))
+					self.episodes.append( Episode(point.time, point.location) )
 				else:
 					# look for state changes
 					if prev_point.state != point.state:
 						# assume the transition happens halfway between points
 						transition_time = prev_point.time+(point.time-prev_point.time)/2
-						self.episodes.append(Episode(transition_time,
-							point.location, False))
+						self.episodes.append( Episode(transition_time, point.location) )
 				prev_point = point
 			# unknown time ends every known segment
-			self.episodes.append(Episode(points[-1].time, None, True))
+			self.episodes.append( Episode(points[-1].time, is_unknown_time=True) )
 		if config.db_out:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -462,16 +461,14 @@ class Trace(object):
 				# add activity duration to the total for this date
 				days[date]['total'].append(duration)
 				# now also add the duration to the appropriate category
-				if self.episodes[i].e_type == 'trip':
+				if self.episodes[i].type == 'trip':
 					days[date]['travel'].append(duration)
-				elif self.episodes[i].e_type == 'unknown':
+				elif self.episodes[i].type == 'unknown':
 					days[date]['unknown'].append(duration)
-				elif self.episodes[i].e_type == 'activity':
-					if self.episodes[i].a_type:
-						# activity location in ['home','work','school']
-						days[date][self.episodes[i].a_type].append(duration)
-					else:  # activity location not known
-						days[date]['other'].append(duration)
+				elif self.episodes[i].type in ['home','work','school']:
+					days[date][self.episodes[i].type].append(duration)
+				else:  # activity location not known
+					days[date]['other'].append(duration)
 		return days
 
 	def flush(self):
