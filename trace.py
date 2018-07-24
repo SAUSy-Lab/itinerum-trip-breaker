@@ -483,25 +483,28 @@ class Trace(object):
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
-					location.id,  # location_id
+					self.id,           # user_id
+					location.id,       # location_id
 					location.longitude,
 					location.latitude,
-					location.name,  # description
-					location.visited))  # whether it was used or not
+					location.name,     # description
+					location.visited   # whether location was used or not
+				))  
 
 	def write_episodes(self):
 		""" Output episode data to CSV."""
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(
+				f.write("{},{},{},{},{},{},{}\n".format(
 					self.id,  # user_id
-					i,  # activity sequence
-					episode.location_id,  # location_id
-					'',  # mode (not currently used)
-					episode.unknown,  # unknown
-					episode.start))  # start_time
+					i,        # activity sequence
+					episode.location_id,
+					'',       # mode (not currently used)
+					True if episode.unknown else '',
+					episode.start,             # timestamp
+					episode.start.timestamp()  # unix time
+			)) 
 
 	def write_points(self):
 		""" Output point attributes to CSV for debugging."""

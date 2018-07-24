@@ -18,7 +18,7 @@ def initialize_output_files():
 	"""
 	# episodes file
 	f = open(config.output_episodes_file, "w")
-	f.write('user_id,sequence,location_id,mode,unknown,start_time\n')
+	f.write('user_id,sequence,location_id,mode,unknown,start_time,unix_time\n')
 	f.close()
 	# locations file
 	f = open(config.output_locations_file, "w")
