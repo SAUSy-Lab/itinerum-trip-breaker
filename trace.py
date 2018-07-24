@@ -461,14 +461,7 @@ class Trace(object):
 				# add activity duration to the total for this date
 				days[date]['total'].append(duration)
 				# now also add the duration to the appropriate category
-				if self.episodes[i].type == 'trip':
-					days[date]['travel'].append(duration)
-				elif self.episodes[i].type == 'unknown':
-					days[date]['unknown'].append(duration)
-				elif self.episodes[i].type in ['home','work','school']:
-					days[date][self.episodes[i].type].append(duration)
-				else:  # activity location not known
-					days[date]['other'].append(duration)
+				days[date][self.episodes[i].type].append(duration)
 		return days
 
 	def flush(self):
