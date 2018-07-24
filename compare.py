@@ -211,7 +211,7 @@ def find_unknown_time(start_times, uflags, users):
 	return result
 
 
-# TODO remove this once timestamps are standardized to epoch time
+# TODO remove this once timestamps are standardized to UTC epoch time
 def parse_gt_ts(t):
 	""" (str) -> DateTime
 	'mm/dd/yyyy HH:mm XX'

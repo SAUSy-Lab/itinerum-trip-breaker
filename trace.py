@@ -50,7 +50,7 @@ class Trace(object):
 			self.points.append(Point(row['timestamp'],
 				float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
 		# sort the list by time
-		self.points.sort(key=lambda x: x.epoch)
+		self.points.sort(key=lambda x: x.unix_time)
 		# measure to and from neighbors
 		all_indices = [i for i, p in enumerate(self.points)]
 		self.observe_neighbors(all_indices)
@@ -90,7 +90,7 @@ class Trace(object):
 		for i in range(1, len(self.points)):
 			if (distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
-				self.points[i].epoch - self.points[i-1].epoch > 1 * 3600):
+				self.points[i].unix_time - self.points[i-1].unix_time > 1 * 3600):
 				# append point to next segment
 				known_segments.append(segment)
 				segment = [self.points[i]]
@@ -103,7 +103,7 @@ class Trace(object):
 		for segment in known_segments:
 			if (len(segment) > 1 and
 				# sufficient time between last and first points
-				segment[-1].epoch - segment[0].epoch > 3600):
+				segment[-1].unix_time - segment[0].unix_time > 3600):
 				# mininum time length of segment?
 				self.known_subsets.append(segment)
 		if config.db_out:
