@@ -3,7 +3,7 @@
 #
 import math
 import config
-import datetime
+from datetime import datetime, timezone,timedelta
 from geopy.distance import great_circle
 from pyproj import Proj, transform
 from scipy.stats import multivariate_normal
@@ -108,23 +108,22 @@ def ts_str(ts, tz):
 
 def parse_ts(timestamp):
 	"""
-	Return a datetime object and a timezone string given a
-	properly formatted timestamp string.
-	Formatted according to itinerum output.
-
-	inverts ts_str
+	Return an aware datetime object given a timestamp string formatted like:
+	'2017-09-08 16:54:16-04:00' ('YYYY-MM-DDThh:mm:ss-OO:oo')
+	inverts ts_str()
 	"""
 	if timestamp == "":
-		return "", ""
-	# ts = 'YYYY-MM-DDThh:mm:ss-00:00'
+		return None
 	year = int(timestamp[:4])
 	month = int(timestamp[5:7])
 	day = int(timestamp[8:10])
 	hour = int(timestamp[11:13])
 	minutes = int(timestamp[14:16])
 	second = int(timestamp[17:19])
-	tz = timestamp[20:]
-	return datetime.datetime(year, month, day, hour, minutes, second), tz
+	tz_offset_h = int(timestamp[19:22])
+	tz_offset_m = int(timestamp[23:25])
+	tz = timezone( timedelta(hours=tz_offset_h,minutes=tz_offset_m) )
+	return datetime(year, month, day, hour, minutes, second,tzinfo=tz)
 
 
 # TODO this should be in the Point class

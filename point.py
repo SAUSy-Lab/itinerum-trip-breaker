@@ -1,7 +1,7 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
 from datetime import timedelta
 from math import ceil
-import config
+import config, re
 
 
 class Point(object):
@@ -9,18 +9,26 @@ class Point(object):
 	A location/time point ie GPS point.
 	"""
 
-	def __init__(self, timestamp, longitude, latitude, accuracy_meters):
+	def __init__(self, time, longitude, latitude, accuracy_meters):
 		# set initially:
 		self.accuracy = accuracy_meters
 		self.latitude = latitude
 		self.longitude = longitude
+		# time is either a decimal representing the unix epoch
+		# or a string representation of a timestamp with time zone
+#		if type(time) in [int,float]:
+#			self.unix_time = time
+#		else if type(time) is str:
+#			if not re.search('*[:-]',time):
+#				# still a number
+#			else:
+				# definitely a timestamp str
+		self.ts = time
+		self.time = parse_ts(time) # timezone aware datetime instance
+
+		# these get set later; just defining them here for clarity
 		self.X = None           # do not access this directly
 		self.Y = None           # do not access this directly
-		# a string representation of a timestampt
-		self.ts = timestamp
-		# datetime representation of the same timestamp
-		self.time, self.tz = parse_ts(timestamp)
-		# these get set later; just defining them here
 		self.d_ante = None      # distance to previous point
 		self.d_post = None      # distance to next point
 		self.angle = None       # angle between this and adjacent points
