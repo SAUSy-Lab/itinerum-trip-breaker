@@ -91,26 +91,18 @@ def unproject(x, y, from_projection_string='epsg:3347'):
 	return longitude, latitude
 
 
-def ts_str(ts, tz):
+def ts_str(date_time):
 	"""
-	Return a properly formatted timestamp string from a datetime
-	object and a timezone string.
-
-	inverts parse_ts
+	Return a timestamp string from a timezone aware datetime object.
+	e.g. '2017-09-08T16:54:16-04:00'
 	"""
-	mo = str(ts.month) if ts.month > 9 else "0"+str(ts.month)
-	d = str(ts.day) if ts.day > 9 else "0"+str(ts.day)
-	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
-	mi = str(ts.minute) if ts.minute > 9 else "0"+str(ts.minute)
-	s = str(ts.second) if ts.second > 9 else "0"+str(ts.second)
-	return "{}-{}-{} {}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
+	return date_time.isoformat()
 
 
 def parse_ts(timestamp):
 	"""
 	Return an aware datetime object given a timestamp string formatted like:
 	'2017-09-08 16:54:16-04:00' ('YYYY-MM-DDThh:mm:ss-OO:oo')
-	inverts ts_str()
 	"""
 	if timestamp == "":
 		return None

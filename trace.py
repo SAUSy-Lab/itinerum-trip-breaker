@@ -1,11 +1,11 @@
 import config
 import csv
+import datetime as dt
 from point import Point
 from episode import Episode
 from location import Location
 from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
 	state_transition_matrix, viterbi, emission_probabilities)
-from datetime import timedelta, datetime
 from math import sqrt
 
 class Trace(object):
@@ -424,31 +424,30 @@ class Trace(object):
 
 	def get_days(self):
 		"""
-		Repartition episodes into day units.
+		Slice episodes by day.
 		"""
-		day_offset = timedelta(hours=3)
 		days = {}
 		# for each episode except the last (always compare to next)
 		for i in range(0, len(self.episodes) - 1):
 			# what date(s) did this occur on?
-			start_date = (self.episodes[i].start - day_offset).date()
-			end_date = (self.episodes[i+1].start - day_offset).date()
+			tz = self.episodes[i].start.tzinfo
+			start_date = self.episodes[i].start.date()
+			end_date = self.episodes[i+1].start.date()
 			date_range = (end_date-start_date).days
 			# for each date touched by each activity
 			for offset in range(0, date_range + 1):
-				date = start_date + timedelta(days=offset)
+				date = start_date + dt.timedelta(days=offset)
 				# initialize the date the first time we see it
 				if date not in days:
 					days[date] = {'home': [], 'work': [], 'school': [],
 					'other': [], 'travel': [], 'unknown': [], 'total': []}
 				# how much of this activity occured on this date?
 				# first limit start_time to start of this day
-				slicer1 = datetime.combine(date, datetime.min.time()) + day_offset
+				slicer1 = dt.datetime.combine(date, dt.time(0,0,0,0,tzinfo=tz) )
 				st1 = slicer1 if self.episodes[i].start < slicer1 else\
 					self.episodes[i].start
 				# now limit end time to end of this day
-				slicer2 = datetime.combine(date + timedelta(days=1),
-					datetime.min.time()) + day_offset
+				slicer2 = dt.datetime.combine(date + dt.timedelta(days=1), dt.time(0,0,0,0,tzinfo=tz) )
 				st2 = slicer2 if self.episodes[i+1].start > slicer2 else\
 					self.episodes[i+1].start
 				# get duration in minutes from timedelta obj
