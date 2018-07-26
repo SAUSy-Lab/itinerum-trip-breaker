@@ -1,4 +1,4 @@
-user_id,sequence,location_id,mode,unknown,local_time,unix_time
+user_id,sequence,location_id,mode,unknown,local_start_time,unix_start_time
 A,1,2,,TRUE,,
 A,2,,walk,,2017-09-08 17:26:00,1504905960
 A,3,1,,,2017-09-08 17:32:00,1504906320

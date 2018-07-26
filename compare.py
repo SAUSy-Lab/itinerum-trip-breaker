@@ -97,9 +97,9 @@ def compare_episode_time(truth, guess):
 	# True and computed unknown times
 	ht = read_headers(truth)
 	hg = read_headers(guess)
-	tut = find_unknown_time(truth_dict[ht["start_time"]],
+	tut = find_unknown_time(truth_dict[ht["local_start_time"]],
 				truth_dict[ht["unknown"]], truth_dict[ht["user_id"]])
-	cut = find_unknown_time(guess_dict[hg["start_time"]],
+	cut = find_unknown_time(guess_dict[hg["local_start_time"]],
 				guess_dict[hg["unknown"]], guess_dict[hg["user_id"]])
 	for user in tut.keys():
 		if user not in cut.keys():
@@ -196,10 +196,7 @@ def find_unknown_time(start_times, uflags, users):
 	for i in range(len(start_times)):
 		lst = []
 		user = users[i]
-		if start_times[i].strip().endswith("M"):
-			ts = parse_gt_ts(start_times[i])
-			lst.append((ts, literal_eval(uflags[i])))
-		elif start_times[i] == "":
+		if start_times[i] == "":
 			pass
 		else:
 			ts, _ = parse_ts(start_times[i] + "-00:00")
@@ -209,25 +206,6 @@ def find_unknown_time(start_times, uflags, users):
 		else:
 			result[user].extend(lst)
 	return result
-
-
-# TODO remove this once timestamps are standardized to UTC epoch time
-def parse_gt_ts(t):
-	""" (str) -> DateTime
-	'mm/dd/yyyy HH:mm XX'
-	'yyyy-mm-ddTHH:mm:ss-00:00'
-
-	Parse archaic timestamps into a human readable format.
-	"""
-	year = t[6:8]
-	month = t[:2]
-	day = t[3:5]
-	minute = t[12:14]
-	hour = t[9:11]
-	second = "01"
-	real_timestamp = "20{}-{}-{}T{}:{}:{}-00:00".format(year, month,
-							day, hour, minute, second)
-	return parse_ts(real_timestamp)[0]
 
 
 def literal_eval(string):
