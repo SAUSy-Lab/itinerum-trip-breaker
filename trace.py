@@ -90,6 +90,7 @@ class Trace(object):
 		for i in range(1, len(self.points)):
 			if (distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
+				# 3600 seconds is 1 hour
 				self.points[i].unix_time - self.points[i-1].unix_time > 1 * 3600):
 				# append point to next segment
 				known_segments.append(segment)
@@ -245,15 +246,16 @@ class Trace(object):
 
 		"""
 		assert len(segment) > 1
-		# iterate over middle points, i.e. skipping termini
-		for i in range(1, len(segment)-1):
+		# iterate over all points except terminal.
+		for i in range(len(segment)-1):
 			this_point = segment[i]
 			next_point = segment[i+1]
 
-			d = distance(this_point, next_point) + 1
+			d = distance(this_point, next_point)
 			t = (next_point.time - this_point.time).total_seconds()
 			if t == 0:  # occurs when there are identical timestamps
-				self.identical += 1
+				self.identical += 1  # for accounting 
+				# there is no time weight between these points
 				w1 = 0
 				w2 = 0
 			else:
@@ -261,13 +263,6 @@ class Trace(object):
 				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
 			this_point.add_weight(w1)
 			next_point.add_weight(w2)
-		# set weights of first and last points
-		segment[0].add_weight(
-			(segment[1].time - segment[0].time).total_seconds() / 2 
-		)
-		segment[-1].add_weight(
-			(segment[-1].time - segment[-2].time).total_seconds() / 2 
-		)
 
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply

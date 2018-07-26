@@ -122,7 +122,7 @@ def compare_user_eps(truth, computed):
 	# total unknown time, correctly identified, misidentified
 	tut, ciut, mut = 0, 0, 0
 	# activity time
-	tat, ciat, mat = 1, 0, 0
+	tat, ciat, mat = 0, 0, 0
 	total = 0
 	# while both iterators haven't reached the end of the survey time
 	while truth[i][0] < end_time and computed[j][0] < end_time:
@@ -132,6 +132,8 @@ def compare_user_eps(truth, computed):
 			lb = max(truth[i][0], computed[j][0])
 			it = (ee - lb)
 			time = it.days * 24 * 60 + it.seconds / 60
+			#if time < 0:
+			#	print("{} seconds between {} and {}".format(time, lb, ee))
 			total += time
 			if truth[i][1] and computed[j][1]:  # correctly identified unknown time T-T
 				ciut += time

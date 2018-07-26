@@ -61,7 +61,7 @@ db_out = True
 # that particular metric, in particular:
 # correctly identified unknown time and activity time (not location dependent)
 # and misidentified unknown and activity time.
-percent_total = False
+percent_total = True
 
 # Number of worker processes on which to run main.py
 # and a flag toggling whether or not to use multiprocessing for main.py

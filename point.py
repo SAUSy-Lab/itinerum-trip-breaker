@@ -119,9 +119,13 @@ class Point(object):
 				new_points.append(new_point)
 		return new_points
 
-	# TODO documentation needed
 	def weight_decimal(self, param):
-		assert param > 0
+		"""
+		Retuns a value varying from 0.5 to 1 as param varies from 0 to infinity.
+		Allows weight to be distributed between points according to
+		a exponential function in the ratio of their distance and 
+		time difference
+		"""
 		return (-1) / (param + 2) + 1
 
 	def add_weight(self, weight):
@@ -129,4 +133,4 @@ class Point(object):
 		Assigns time-based weight value.
 		"""
 		assert weight >= 0  # we may want negative weights eventually?
-		self.weight = weight
+		self.weight += weight
