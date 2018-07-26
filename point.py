@@ -43,9 +43,9 @@ class Point(object):
 		return (self.latitude, self.longitude)
 
 	@property
-	def epoch(self):
+	def unix_time(self):
 		"""
-		Return the time in seconds since the epoch.
+		Return the Unix time (seconds since the UTC epoch).
 		"""
 		return self.time.timestamp()
 

@@ -21,7 +21,7 @@ class Trace(object):
 		"""
 		self.id = user_id
 		self.raw = raw_data
-		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 data
+		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 locations
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
 		# the set of original input points, minus any that get cleaned out. 
@@ -50,7 +50,7 @@ class Trace(object):
 			self.points.append(Point(row['timestamp'],
 				float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
 		# sort the list by time
-		self.points.sort(key=lambda x: x.epoch)
+		self.points.sort(key=lambda x: x.unix_time)
 		# measure to and from neighbors
 		all_indices = [i for i, p in enumerate(self.points)]
 		self.observe_neighbors(all_indices)
@@ -90,7 +90,8 @@ class Trace(object):
 		for i in range(1, len(self.points)):
 			if (distance(self.points[i], self.points[i-1]) > 1000 and
 				# time gap > 2 hours?
-				self.points[i].epoch - self.points[i-1].epoch > 2 * 3600):
+				# 3600 seconds is 1 hour
+				self.points[i].unix_time - self.points[i-1].unix_time > 1 * 3600):
 				# append point to next segment
 				known_segments.append(segment)
 				segment = [self.points[i]]
@@ -103,7 +104,7 @@ class Trace(object):
 		for segment in known_segments:
 			if (len(segment) > 1 and
 				# sufficient time between last and first points
-				segment[-1].epoch - segment[0].epoch > 3600):
+				segment[-1].unix_time - segment[0].unix_time > 3600):
 				# mininum time length of segment?
 				self.known_subsets.append(segment)
 		if config.db_out:
@@ -196,17 +197,16 @@ class Trace(object):
 			for i, point in enumerate(points):
 				if i == 0:
 					# record first episode
-					self.episodes.append(Episode(point.time, point.location, False))
+					self.episodes.append( Episode(point.time, point.location) )
 				else:
 					# look for state changes
 					if prev_point.state != point.state:
 						# assume the transition happens halfway between points
 						transition_time = prev_point.time+(point.time-prev_point.time)/2
-						self.episodes.append(Episode(transition_time,
-							point.location, False))
+						self.episodes.append( Episode(transition_time, point.location) )
 				prev_point = point
 			# unknown time ends every known segment
-			self.episodes.append(Episode(points[-1].time, None, True))
+			self.episodes.append( Episode(points[-1].time, is_unknown_time=True) )
 		if config.db_out:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -281,7 +281,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
@@ -369,7 +369,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
@@ -383,7 +383,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
@@ -396,7 +396,7 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		if config.db_out:
+		if config.db_out and count > 0:
 			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
@@ -456,16 +456,7 @@ class Trace(object):
 				# add activity duration to the total for this date
 				days[date]['total'].append(duration)
 				# now also add the duration to the appropriate category
-				if self.episodes[i].e_type == 'trip':
-					days[date]['travel'].append(duration)
-				elif self.episodes[i].e_type == 'unknown':
-					days[date]['unknown'].append(duration)
-				elif self.episodes[i].e_type == 'activity':
-					if self.episodes[i].a_type:
-						# activity location in ['home','work','school']
-						days[date][self.episodes[i].a_type].append(duration)
-					else:  # activity location not known
-						days[date]['other'].append(duration)
+				days[date][self.episodes[i].type].append(duration)
 		return days
 
 	def flush(self):
@@ -487,25 +478,28 @@ class Trace(object):
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
 				f.write("{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
-					location.id,  # location_id
+					self.id,           # user_id
+					location.id,       # location_id
 					location.longitude,
 					location.latitude,
-					location.name,  # description
-					location.visited))  # whether it was used or not
+					location.name,     # description
+					location.visited   # whether location was used or not
+				))  
 
 	def write_episodes(self):
 		""" Output episode data to CSV."""
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{}\n".format(
+				f.write("{},{},{},{},{},{},{}\n".format(
 					self.id,  # user_id
-					i,  # activity sequence
-					episode.location_id,  # location_id
-					'',  # mode (not currently used)
-					episode.unknown,  # unknown
-					episode.start))  # start_time
+					i,        # activity sequence
+					episode.location_id,
+					'',       # mode (not currently used)
+					True if episode.unknown else '',
+					episode.start,             # timestamp
+					episode.start.timestamp()  # unix time
+			)) 
 
 	def write_points(self):
 		""" Output point attributes to CSV for debugging."""

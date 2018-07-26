@@ -103,7 +103,7 @@ def ts_str(ts, tz):
 	h = str(ts.hour) if ts.hour > 9 else "0"+str(ts.hour)
 	mi = str(ts.minute) if ts.minute > 9 else "0"+str(ts.minute)
 	s = str(ts.second) if ts.second > 9 else "0"+str(ts.second)
-	return "{}-{}-{}T{}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
+	return "{}-{}-{} {}:{}:{}-{}".format(ts.year, mo, d, h, mi, s, tz)
 
 
 def parse_ts(timestamp):
