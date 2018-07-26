@@ -21,7 +21,7 @@ class Trace(object):
 		"""
 		self.id = user_id
 		self.raw = raw_data
-		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 data
+		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 locations
 		self.work = raw_survey[1]
 		self.school = raw_survey[2]
 		# the set of original input points, minus any that get cleaned out. 

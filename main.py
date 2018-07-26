@@ -36,10 +36,13 @@ def initialize_output_files():
 	f.close()
 
 
-def analyze_user(tup):
-	user_id = tup[0]
-	data = tup[1]
-	survey = tup[2]
+def analyze_user(user_data_list):
+	"""
+	User data is passed as a list for compatibility with multiprocessing
+	"""
+	user_id = user_data_list[0]
+	data = user_data_list[1]
+	survey = user_data_list[2]
 	user = Trace(user_id, data, survey)
 	if len(user.points) > 100:
 		if config.db_out:
@@ -92,16 +95,18 @@ if __name__ == "__main__":
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
 	initialize_output_files()
-	# loop over users calling all the functions for each
-
+	# create a list of users' data to work on
 	list_of_users = []
 	for uid, data in user_data.items():
-		# survey responses[ui] instead of (None, None, None)
-		list_of_users.append((uid, data, (None, None, None)))
+		list_of_users.append(( uid, data, survey_responses[uid] ))
+	# parallel processing option
 	if config.multi_process:
 		with Pool(config.num_pro) as p:
 			p.map(analyze_user, list_of_users)
+	# non-parallel processing
 	else:
-		for t in list_of_users:
-			analyze_user(t)
-	print("Done!\7", file=sys.stderr)
+		for user_data in list_of_users:
+			analyze_user(user_data)
+
+	print("Done!", file=sys.stderr)
+
