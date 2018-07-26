@@ -56,7 +56,7 @@ def analyze_user(user_data_list):
 		user.remove_sequential_duplicates()
 		# identify gaps in the data
 		user.make_known_subsets()
-		if config.db_out:
+		if config.db_out and user.identical > 0:
 			print("\t{} identical timestamps found.".format(user.identical))
 		# find locations with the cleaned data
 		user.get_activity_locations()

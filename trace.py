@@ -286,7 +286,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
@@ -374,7 +374,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
@@ -388,7 +388,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out:
+		if config.db_out and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
@@ -401,7 +401,7 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		if config.db_out:
+		if config.db_out and count > 0:
 			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
