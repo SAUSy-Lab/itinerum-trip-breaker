@@ -97,16 +97,11 @@ def compare_episodes(truth, compd):
 	# get the headers, both files should match
 	h = read_headers(truth)
 	metrics = []
+        
 	for user in true_users_to_eps:
 		if user in computed_users_to_eps:
-			i, j = 0, 0
-			while i < len(true_users_to_eps[user]) and j < len(computed_users_to_eps[user]):
-				print("{}\t{}".format(true_users_to_eps[user][i][-1], computed_users_to_eps[user][j][-1]))
-
-				if (): # com
-					i = i + 1
-				else:
-					j = j + 1
+			user_metrics = (user,) + compare_user_episodes(true_users_to_eps[user], computed_users_to_eps[user], h)
+			metrics.append(user_metrics)
 		else:
 			print("{} not in computed episodes".format(user))
 	return metrics
@@ -128,8 +123,24 @@ def read_episodes(file_name):
 	fd.close()
 	# Sort the lists of episodes by unix time
 	for u in users_to_eps:
+		# the lambda expression sorts the episode entries by their unix time
 		users_to_eps[u].sort(key=lambda x: x[-1])	
 	return users_to_eps
+
+def compare_user_episodes(true, computed, headers):
+	end_time = min(true[-1][-1], computed[-1][-1])
+	start_time = max(true[0][-1], computed[0][-1])
+	i, j = 0, 0
+	# First we bring indices to overlapping episodes
+	while true[i+1] < start_time:
+		i = i + 1
+	while computed[j+1] < start_time:
+		j = j + 1
+
+	# Iterate over episodes incrementally so that they always overlap
+	while true[i] < end_time and computed[j] < end_time:
+		pass  # do work
+	return (1,2,3,4)
 
 def literal_eval(string):
 	""" (str) -> Bool
