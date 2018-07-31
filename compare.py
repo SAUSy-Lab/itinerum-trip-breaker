@@ -127,48 +127,110 @@ def read_episodes(file_name):
 		users_to_eps[u].sort(key=lambda x: x[-1])	
 	return users_to_eps
 
-def compare_user_episodes(true, computed, headers):
-	end_time = min(true[-1][-1], computed[-1][-1])
-	start_time = max(true[0][-1], computed[0][-1])
+def compare_user_episodes(true, computed, h):
+	# TODO replace hardcoded unix time indices with header mapping
+	end_time = min(true[-1][-1], computed[-1][-1])  # TODO
+	start_time = max(true[0][-1], computed[0][-1])  # TODO
+	total_time = float(end_time) - float(start_time)
 	i, j = 0, 0
 	# First we bring indices to overlapping episodes
-	while true[i+1] < start_time:
+	while true[i+1][-1] < start_time:  # TODO
 		i = i + 1
-	while computed[j+1] < start_time:
+	while computed[j+1][-1] < start_time:  # TODO
 		j = j + 1
 
+	# Values to compute:
+	# 0 correct_unknown_time
+	# 1 correct_travel_time
+	# 2 correct_loc_time
+	# 3 true_unknown_time
+	# 4 true_travel_time
+	# 5 true_loc_time
+	# 6 incorr_unknown_time
+	# 7 incorr_travel_time
+	# 8 incorr_loc_time
+	values = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 	# Iterate over episodes incrementally so that they always overlap
-	while true[i] < end_time and computed[j] < end_time:
-		pass  # do work
-	return (1,2,3,4)
+	# TODO minor bug when an episode has duration 0
+	while true[i][-1] < end_time and computed[j][-1] < end_time:  # TODO
+		duration = compare_single_episode((true[i], true[i+1]), (computed[j], computed[j+1]), h, values)
+		if true[i+1][-1] <= computed[j+1][-1]:  # TODO
+			i = i + 1
+		else:
+			j = j + 1
+	# percent correct or incorrect unknown, travelling, or at_location time
+	p_corr_ut = values[0] / values[3]
+	p_corr_trav = values[1] / values[4]
+	p_corr_loc = values[2] / values[5]
+	p_inc_ut = values[6] / (total_time - values[0])
+	p_inc_trav = values[7] / (total_time - values[1])
+	p_inc_loc = values[8] / (total_time - values[2])
+	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav, p_inc_loc)
 
-def literal_eval(string):
-	""" (str) -> Bool
-	Return a Boolean represented by string.
-	"""
-	if string.lower() == 'true':
-		return True
-	elif string.lower() == 'false' or string.lower() == '':
-		return False
+def compare_single_episode(true_pair, computed_pair, h, values):
+	overlapping_time = float(min(true_pair[1][-1], computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
+	true_unknown = False if true_pair[0][h["unknown"]] == "" else True
+	true_at_loc = False if (true_pair[0][h["location_id"]] == "" or
+		                true_pair[0][h["location_id"]] == "None") else True
+	comp_unknown = False if computed_pair[0][h["unknown"]] == "" else True
+	comp_at_loc = False if (computed_pair[0][h["location_id"]] == "" or
+		                computed_pair[0][h["location_id"]] == "None")else True
+
+	if true_unknown and comp_unknown:
+		values[0] += overlapping_time
+	if not (true_at_loc or comp_at_loc):
+		values[1] += overlapping_time
+	if true_at_loc and comp_at_loc:
+		values[2] += overlapping_time
+	if true_unknown:
+		values[3] += overlapping_time
+	if not true_at_loc:
+		values[4] += overlapping_time
 	else:
-		raise ValueError("Cannot convert {} to a boolean".format(string))
+		values[5] += overlapping_time
+	if not true_unknown and comp_unknown:
+		values[6] += overlapping_time
+	if true_at_loc and not comp_at_loc:
+		values[7] += overlapping_time
+	if not true_at_loc and comp_at_loc:
+		values[8] += overlapping_time
+        
+		
+
+	return overlapping_time
 
 # Data writing functions:
         
 def write_data(data):
-	rs = ("user,excess_locations,mean_distance,median_distance\n")
+	rs = ("user,excess_locations,mean_distance,median_distance,"+
+		"percent_identified_unknown,percent_identified_travel,"+
+		"percent_identified_location,percent_misidentified_unknown,"+
+		"percent_misidentified_travel,percent_misidentified_location\n")
 	for tup in data:
 		user = tup[0]
 		excess = round(tup[1], 2)
 		mean = round(tup[2], 2)
 		median = round(tup[3], 2)
-		rs = rs + "{},{},{},{}\n".format(user,
-		excess, mean, median)
+		p_i_ut = round(tup[4], 2)
+		p_i_tt = round(tup[5], 2)
+		p_i_lt = round(tup[6], 2)
+		p_m_ut = round(tup[7], 2)
+		p_m_tt = round(tup[8], 2)
+		p_m_lt = round(tup[9], 2)
+		rs = rs + "{},{},{},{},{},{},{},{},{},{}\n".format(user,
+		                                                   excess, mean, median, p_i_ut,
+		                                                   p_i_tt, p_i_lt, p_m_ut, p_m_tt, p_m_lt)
 	fd = open(output_compare_file, "w")
 	fd.write(rs)
 
+def merge_lists(t1, t2):
+	new_data = []
+	for i in range(len(t1)):
+		new_data.append(t1[i] + t2[i][1:])
+	return new_data
+
 if __name__ == "__main__":
-	location_data = compare_locations(locations_gt, output_locations_file)
-	episode_data = compare_episodes(activities_gt, output_episodes_file)
-	print(episode_data)
-	write_data(location_data)
+	location_data = sorted(compare_locations(locations_gt, output_locations_file))
+	episode_data = sorted(compare_episodes(activities_gt, output_episodes_file))
+	data = merge_lists(location_data, episode_data)
+	write_data(data)
