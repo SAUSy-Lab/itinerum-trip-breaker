@@ -493,7 +493,7 @@ class Trace(object):
 				f.write("{},{},{},{},{},{},{}\n".format(
 					self.id,  # user_id
 					i,        # activity sequence
-					episode.location_id,
+					episode.location_id if episode.location else '',
 					'',       # mode (not currently used)
 					True if episode.unknown else '',
 					episode.start,             # timestamp
