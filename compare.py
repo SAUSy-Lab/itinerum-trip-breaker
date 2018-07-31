@@ -5,36 +5,16 @@ from statistics import median
 from datetime import timedelta, datetime
 from misc_funcs import parse_ts, read_headers
 
-
-def compare_user_locations(distances, num_to_match):
-	min_distances = []
-	dist_list = []
-	for loc in distances:
-		for guess in distances[loc]:
-			dist_list.append((distances[loc][guess], guess, loc))
-	for _ in range(num_to_match):
-		dist_list.sort()
-		best = dist_list.pop(0)  # First in the list
-		min_distances.append(best[0])  # the distance entry
-		guess = best[1]
-		loc = best[2]
-		for entry in dist_list:
-			# if the guess or true location match
-			if entry[1] == guess or entry[2] == loc:
-				dist_list.remove(entry)
-	return min_distances
-
+# Location comparison functions
 
 def compare_locations(truth, compd):
 	""" (str, str) -> [(str, int, float, float)]
 	Compare ground truth locations to the computed locations,
 	and output a list of quality metrics by user.
 	"""
-	true_locations = {}
-	computed_locations = {}
-	get_locations(truth, true_locations)
-	get_locations(compd, computed_locations)
-
+	true_locations = get_locations(truth)
+	computed_locations = get_locations(compd)
+	
 	users_to_matrix = {}
 	results = []
 	for user in true_locations:
@@ -57,25 +37,45 @@ def compare_locations(truth, compd):
 			results.append((user, num_locations, mean_min_dis, med))
 	return results
 
+def compare_user_locations(distances, num_to_match):
+	min_distances = []
+	dist_list = []
+	for loc in distances:
+		for guess in distances[loc]:
+			dist_list.append((distances[loc][guess], guess, loc))
+	for _ in range(num_to_match):
+		dist_list.sort()
+		best = dist_list.pop(0)  # First in the list has the lowest distance
+		min_distances.append(best[0])  # save the distance entry
+		compd = best[1]  # the computed location
+		truth = best[2]  # the true location
+		for entry in dist_list:
+			# if the computed or true location match
+                        # remove the rest of the entries with those locations
+			if entry[1] == compd or entry[2] == truth:
+				dist_list.remove(entry)
+	return min_distances
+
 
 def distance_matrix(h, matrix, truths, compds):
 	""" (dict, dict, dict, dict) -> None
 	Update matrix for user with a 2d matrix mapping true
 	locations and computed locations to their respective distances.
 	"""
-	for locus in truths:
-		matrix[locus[1]] = {}  # TODO replace 1 with heading reference
+	for location in truths:
+		matrix[location[h["location_id"]]] = {}
 		for guess in compds:
 			p1 = Point("", guess[h["lon"]], guess[h["lat"]], 0)
-			p2 = Point("", locus[h["lon"]], locus[h["lat"]], 0)
+			p2 = Point("", location[h["lon"]], location[h["lat"]], 0)
 			# Felipevh forgets if these need to be projected first
-			matrix[locus[1]][guess[1]] = distance(p1, p2)
+			matrix[location[h["location_id"]]][guess[h["location_id"]]] = distance(p1, p2)
 
-
-def get_locations(location_file, utl):
-	""" (str, dict) -> None
-	Populate utl with the locations described in location_file.
+def get_locations(location_file):
+	""" (str) -> dict
+	Return a dictionary mapping users to the location described in 
+	location_file
 	"""
+	utl = {}  # users to locations dictionary
 	fd = open(location_file)
 	h = read_headers(location_file)
 	line = fd.readline().split(',')
@@ -85,130 +85,51 @@ def get_locations(location_file, utl):
 			utl[loc[h["user_id"]]] = [loc]
 		else:
 			utl[loc[h["user_id"]]].append(loc)
+	return utl
 
+# Episode comparison functions below
 
-def compare_episode_time(truth, guess):
-	""" (str, str) -> [str, float, float]
-	Return a list of users and their episode time quality metrics.
+def compare_episodes(truth, compd):
 	"""
-	result = []
-	truth_dict = read_file(truth)
-	guess_dict = read_file(guess)
-	# True and computed unknown times
-	ht = read_headers(truth)
-	hg = read_headers(guess)
-	tut = find_unknown_time(truth_dict[ht["local_start_time"]],
-				truth_dict[ht["unknown"]], truth_dict[ht["user_id"]])
-	cut = find_unknown_time(guess_dict[hg["local_start_time"]],
-				guess_dict[hg["unknown"]], guess_dict[hg["user_id"]])
-	for user in tut.keys():
-		if user not in cut.keys():
-			print("user {} not in computed data".format(user))
+	"""
+	true_users_to_eps = read_episodes(truth)
+	computed_users_to_eps = read_episodes(compd)
+	# get the headers, both files should match
+	h = read_headers(truth)
+	metrics = []
+	for user in true_users_to_eps:
+		if user in computed_users_to_eps:
+			i, j = 0, 0
+			while i < len(true_users_to_eps[user]) and j < len(computed_users_to_eps[user]):
+				print("{}\t{}".format(true_users_to_eps[user][i][-1], computed_users_to_eps[user][j][-1]))
+
+				if (): # com
+					i = i + 1
+				else:
+					j = j + 1
 		else:
-			result.append((user, compare_user_eps(tut[user], cut[user])))
-	return result
+			print("{} not in computed episodes".format(user))
+	return metrics
 
-
-def compare_user_eps(truth, computed):
-	""" ([(Datetime, Bool)], [(Datetime, Bool)]) -> (float, float)
-	Return the episode time quality metrics for this user.
+def read_episodes(file_name):
 	"""
-	start_time = max(truth[0][0], computed[0][0])
-	end_time = min(truth[-1][0], computed[-1][0])
-	# Time in minutes that the survey lasted, trimmed
-	##total_time = ((end_time - start_time).days * 24 * 60 +
-	##(end_time - start_time).seconds / 60)
-	i, j = 0, 0
-	# total unknown time, correctly identified, misidentified
-	tut, ciut, mut = 0, 0, 0
-	# activity time
-	tat, ciat, mat = 0, 0, 0
-	total = 0
-	# while both iterators haven't reached the end of the survey time
-	while truth[i][0] < end_time and computed[j][0] < end_time:
-		if overlaps(truth[i][0], truth[i+1][0], computed[j][0], computed[j+1][0]):
-			# identified time lies between latest begining and earliest end
-			ee = min(truth[i+1][0], computed[j+1][0])
-			lb = max(truth[i][0], computed[j][0])
-			it = (ee - lb)
-			time = it.days * 24 * 60 + it.seconds / 60
-			#if time < 0:
-			#	print("{} seconds between {} and {}".format(time, lb, ee))
-			total += time
-			if truth[i][1] and computed[j][1]:  # correctly identified unknown time T-T
-				ciut += time
-			elif not truth[i][1] and computed[j][1]:  # misidentified unknown time F-T
-				mut += time
-			if not (truth[i][1] or computed[j][1]):  # identified act time F-F
-				ciat += time
-			if truth[i][1] and not computed[j][1]:  # misidentified unknown time T-F
-				mat += time
-		# whichever episode ends first needs to be incremented
-		if truth[i+1][0] < computed[j+1][0]:  # truth ep ends first
-			i += 1
-		else:  # computed ep ends first
-			j += 1
-	# Each value as a percent of total time
-	if percent_total:
-		p_ciut = ciut / total
-		p_mut = mut / total
-		p_ciat = ciat / total
-		p_mat = mat / total
-	else:  # As a percent of possible values
-		p_ciut = ciut / (ciut + mat)
-		p_mut = mut / (mut + ciat)
-		p_ciat = ciat / (ciat + mut)
-		p_mat = mat / (mat + ciut)
-	return (p_ciut * 100, p_mut * 100, p_ciat * 100, p_mat * 100)
-
-
-def overlaps(t1, t2, c1, c2):
-	""" (Datetime, Datetime, Datetime, Datetime) -> Bool
-	Return true iff the time gaps t2 - t1 and c2 - c1 overlap.
 	"""
-	return (t1 < c1 and t2 > c1) or (c1 < t1 and c2 > t1)
-
-
-def read_file(fname):
-	""" (str) -> {int : [str]}
-	Return a dictionary mapping column numbers
-	to lists of entries for that column in fname.
-	Drops the header line and strips whitespace.
-	"""
-	fd = open(fname, "r")
-	fd.readline()  # header
-	d = {}
-	for line in fd:
-		cleaned = line.split(',')
-		for i in range(len(cleaned)):
-			if i in d.keys():
-				d[i].append(cleaned[i].strip())
-			else:
-				d[i] = [cleaned[i].strip()]
-	return d
-
-
-def find_unknown_time(start_times, uflags, users):
-	""" ([str], [str]) -> [(timedelta, bool)]
-	Return a list of timedeltas, and true iff
-	that time is classified as unknown
-	"""
-	assert(len(start_times) == len(uflags))
-	result = {}
-	for i in range(len(start_times)):
-		lst = []
-		user = users[i]
-		if start_times[i] == "":
-			pass
+	h = read_headers(file_name)
+	fd = open(file_name)
+	users_to_eps = {}
+	fd.readline()
+	for l in fd:
+		line = l.strip().split(",")
+		user = line[h["user_id"]]
+		if user in users_to_eps:
+			users_to_eps[user].append(line)
 		else:
-			ts, _ = parse_ts(start_times[i] + "-00:00")
-			lst.append((ts, literal_eval(uflags[i])))
-		if user not in result.keys():
-			result[user] = lst
-		else:
-			result[user].extend(lst)
-	return result
-
+			users_to_eps[user] = [line]
+	fd.close()
+	# Sort the lists of episodes by unix time
+	for u in users_to_eps:
+		users_to_eps[u].sort(key=lambda x: x[-1])	
+	return users_to_eps
 
 def literal_eval(string):
 	""" (str) -> Bool
@@ -221,29 +142,22 @@ def literal_eval(string):
 	else:
 		raise ValueError("Cannot convert {} to a boolean".format(string))
 
-
-def write_data(locs, eps):
-	user_to_loc = {user: [excess, mean, med]
-		for (user, excess, mean, med) in locs}
-	user_to_eps = {user: [ciut, mut, ciat, mat]
-			for (user, (ciut, mut, ciat, mat)) in eps}
-	rs = ("user,excess_locations,mean_distance,median distance" +
-		",identified_unknowntime,misidentified_unknowntime" +
-		",identified_activitytime,misidentified_activitytime\n")
-	for user in user_to_loc.keys():
-		excess = user_to_loc[user][0]
-		mean = round(user_to_loc[user][1], 2)
-		median = round(user_to_loc[user][2], 2)
-		ciut = round(user_to_eps[user][0], 2)
-		mut = round(user_to_eps[user][1], 2)
-		ciat = round(user_to_eps[user][2], 2)
-		mat = round(user_to_eps[user][3], 2)
-		rs = rs + "{},{},{},{},{},{},{},{}\n".format(user,
-		excess, mean, median, ciut, mut, ciat, mat)
+# Data writing functions:
+        
+def write_data(data):
+	rs = ("user,excess_locations,mean_distance,median_distance\n")
+	for tup in data:
+		user = tup[0]
+		excess = round(tup[1], 2)
+		mean = round(tup[2], 2)
+		median = round(tup[3], 2)
+		rs = rs + "{},{},{},{}\n".format(user,
+		excess, mean, median)
 	fd = open(output_compare_file, "w")
 	fd.write(rs)
 
 if __name__ == "__main__":
-	loc = compare_locations(locations_gt, output_locations_file)
-	eps = compare_episode_time(activities_gt, output_episodes_file)
-	write_data(loc, eps)
+	location_data = compare_locations(locations_gt, output_locations_file)
+	episode_data = compare_episodes(activities_gt, output_episodes_file)
+	print(episode_data)
+	write_data(location_data)
