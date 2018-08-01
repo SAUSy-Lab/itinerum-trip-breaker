@@ -133,15 +133,14 @@ def distance(point1, point2, euclid=False):
 		return great_circle(p1, p2).meters
 
 
-def gaussian(distance, bandwidth):
-	"""Calculate a probability that a point originated from a location,
-		given the distance."""
-	# https://en.wikipedia.org/wiki/Gaussian_function
-	a = 1  # height
-	b = 0  # mean
-	c = bandwidth
-	x = distance
-	return a * math.exp(-((x-b)**2 / (2*c**2)))
+def gaussian(x, bandwidth):
+	"""
+	Evaluate a Gaussian function at x for a distribution centered on zero 
+	with a height of 1 given a bandwidth.
+	Used as a distance decay function.
+	See: https://en.wikipedia.org/wiki/Gaussian_function
+	"""	
+	return math.exp( -( x**2 / ( 2 * bandwidth**2 ) ) )
 
 
 def inner_angle_sphere(point1, point2, point3):
