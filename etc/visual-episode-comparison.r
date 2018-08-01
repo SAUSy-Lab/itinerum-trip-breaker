@@ -1,5 +1,11 @@
 USER = 'A'
 
+cols = c(
+		rgb(1,0,0,alpha=0.5),
+		rgb(0,1,0,alpha=0.5),
+		rgb(0,0,1,alpha=0.5)
+	)
+
 d = read.csv('~/itinerum/itinerum-trip-breaker/outputs/episodes.csv')
 g = read.csv('~/itinerum/itinerum-trip-breaker/outputs/episodes_ground_truth.csv')
 # explicitly break into classes: unknown, travel, stationary
@@ -16,26 +22,34 @@ d = d[d$user_id == USER,]
 g = g[g$user_id == USER,]
 
 # get start and end times
-min_start_time = min( c( d$unix_start_time, g$unix_start_time ) )
-d$st = (d$unix_start_time - min_start_time) / 3600
-g$st = (g$unix_start_time - min_start_time) / 3600
-d$et = d$st + c( diff(d$st), 0.1 )
-g$et = g$st + c( diff(g$st), 0.1 )
+d$st = d$unix_start_time
+g$st = g$unix_start_time
+d$et = d$unix_start_time + c( diff(d$st), 0.1 )
+g$et = g$unix_start_time + c( diff(g$st), 0.1 )
 
-cols = list(stationary='red',travel='green',unknown='blue')
-
-plot( 0, type='n', main=USER, xlim=range(d$st), ylim=c(0,1), bty='n' )
-for( i in 1:nrow(d)){ # discovered is on top
-	lines(
-		x=c( d[i,'st'], d[i,'et'] ),
-		y=c( .55, 1 ),
-		col=cols[[d[i,'class']]]
+pdf(paste0('~/',USER,'.pdf'),width=3,height=200)
+	par(
+		# bottom left top right
+		mar=c(0,0,0,0),
+		mai=c(0,1.4,0,0),
+		family='mono'
+	) 
+	min_hour = min(d$st) - min(d$st) %% 3600
+	max_hour = max(d$st) + max(d$st) %% 3600
+	plot( 0, type='n', 
+		main=USER, 
+		ylim=c(min_hour,max_hour), xlim=c(0,1), 
+		bty='n', xaxt='n', yaxt='n',xlab='',ylab=''
 	)
-}
-for( i in 1:nrow(g)){ # ground truth on bottom 
-	lines(
-		x=c( g[i,'st'], g[i,'et'] ),
-		y=c( 0, .45 ),
-		col=cols[[g[i,'class']]]
+	axis( 2, at=seq(min_hour,max_hour,3600), las=2 )
+	rect( # discovered is on right
+		xleft=0.55, xright=1,
+		ytop=d$st, ybottom=d$et,
+		col=c(cols[d$class])
 	)
-}
+	rect( # ground truth is on left
+		xleft=0, xright=.45,
+		ytop=g$st, ybottom=g$et,
+		col=c(cols[g$class])
+	)
+dev.off()
