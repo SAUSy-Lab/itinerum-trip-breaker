@@ -1,7 +1,9 @@
 #
 # Configuration parameters
 #
-import os
+
+# Flag for toggling debugging print statement on or off
+db_out = True
 
 input_dir = './inputs'
 output_dir = './outputs'
@@ -24,28 +26,26 @@ activities_gt = output_dir + '/episodes_ground_truth.csv'
 # timezone to use (until efficient timezone lookups can be implemented)
 local_timezone = 'America/Toronto'
 
-# How much time must be spent in one spot for it to be detected as a potential
-# activity location? In seconds.
-minimum_activity_time = 10*60
+# How much time must be spent in one spot for it to be detected as 
+# an activty episode?
+minimum_activity_time = 10*60 # seconds
 
 # Spatial kernel bandwidth in meters (standard deviation of gaussian kernel)
+# Used for location detection.
 kernel_bandwidth = 25
 
-# what is the limit of stated h_accuracy which will be acceptable?
-# (standard deviation in meters of a normal distribution?)
+# Limit of h_accuracy beyond which points get discarded
+# (is the unit  meters of in standard deviation of a normal distribution?)
 min_accuracy = 100
 
-# minimum distance between separate clusters
-# (parameter for activity location detection)
-cluster_distance = 50
-
+# Minimum distance between separate locations
 location_distance = 150  # meters
 
 # interpolation distance parameter (meters). maximum length of segment to
 # remain uninterpolated for linear spatial interpolations.
 # For reasonable results, this must be < cluster_distance
 interpolation_distance = 30
-assert cluster_distance > interpolation_distance
+assert location_distance > interpolation_distance
 
 # weight coefficient:
 # Affects the input to the weight distribution function,
@@ -54,9 +54,6 @@ assert cluster_distance > interpolation_distance
 # while decreasing under 1 scales increases it.
 weight_coef = 1
 assert (weight_coef > 0)
-
-# Flag for toggling debugging print statement on or off
-db_out = True
 
 # Flag for toggling different denominators in calculating episode detection
 # Metrics. If on, the denominator consists of the total time for that user,
@@ -68,5 +65,6 @@ percent_total = True
 
 # Number of worker processes on which to run main.py
 # and a flag toggling whether or not to use multiprocessing for main.py
-num_pro = os.cpu_count()
+from os import cpu_count
+num_pro = cpu_count()
 multi_process = False
