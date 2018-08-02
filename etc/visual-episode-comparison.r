@@ -1,9 +1,9 @@
 USER = 'A'
 
 cols = c(
-		rgb(1,0,0,alpha=0.5),
-		rgb(0,1,0,alpha=0.5),
-		rgb(0,0,1,alpha=0.5)
+		rgb(1,0,0,alpha=0.5), # red: stationary
+		rgb(0,1,0,alpha=0.5), # green: travel
+		rgb(0,0,1,alpha=0.5)  # blue: unknown
 	)
 
 d = read.csv('~/itinerum/itinerum-trip-breaker/outputs/episodes.csv')
