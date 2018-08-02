@@ -1,8 +1,10 @@
 from misc_funcs import ts_str, distance, project, unproject
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
+from pytz import timezone
 from math import ceil
 import config, re
 
+localTime = timezone(config.local_timezone)
 
 class Point(object):
 	"""
@@ -14,9 +16,8 @@ class Point(object):
 		self.latitude = float(latitude)
 		self.longitude = float(longitude)
 		self.accuracy = float(accuracy_meters)
-		# time is either a decimal representing the unix epoch
-		# or a string representation of a timestamp with time zone
-		self.time = datetime.fromtimestamp(float(time),timezone.utc)
+		# timezone aware datetime object
+		self.time = localTime.localize( datetime.fromtimestamp(float(time)) )
 		# these get set later; just defining them here for clarity
 		self.X = None           # do not access this directly
 		self.Y = None           # do not access this directly

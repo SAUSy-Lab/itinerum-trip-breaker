@@ -21,6 +21,9 @@ output_compare_file = output_dir + '/compare.csv'
 locations_gt = output_dir + '/locations_ground_truth.csv'
 activities_gt = output_dir + '/episodes_ground_truth.csv'
 
+# timezone to use (until efficient timezone lookups can be implemented)
+local_timezone = 'America/Toronto'
+
 # How much time must be spent in one spot for it to be detected as a potential
 # activity location? In seconds.
 minimum_activity_time = 10*60
