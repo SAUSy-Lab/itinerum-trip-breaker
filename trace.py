@@ -47,8 +47,11 @@ class Trace(object):
 		# read in all time and location data for points
 		# right now only using a few fields
 		for row in raw_data:
-			self.points.append(Point(row['timestamp'],
-				float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
+			self.points.append( Point(
+				int(row['timestamp_epoch']),
+				float(row['longitude']), float(row['latitude']), 
+				float(row['h_accuracy'])
+			))
 		# sort the list by time
 		self.points.sort(key=lambda x: x.unix_time)
 		# measure to and from neighbors
@@ -272,11 +275,12 @@ class Trace(object):
 		unique_points = []
 		to_remove = []
 		for i, point in enumerate(self.points):
-			uid = str(point.latitude)+str(point.longitude)+str(point.ts)
+			# TODO can we do this better with an __eq__ function?
+			uid = str(point.latitude)+str(point.longitude)+str(point.time)
 			# if this is the first we've seen this exact record
 			if uid not in unique_points:
 				unique_points.append(uid)
-			else:  # we've already seen this exact point
+			else: # we've already seen this exact point
 				to_remove.append(i)
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):

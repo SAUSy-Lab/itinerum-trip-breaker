@@ -1,4 +1,4 @@
-uuid,id,latitude,longitude,altitude,speed,h_accuracy,v_accuracy,timestamp,unix_time
+uuid,id,latitude,longitude,altitude,speed,h_accuracy,v_accuracy,timestamp,timestamp_epoch
 A,1,43.6608508,-79.3977623,,0,200,0,2017-09-08T16:54:16-04:00,1504904056
 A,2,43.6600928,-79.3991697,,0,800,0,2017-09-08T16:55:19-04:00,1504904119
 A,3,43.6600928,-79.3991697,,0,800,0,2017-09-08T16:56:35-04:00,1504904195

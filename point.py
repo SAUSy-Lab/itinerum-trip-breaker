@@ -1,5 +1,5 @@
 from misc_funcs import parse_ts, ts_str, distance, project, unproject
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from math import ceil
 import config, re
 
@@ -11,16 +11,12 @@ class Point(object):
 
 	def __init__(self, time, longitude, latitude, accuracy_meters):
 		# set initially:
-		self.accuracy = accuracy_meters
-		self.latitude = latitude
-		self.longitude = longitude
+		self.latitude = float(latitude)
+		self.longitude = float(longitude)
+		self.accuracy = float(accuracy_meters)
 		# time is either a decimal representing the unix epoch
 		# or a string representation of a timestamp with time zone
-		if type(time) in [int,float]:
-			self.time = datetime.fromtimestamp(time,timezone.utc)
-		else:
-			self.time = parse_ts(time) # timezone aware datetime instance
-		self.ts = time          # TODO get rid of this
+		self.time = datetime.fromtimestamp(float(time),timezone.utc)
 		# these get set later; just defining them here for clarity
 		self.X = None           # do not access this directly
 		self.Y = None           # do not access this directly
