@@ -1,4 +1,4 @@
-from misc_funcs import parse_ts, ts_str, distance, project, unproject
+from misc_funcs import ts_str, distance, project, unproject
 from datetime import timedelta, datetime, timezone
 from math import ceil
 import config, re

@@ -99,25 +99,6 @@ def ts_str(date_time):
 	return date_time.isoformat()
 
 
-def parse_ts(timestamp):
-	"""
-	Return an aware datetime object given a timestamp string formatted like:
-	'2017-09-08 16:54:16-04:00' ('YYYY-MM-DDThh:mm:ss-OO:oo')
-	"""
-	if timestamp == "":
-		return None
-	year = int(timestamp[:4])
-	month = int(timestamp[5:7])
-	day = int(timestamp[8:10])
-	hour = int(timestamp[11:13])
-	minutes = int(timestamp[14:16])
-	second = int(timestamp[17:19])
-	tz_offset_h = int(timestamp[19:22])
-	tz_offset_m = int(timestamp[23:25])
-	tz = timezone( timedelta(hours=tz_offset_h,minutes=tz_offset_m) )
-	return datetime(year, month, day, hour, minutes, second,tzinfo=tz)
-
-
 # TODO this should be in the Point class
 def distance(point1, point2, euclid=False):
 	"""
@@ -215,7 +196,7 @@ def emission_probabilities(point, locations):
 		function that starts 100 meters out from the location.
 	"""
 	# with d < 100 as at location
-	dists = [distance(loc, point) - 100 for loc in locations]
+	dists = [distance(loc, point) for loc in locations]
 	dists = [0 if d < 0 else d for d in dists]
 	probs = [gaussian(d, 100) for d in dists]
 	# standardize to one if necessary
@@ -231,17 +212,18 @@ def state_transition_matrix(states=[]):
 		transition probability matrix for use in the viterbi function.
 		Transition probs are currently hardcoded and returned as a list of lists.
 		0 is the 'travel' state. E.g.:
-		    0   1   2  ...
-		0  .8  .1  .1
-		1  .2  .8  .0
-		2  .2  .0  .8
+		    0   1   2   3 ...
+		0  .9  .03 .03 .03
+		1  .1  .9  .0  .0
+		2  .1  .0  .9  .0
+		3  .1  .0  .0  .9
 		...
 	"""
 	# define possible transition probabilities
 	travel_to_travel_prob = 0.8
 	travel_to_place_prob = 0.2 / len(states)
-	place_to_travel_prob = 0.2
-	place_to_itself_prob = 0.8
+	place_to_travel_prob = 0.1
+	place_to_itself_prob = 0.9
 	teleport_prob = 0.0  # impossible, in theory at least
 	# make sure travel is an option
 	if 0 not in states:
