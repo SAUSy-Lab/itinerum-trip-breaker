@@ -510,8 +510,9 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{},{},{}\n".format(
+				f.write("{},{},{},{},{},{},{},{},{},{},{}\n".format(
 					self.id,
+					point.unix_time,
 					point.longitude,
 					point.latitude,
 					point.x,
@@ -519,8 +520,8 @@ class Trace(object):
 					point.weight,
 					point.discarded,
 					point.synthetic,
-					point.state,
-					point.kde_p))
+					point.state if point.state is not None else '',
+					point.kde_p if point.kde_p is not None else ''))
 
 	def write_day_summary(self):
 		"""Output daily summary to CSV."""
