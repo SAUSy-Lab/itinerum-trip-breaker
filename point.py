@@ -32,8 +32,9 @@ class Point(object):
 		self.location = None    # reference to location object point is at per state
 		self.kde_p = None       # estimated PDF at this point
 		# for diagnostic output
-		self.discarded = False  # will be true if point tossed in cleaning
-		self.synthetic = False  # was this point synthesized e.g. by interpolation?
+		self.known_subset = None # known subset to which this belongs if any
+		self.discarded = False   # will be true if point tossed in cleaning
+		self.synthetic = False   # was this point synthesized e.g. by interpolation?
 
 	@property
 	def geom(self):

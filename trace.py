@@ -1,6 +1,7 @@
 import config
 import csv
 import datetime as dt
+import re
 from point import Point
 from episode import Episode
 from location import Location
@@ -79,37 +80,30 @@ class Trace(object):
 
 	def make_known_subsets(self):
 		"""
-		Partition the trace points into sets for which we're confident
-		we don't have substantial missing data. That is, exclude segments
-		where it seems like we have no data, but substantial movement; for
-		which trip and activity reconstruction would be impossible.
-		TODO: Eventually we will need some much stricter checking here
-		and eventually an explicit check for subway trips.
+		Partition the trace points into contiguous sets for which we're confident
+		we don't have substantial missing data. That is, exclude segments where it 
+		seems like we have no data, but substantial movement; for which trip and 
+		activity reconstruction would be impossible.
+		TODO: Eventually we will need to check for subway trips.
 		"""
-		known_segments = []
 		segment = [self.points[0]]
 		# iterate over all points (except the first). Test each point to see
 		# whether we add it to the current segment or the one after.
 		for i in range(1, len(self.points)):
-			if (distance(self.points[i], self.points[i-1]) > 1000 and
-				# time gap > 2 hours?
-				# 3600 seconds is 1 hour
-				self.points[i].unix_time - self.points[i-1].unix_time > 1 * 3600):
+			if distance(self.points[i], self.points[i-1]) > 1000:
 				# append point to next segment
-				known_segments.append(segment)
+				self.known_subsets.append(segment)
 				segment = [self.points[i]]
 			else:
 				# add this point to the current segment
 				segment.append(self.points[i])
-		if len(segment) > 1:
-			known_segments.append(segment)
-		# check these segments for plausibility and append to the global property
-		for segment in known_segments:
-			if (len(segment) > 1 and
-				# sufficient time between last and first points
-				segment[-1].unix_time - segment[0].unix_time > 3600):
-				# mininum time length of segment?
-				self.known_subsets.append(segment)
+		self.known_subsets.append(segment)
+		# check these segments for sufficient length
+		self.known_subsets = [ s for s in self.known_subsets if len(s) >=5 ]
+		self.known_subsets = [ s for s in self.known_subsets if s[-1].unix_time - s[0].unix_time > 3600 ]
+		for seg_index, segment in enumerate(self.known_subsets):
+			for point in segment:
+				point.known_subset = seg_index
 		if config.db_out:
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
@@ -509,10 +503,11 @@ class Trace(object):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
-			for point in self.discarded_points + self.all_interpolated_points:
-				f.write("{},{},{},{},{},{},{},{},{},{},{}\n".format(
+			for point in self.all_interpolated_points + self.discarded_points:
+				f.write("{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
 					self.id,
 					point.unix_time,
+					point.known_subset if point.known_subset is not None else '',
 					point.longitude,
 					point.latitude,
 					point.x,
