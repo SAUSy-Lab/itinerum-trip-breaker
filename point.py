@@ -51,6 +51,13 @@ class Point(object):
 		return self.time.timestamp()
 
 	@property
+	def human_timestamp(self):
+		"""
+		Returns a human readable timestamp string.
+		"""
+		return self.time.isoformat(' ')
+
+	@property
 	def x(self):
 		"""
 		Return the projected X value.

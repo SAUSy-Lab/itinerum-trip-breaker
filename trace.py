@@ -488,15 +488,14 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
-				f.write("{},{},{},{},{},{},{}\n".format(
-					self.id,  # user_id
-					i,        # activity sequence
+				attributes = [
+					self.id, i,                  # activity sequence
 					episode.location_id if episode.location else '',
-					'',       # mode (not currently used)
+					'',                          # mode (not currently used)
 					True if episode.unknown else '',
-					episode.start,             # timestamp
-					episode.start.timestamp()  # unix time
-			)) 
+					episode.start,               # timestamp
+					episode.start.timestamp() ]  # unix time
+				f.write(','.join([str(a) for a in attributes])+'\n')
 
 	def write_points(self):
 		""" Output point attributes to CSV for debugging."""
@@ -504,35 +503,25 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_points_file, 'a') as f:
 			for point in self.all_interpolated_points + self.discarded_points:
-				f.write("{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
-					self.id,
-					point.unix_time,
+				attributes = [
+					self.id, point.unix_time,
 					point.known_subset if point.known_subset is not None else '',
-					point.longitude,
-					point.latitude,
-					point.x,
-					point.y,
-					point.weight,
-					point.discarded,
-					point.synthetic,
+					point.longitude, point.latitude, point.x, point.y, 
+					point.weight, point.discarded,
+					point.human_timestamp, point.synthetic,
 					point.state if point.state is not None else '',
-					point.kde_p if point.kde_p is not None else ''))
+					point.kde_p if point.kde_p is not None else '' ]
+				f.write(','.join([str(a) for a in attributes])+'\n')
 
 	def write_day_summary(self):
 		"""Output daily summary to CSV."""
 		days = self.get_days()
 		with open(config.output_days_file, 'a') as f:
 			for date, data in days.items():
-				f.write("{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(
-					self.id, date, date.weekday(),
-					sum(data['total']),
-					len(data['travel']),
-					sum(data['travel']),
-					sum(data['unknown']),
-					sum(data['home']),
-					sum(data['work']),
-					sum(data['school']),
-					len(data['home']),
-					len(data['work']),
-					len(data['school'])
-				))
+				attributes = [
+					self.id, date, date.weekday(), sum(data['total']), 
+					len(data['travel']), sum(data['travel']), sum(data['unknown']),
+					sum(data['home']), sum(data['work']), sum(data['school']),
+					len(data['home']), len(data['work']), len(data['school']) ]
+				f.write(','.join([str(a) for a in attributes])+'\n')
+
