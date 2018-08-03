@@ -63,6 +63,7 @@ def analyze_user(user_data_list):
 		user.get_activity_locations()
 		# allocate time
 		user.break_trips()
+		user.identify_named_locations()
 		# write the output
 		user.flush()
 
@@ -80,18 +81,27 @@ if __name__ == "__main__":
 			else:
 				user_data[row['uuid']].append(row)
 	# read in the survey response location data once now and store in a dict
-	survey_responses = {}
+	user_locations = {}
 	with open(config.input_survey_responses_file, newline='') as f:
 		reader = csv.DictReader(f)
 		for row in reader:
-			home = Location(row['location_home_lon'], row['location_home_lat'])
-			work = Location(row['location_work_lon'], row['location_work_lat'])
-			if row['location_study_lon'].strip() and row['location_study_lat'].strip():
-				school = Location(row['location_study_lon'].strip(),
-				row['location_study_lat'].strip())
-			else:
-				school = None
-			survey_responses[row['uuid']] = [home, work, school]
+			user_id = row['uuid']
+			user_locations[user_id] = {}
+			if row['location_home_lon'] != '':
+				user_locations[user_id]['home'] = Location(
+					row['location_home_lon'], 
+					row['location_home_lat']
+				)
+			if row['location_work_lon'] != '':
+				user_locations[user_id]['work'] = Location(
+					row['location_work_lon'], 
+					row['location_work_lat']
+				)
+			if row['location_study_lon'] != '':
+				user_locations[user_id]['school'] = Location(
+					row['location_study_lon'], 
+					row['location_study_lat']
+				)
 	if config.db_out:
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
@@ -99,7 +109,7 @@ if __name__ == "__main__":
 	# create a list of users' data to work on
 	list_of_users = []
 	for uid, data in user_data.items():
-		list_of_users.append(( uid, data, survey_responses[uid] ))
+		list_of_users.append(( uid, data, user_locations[uid] ))
 	# parallel processing option
 	if config.multi_process:
 		with Pool(config.num_pro) as p:

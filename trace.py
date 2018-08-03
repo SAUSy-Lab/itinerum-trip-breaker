@@ -15,16 +15,14 @@ class Trace(object):
 	It's mainly treated here as a temporal/spatial sequence of points.
 	"""
 
-	def __init__(self, user_id, raw_data, raw_survey):
+	def __init__(self, user_id, raw_data, named_locations):
 		"""
 		Construct the user object by pulling all data pertaining to this user, 
 		identified by ID.
 		"""
 		self.id = user_id
 		self.raw = raw_data
-		self.home = raw_survey[0]  # Raw survey data passed as a list of 3 locations
-		self.work = raw_survey[1]
-		self.school = raw_survey[2]
+		self.named_locations = named_locations
 		# the set of original input points, minus any that get cleaned out. 
 		self.points = []
 		# points removed during cleaning
@@ -142,12 +140,13 @@ class Trace(object):
 		locations = self.locations.extend(locations)
 		return self.locations
 
-	def identify_locations(self):
+	def identify_named_locations(self):
 		"""
 		Identify locations with user-provided home, work, school locations if
 		possible. This algorithm was written in a hurry and needs to be made
 		much more robust. It is not currently called anywhere in the code. TODO
 		"""
+		return
 		if self.home:
 			for location in self.locations:
 				if distance(location, self.home) <= 150:  # meters
