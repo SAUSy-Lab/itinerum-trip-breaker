@@ -23,7 +23,7 @@ class Location(object):
 
 	def identify(self, name):
 		"""
-		Name this location ('home','work','school').
+		Name this location e.g. ['home','work','school'].
 		"""
 		self.name = name
 

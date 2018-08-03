@@ -99,7 +99,6 @@ def ts_str(date_time):
 	return date_time.isoformat()
 
 
-# TODO this should be in the Point class
 def distance(point1, point2, euclid=False):
 	"""
 	Gives the great circle distance between two point objects.
