@@ -151,7 +151,7 @@ class Trace(object):
 			for location in self.locations:
 				if distance(place, location) <= config.location_distance / 2:
 					location.identify( name )
-					if config.bd_out:
+					if config.db_out:
 						print('\tfound',name)
 
 	def break_trips(self):

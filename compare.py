@@ -3,7 +3,7 @@ from config import *
 from misc_funcs import distance
 from statistics import median
 from datetime import timedelta, datetime
-from misc_funcs import parse_ts, read_headers
+from misc_funcs import read_headers
 
 # Location comparison functions
 
@@ -65,8 +65,8 @@ def distance_matrix(h, matrix, truths, compds):
 	for location in truths:
 		matrix[location[h["location_id"]]] = {}
 		for guess in compds:
-			p1 = Point("", guess[h["lon"]], guess[h["lat"]], 0)
-			p2 = Point("", location[h["lon"]], location[h["lat"]], 0)
+			p1 = Point("0", guess[h["lon"]], guess[h["lat"]], 0)
+			p2 = Point("0", location[h["lon"]], location[h["lat"]], 0)
 			# Felipevh forgets if these need to be projected first
 			matrix[location[h["location_id"]]][guess[h["location_id"]]] = distance(p1, p2)
 
