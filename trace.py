@@ -85,21 +85,22 @@ class Trace(object):
 		are never greater than config.interpolation_distance.
 		Does NOT assign weights. 
 		"""
-		new_points = [point1.copy()]  # Why is this copied?
-		dist = distance(point1, point2)
+		p1, p2 = point1, point2
+		new_points = [p1.copy()]  # Why is this copied?
+		dist = distance(p1, p2)
 		if dist > config.interpolation_distance:
-			time_dif = (point2.time - point1.time).seconds
-			n_segs = ceil(dist / config.interpolation_distance)
+			time_delta = p2.unix_time - p1.unix_time
+			# number of segments in final interpolation
+			n_segs = ceil( dist / config.interpolation_distance )
 			seg_len = dist // n_segs
-			x1, y1 = project(point1.longitude, point1.latitude)
-			x2, y2 = project(point2.longitude, point2.latitude)
-			dx, dy = (x2 - x1)/n_segs, (y2 - y1)/n_segs
-			delta = time_dif / n_segs
-			for np in range(1, n_segs):
-				x0, y0 = x1 + np*dx, y1 + np*dy
-				lng, lat = unproject(x0, y0)
-				tstamp = (point1.time + dt.timedelta(seconds=delta*np)).timestamp()
-				new_point = Point(tstamp, lng, lat, point1.accuracy)
+			delta_x = (p2.x - p1.x) / n_segs
+			delta_y = (p2.y - p1.y) / n_segs
+			delta_t = time_delta / n_segs
+			for i in range(1, n_segs):
+				lng, lat = unproject(p1.x + i * delta_x, p1.y + i * delta_y)				
+				t = point1.unix_time + i * delta_t
+				acc = (p1.accuracy + p2.accuracy) / 2
+				new_point = Point(t, lng, lat, acc)
 				new_point.synthetic = True
 				new_points.append(new_point)
 		return new_points
