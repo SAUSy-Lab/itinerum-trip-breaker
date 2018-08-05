@@ -91,7 +91,7 @@ class Point(object):
 		return id(self)
 
 	def copy(self):
-		return Point(self.ts, self.longitude, self.latitude, self.accuracy)
+		return Point(self.unix_time, self.longitude, self.latitude, self.accuracy)
 
 	def pair_interpolation(self, other_point):
 		"""
@@ -99,7 +99,7 @@ class Point(object):
 		interpolated points between the two such that gaps between the points
 		are never greater than config.interpolation_distance.
 		"""
-		new_points = [self.copy()]  # TODO Why is this copied?
+		new_points = [self.copy()]  # Why is this copied?
 		dist = distance(self, other_point)
 		if dist > config.interpolation_distance:
 			time_dif = (other_point.time - self.time).seconds
@@ -112,7 +112,7 @@ class Point(object):
 			for np in range(1, n_segs):
 				x0, y0 = x1 + np*dx, y1 + np*dy
 				lng, lat = unproject(x0, y0)
-				tstamp = (self.time + timedelta(seconds=dt*np)).timetamp()
+				tstamp = (self.time + timedelta(seconds=dt*np)).timestamp()
 				new_point = Point(tstamp, lng, lat, self.accuracy)
 				new_point.synthetic = True
 				new_points.append(new_point)

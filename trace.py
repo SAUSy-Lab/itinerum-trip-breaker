@@ -112,7 +112,7 @@ class Trace(object):
 		"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
-			interpolated_subset = subset  # self.interpolate_segment(subset)
+			interpolated_subset = self.interpolate_segment(subset)
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
 		if len(self.all_interpolated_points) > 75000:
