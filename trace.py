@@ -72,7 +72,6 @@ class Trace(object):
 		# For each point but the first
 		for i, point in enumerate(segment):
 			if i > 0:
-				
 				pair_int = self.pair_interpolation( segment[i-1], point )
 				new_points.extend(pair_int)
 		new_points.append(segment[-1])
@@ -80,30 +79,45 @@ class Trace(object):
 
 	def pair_interpolation(self, point1, point2):
 		"""
-		Given this and one other Point object, attempts to supply a list of
-		interpolated points between the two such that gaps between the points
-		are never greater than config.interpolation_distance.
-		Does NOT assign weights. 
+		Given two Point objects, supplies a list containing the first point
+		and any points to be interpolated between the two.	Spatially, 
+		interpolation is done such that gaps between the points are never greater 
+		than config.interpolation_distance. Temporally, there are two paradigms. 
+		For segments faster than walking speed, time is allocated uniformly. 
+		For those slower, it is assumed that walking-speed travel to the second 
+		point begins at the last possible moment, allowing time to accumulate 
+		at the first point. This function does NOT assign weights; those are 
+		applied later according to timestamps. 
 		"""
 		p1, p2 = point1, point2
-		new_points = [p1.copy()]  # Why is this copied?
 		dist = distance(p1, p2)
-		if dist > config.interpolation_distance:
-			time_delta = p2.unix_time - p1.unix_time
-			# number of segments in final interpolation
+		if dist <= config.interpolation_distance:
+			return [p1] # no interpolation to do
+		else:
+			# temporal
+			walk_speed = 5*1000/3600  # 5 kmph in mps
+			delta_t = p2.unix_time - p1.unix_time
+			# spatial 
 			n_segs = ceil( dist / config.interpolation_distance )
-			seg_len = dist // n_segs
+			seg_len = dist / n_segs
 			delta_x = (p2.x - p1.x) / n_segs
 			delta_y = (p2.y - p1.y) / n_segs
-			delta_t = time_delta / n_segs
+			# iteration over segments
+			new_points = []
 			for i in range(1, n_segs):
 				lng, lat = unproject(p1.x + i * delta_x, p1.y + i * delta_y)				
-				t = point1.unix_time + i * delta_t
 				acc = (p1.accuracy + p2.accuracy) / 2
+				if dist >= delta_t * walk_speed: 
+					# if faster than walking speed, assign time uniformly
+					t = p1.unix_time + i * delta_t / n_segs
+				else: 
+					# slower than walking speed, so assign time backwards from last 
+					# point at walking speed 
+					t = p2.unix_time - (dist/n_segs)/walk_speed*(n_segs-i)
 				new_point = Point(t, lng, lat, acc)
 				new_point.synthetic = True
 				new_points.append(new_point)
-		return new_points
+			return [p1] + new_points
 
 	def make_known_subsets(self):
 		"""
