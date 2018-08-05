@@ -93,30 +93,6 @@ class Point(object):
 	def copy(self):
 		return Point(self.unix_time, self.longitude, self.latitude, self.accuracy)
 
-	def pair_interpolation(self, other_point):
-		"""
-		Given this and one other Point object, attempts to supply a list of
-		interpolated points between the two such that gaps between the points
-		are never greater than config.interpolation_distance.
-		"""
-		new_points = [self.copy()]  # Why is this copied?
-		dist = distance(self, other_point)
-		if dist > config.interpolation_distance:
-			time_dif = (other_point.time - self.time).seconds
-			n_segs = ceil(dist / config.interpolation_distance)
-			seg_len = dist // n_segs
-			x1, y1 = project(self.longitude, self.latitude)
-			x2, y2 = project(other_point.longitude, other_point.latitude)
-			dx, dy = (x2 - x1)/n_segs, (y2 - y1)/n_segs
-			dt = time_dif / n_segs
-			for np in range(1, n_segs):
-				x0, y0 = x1 + np*dx, y1 + np*dy
-				lng, lat = unproject(x0, y0)
-				tstamp = (self.time + timedelta(seconds=dt*np)).timestamp()
-				new_point = Point(tstamp, lng, lat, self.accuracy)
-				new_point.synthetic = True
-				new_points.append(new_point)
-		return new_points
 
 	def weight_decimal(self, param):
 		"""

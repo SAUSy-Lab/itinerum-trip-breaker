@@ -6,8 +6,8 @@ from point import Point
 from episode import Episode
 from location import Location
 from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
-	state_transition_matrix, viterbi, emission_probabilities)
-from math import sqrt
+	state_transition_matrix, viterbi, emission_probabilities, project, unproject)
+from math import sqrt, ceil
 
 class Trace(object):
 	"""
@@ -62,18 +62,46 @@ class Trace(object):
 		"""Get all (real & interpolated) points in one big list"""
 		return [ p for s in self.known_subsets_interpolated for p in s ]
 
-	def interpolate_segment(self, segment):
+	def interpolate_among_subset(self, segment):
 		"""
 		Takes a known subset (a list of ordered points) and interpolates
-		linearly between them such that the distance between new points
-		is never greater than a value specified in config, e.g. 30m.
+		linearly between them such that the distance between the returned list of
+		points is never greater than a value specified in config, e.g. 30m.
 		"""
 		new_points = []
-		# For each point bu the last
-		for i in range(0, len(segment) - 1):
-			pair_int = segment[i].pair_interpolation(segment[i+1])
-			new_points.extend(pair_int)
+		# For each point but the first
+		for i, point in enumerate(segment):
+			if i > 0:
+				
+				pair_int = self.pair_interpolation( segment[i-1], point )
+				new_points.extend(pair_int)
 		new_points.append(segment[-1])
+		return new_points
+
+	def pair_interpolation(self, point1, point2):
+		"""
+		Given this and one other Point object, attempts to supply a list of
+		interpolated points between the two such that gaps between the points
+		are never greater than config.interpolation_distance.
+		Does NOT assign weights. 
+		"""
+		new_points = [point1.copy()]  # Why is this copied?
+		dist = distance(point1, point2)
+		if dist > config.interpolation_distance:
+			time_dif = (point2.time - point1.time).seconds
+			n_segs = ceil(dist / config.interpolation_distance)
+			seg_len = dist // n_segs
+			x1, y1 = project(point1.longitude, point1.latitude)
+			x2, y2 = project(point2.longitude, point2.latitude)
+			dx, dy = (x2 - x1)/n_segs, (y2 - y1)/n_segs
+			delta = time_dif / n_segs
+			for np in range(1, n_segs):
+				x0, y0 = x1 + np*dx, y1 + np*dy
+				lng, lat = unproject(x0, y0)
+				tstamp = (point1.time + dt.timedelta(seconds=delta*np)).timestamp()
+				new_point = Point(tstamp, lng, lat, point1.accuracy)
+				new_point.synthetic = True
+				new_points.append(new_point)
 		return new_points
 
 	def make_known_subsets(self):
@@ -112,7 +140,7 @@ class Trace(object):
 		"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
-			interpolated_subset = self.interpolate_segment(subset)
+			interpolated_subset = self.interpolate_among_subset(subset)
 			self.known_subsets_interpolated.append(interpolated_subset)
 			self.weight_points(interpolated_subset)
 		if len(self.all_interpolated_points) > 75000:
