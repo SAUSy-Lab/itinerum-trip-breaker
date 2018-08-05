@@ -99,7 +99,7 @@ class Point(object):
 		interpolated points between the two such that gaps between the points
 		are never greater than config.interpolation_distance.
 		"""
-		new_points = [self]
+		new_points = [self.copy()]  # TODO Why is this copied?
 		dist = distance(self, other_point)
 		if dist > config.interpolation_distance:
 			time_dif = (other_point.time - self.time).seconds
@@ -112,24 +112,24 @@ class Point(object):
 			for np in range(1, n_segs):
 				x0, y0 = x1 + np*dx, y1 + np*dy
 				lng, lat = unproject(x0, y0)
-				tstamp = (self.time + timedelta(seconds=dt*np)).timestamp()
+				tstamp = (self.time + timedelta(seconds=dt*np)).timetamp()
 				new_point = Point(tstamp, lng, lat, self.accuracy)
 				new_point.synthetic = True
 				new_points.append(new_point)
-		self.weight_points(new_points)
 		return new_points
 
-	def weight_points(self, segment):
-		if len(segment) > 1:
-			if (segment[-1].time < segment[0].time):
-				pass
-				#print("Out of order: last: {}, first: {}".format(segment[-1].time, segment[0].time))
-			total_time = segment[-1].time - segment[0].time  # TODO segments are out of order?
-			for p in segment:
-				p.add_weight(1)
+	def weight_decimal(self, param):
+		"""
+		Retuns a value varying from 0.5 to 1 as param varies from 0 to infinity.
+		Allows weight to be distributed between points according to
+		a exponential function in the ratio of their distance and 
+		time difference
+		"""
+		return (-1) / (param + 2) + 1
 
 	def add_weight(self, weight):
 		"""
 		Assigns time-based weight value.
 		"""
+		assert weight >= 0  # we may want negative weights eventually?
 		self.weight += weight
