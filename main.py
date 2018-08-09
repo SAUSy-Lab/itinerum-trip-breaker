@@ -8,9 +8,13 @@ import rpy2
 from point import Point
 from trace import Trace
 from location import Location
-from multiprocessing import Pool
+from multiprocessing import Pool, Lock
 import config
+import misc_funcs
 
+def init_pool():
+	global LOCKS
+	LOCKS = (Lock(), Lock(), Lock(), Lock())
 
 def initialize_output_files():
 	"""
@@ -41,10 +45,13 @@ def analyze_user(user_data_list):
 	"""
 	User data is passed as a list for compatibility with multiprocessing
 	"""
+	locks = (None, None, None, None)
+	if config.multi_process:
+		locks = LOCKS
 	user_id = user_data_list[0]
 	data = user_data_list[1]
 	survey = user_data_list[2]
-	user = Trace(user_id, data, survey)
+	user = Trace(user_id, data, survey, locks)
 	if len(user.points) > 100:
 		if config.db_out:
 			print("User", user_id, 'starts with', len(user.points), 'coordinates')
@@ -112,12 +119,12 @@ if __name__ == "__main__":
 		list_of_users.append(( uid, data, user_locations[uid] ))
 	# parallel processing option
 	if config.multi_process:
-		with Pool(config.num_pro) as p:
-			p.map(analyze_user, list_of_users)
+		LOCKS=(Lock(), Lock(), Lock(), Lock())
+		p = Pool(processes=config.num_pro, initializer=init_pool)
+		p.map(analyze_user, list_of_users)
 	# non-parallel processing
 	else:
 		for user_data in list_of_users:
 			analyze_user(user_data)
 
 	print("Done!", file=sys.stderr)
-

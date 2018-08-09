@@ -15,11 +15,12 @@ class Trace(object):
 	It's mainly treated here as a temporal/spatial sequence of points.
 	"""
 
-	def __init__(self, user_id, raw_data, named_places):
+	def __init__(self, user_id, raw_data, named_places, locks):
 		"""
 		Construct the user object by pulling all data pertaining to this user, 
 		identified by ID.
 		"""
+		self.locks = locks
 		self.id = user_id
 		self.raw = raw_data
 		self.named_places = named_places
@@ -510,6 +511,8 @@ class Trace(object):
 		# write potential activity locations to file
 		with open(config.output_locations_file, "a") as f:
 			for location in self.locations:
+				if config.multi_process:
+					self.locks[0].acquire()
 				f.write("{},{},{},{},{},{}\n".format(
 					self.id,           # user_id
 					location.id,       # location_id
@@ -517,10 +520,13 @@ class Trace(object):
 					location.latitude,
 					location.name,     # description
 					location.visited   # whether location was used or not
-				))  
+				))
+				if config.multi_process:
+					self.locks[0].release()
 
 	def write_episodes(self):
 		""" Output episode data to CSV."""
+		self.remove_short_episodes(config.minimum_activity_time)
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
@@ -531,7 +537,11 @@ class Trace(object):
 					True if episode.unknown else '',
 					episode.start,               # timestamp
 					episode.start.timestamp() ]  # unix time
+				if config.multi_process:
+					self.locks[1].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
+				if config.multi_process:
+					self.locks[1].release()
 
 	def write_points(self):
 		""" Output point attributes to CSV for debugging."""
@@ -547,7 +557,11 @@ class Trace(object):
 					point.human_timestamp, point.synthetic,
 					point.state if point.state is not None else '',
 					point.kde_p if point.kde_p is not None else '' ]
+				if config.multi_process:
+					self.locks[2].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
+				if config.multi_process:
+					self.locks[2].release()
 
 	def write_day_summary(self):
 		"""Output daily summary to CSV."""
@@ -559,5 +573,21 @@ class Trace(object):
 					len(data['travel']), sum(data['travel']), sum(data['unknown']),
 					sum(data['home']), sum(data['work']), sum(data['school']),
 					len(data['home']), len(data['work']), len(data['school']) ]
+				if config.multi_process:
+					self.locks[3].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
+				if config.multi_process:
+					self.locks[3].release()
 
+	def remove_short_episodes(self, min_len):
+		self.episodes.sort()
+		for i in range(len(self.episodes) - 1):
+			cur = self.episodes[i]
+			nxt = self.episodes[i+1]
+			delta = (nxt.start - cur.start)
+			seconds = delta.days * 24 * 60 * 60 + delta.seconds
+			if (cur.location != None and  # is an activity
+				seconds < min_len):
+				# this episode should be travel
+				cur.location = None
+			

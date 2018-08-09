@@ -107,5 +107,4 @@ class Point(object):
 		"""
 		Assigns time-based weight value.
 		"""
-		assert weight >= 0  # we may want negative weights eventually?
 		self.weight += weight

@@ -1,6 +1,6 @@
 # Remove error generating users from 2016 or 2017 CFS data
 # According to hardcoded list of users
-in_fd = "../inputs/SECcoordinates.csv"  # 2016 or 2017 CFS data
+in_fd = "../inputs/SECcoordinates2017.csv"  # 2016 or 2017 CFS data
 users = [
 "73fcaa05-20af-434b-a8d2-7d079ba35a51", 
 "1EDF2943-E2C1-4608-8CD2-FA53A54C340E"]  # 2016
@@ -99,8 +99,8 @@ users = [
 "946fa994-fb44-4371-86b4-a9e669224acd",
 "946fa994-fb44-4371-86b4-a9e669224acd"]
 '''
-out1 = "../inputs/SECiso-coordinates.csv"  # coordinate file including only error-prone users
-out2 = "../inputs/SECalm-coordinates.csv"  # coordinate file including no error-prone users
+out1 = "../inputs/SECiso-coordinates2017.csv"  # coordinate file including only error-prone users
+out2 = "../inputs/SECalm-coordinates2017.csv"  # coordinate file including no error-prone users
 fd = open(in_fd, "r")
 out1_fd = open(out1, "w")
 out2_fd = open(out2, "w")

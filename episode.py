@@ -12,6 +12,9 @@ class Episode(object):
 		self.end = None                 # datetime object
 		self.duration = None            # timedelta object
 
+	def __lt__(self, other):
+		return self.start < other.start
+
 	@property
 	def location_id(self):
 		"""Return the id of the location if any."""
