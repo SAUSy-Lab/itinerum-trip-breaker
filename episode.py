@@ -13,6 +13,7 @@ class Episode(object):
 		self.duration = None            # timedelta object
 
 	def __lt__(self, other):
+		"""for sorting by time"""
 		return self.start < other.start
 
 	@property

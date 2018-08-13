@@ -38,7 +38,7 @@ class Trace(object):
 		self.known_subsets_interpolated = []
 		# list of potential activity locations
 		self.locations = []
-		# dictionary of activity episodes?
+		# list of activity episodes (travel, activity, home, work, etc)
 		self.episodes = []
 		# records the number of activity records written so far
 		self.activity_count = 0
@@ -501,6 +501,7 @@ class Trace(object):
 		stored as a property. All Trace objects call this at the end, and the 
 		files are initialized in main, so we only append rows here.
 		"""
+		while self.remove_short_stationary_episodes(): pass
 		self.write_locations()
 		self.write_episodes()
 		self.write_points()
@@ -526,7 +527,6 @@ class Trace(object):
 
 	def write_episodes(self):
 		""" Output episode data to CSV."""
-		self.remove_short_episodes(config.minimum_activity_time)
 		# write episodes file
 		with open(config.output_episodes_file, "a") as f:
 			for i, episode in enumerate(self.episodes):
@@ -579,15 +579,42 @@ class Trace(object):
 				if config.multi_process:
 					self.locks[3].release()
 
-	def remove_short_episodes(self, min_len):
+	def remove_short_stationary_episodes(self):
+		"""
+		Identify and remove stationary episodes shorter than a given time.
+		"""
 		self.episodes.sort()
-		for i in range(len(self.episodes) - 1):
-			cur = self.episodes[i]
-			nxt = self.episodes[i+1]
-			delta = (nxt.start - cur.start)
-			seconds = delta.days * 24 * 60 * 60 + delta.seconds
-			if (cur.location != None and  # is an activity
-				seconds < min_len):
-				# this episode should be travel
-				cur.location = None
-			
+		for i in range(0, len(self.episodes)-1):
+			cur, nxt = self.episodes[i], self.episodes[i+1]
+			# we don't care how short travel and unknown episodes are
+			if cur.type in ['unknown','travel']: continue
+			delta_seconds = (nxt.start - cur.start).total_seconds()
+			# if too short
+			if delta_seconds < config.minimum_activity_time:
+				self.remove_episode(i)
+				return True
+		return False
+
+	def remove_episode(self,i):
+		"""
+		Given a stationary episode, identified by index position, remove the 
+		episode and dissolve its time into surrounding episodes as appropriate. 
+		"""
+		assert 0 <= i <= len(self.episodes)
+		prev = self.episodes[i-1] if i-1 >= 0 else None 
+		this = self.episodes[i]
+		next = self.episodes[i+1] if i+1 <= len(self.episodes) else None
+		if next and prev:
+			if prev.type == next.type: 
+				# these two get dissolved into prev
+				self.episodes.pop(i+1) # pop next
+				self.episodes.pop(i)   # pop this
+			else:
+				# draw the times from the surrounding episodes into the middle
+				# end_prev --> deleted_episode <-- start_next
+				# start next is the only one that actually needs updated
+				next.start = next.start + (next.start - this.start)/2
+				self.episodes.pop(i)
+		else: # is at either end of the sequence
+			self.episodes.pop(i)
+
