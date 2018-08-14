@@ -63,6 +63,14 @@ class Trace(object):
 		"""Get all (real & interpolated) points in one big list"""
 		return [ p for s in self.known_subsets_interpolated for p in s ]
 
+	def temporally_interpolate_points(self, segment):
+		"""
+		TODO: This is currently just a placeholder. 
+		This function interpolates linearly in spacetime where the temporal 
+		gap between two points is sufficiently large. 
+		"""
+		pass
+
 	def spatially_interpolate_points(self, segment):
 		"""
 		Takes a list of ordered points and interpolates spatially between them 
