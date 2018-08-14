@@ -65,7 +65,6 @@ class Trace(object):
 
 	def temporally_interpolate_points(self, segment):
 		"""
-		TODO: This is currently just a placeholder. 
 		This function interpolates linearly in spacetime where the temporal 
 		gap between two points is sufficiently large. 
 		"""
