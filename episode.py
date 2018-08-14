@@ -19,10 +19,7 @@ class Episode(object):
 	@property
 	def location_id(self):
 		"""Return the id of the location if any."""
-		if self.location:
-			return self.location.id
-		else:
-			return None
+		return self.location.id if self.location else None
 
 	@property
 	def type(self):
