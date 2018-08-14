@@ -603,9 +603,9 @@ class Trace(object):
 		assert 0 <= i <= len(self.episodes)
 		prev = self.episodes[i-1] if i-1 >= 0 else None 
 		this = self.episodes[i]
-		next = self.episodes[i+1] if i+1 <= len(self.episodes) else None
-		if next and prev:
-			if prev.type == next.type: 
+		nxt = self.episodes[i+1] if i+1 <= len(self.episodes) else None
+		if nxt and prev:
+			if prev.type == nxt.type: 
 				# these two get dissolved into prev
 				self.episodes.pop(i+1) # pop next
 				self.episodes.pop(i)   # pop this
@@ -613,7 +613,7 @@ class Trace(object):
 				# draw the times from the surrounding episodes into the middle
 				# end_prev --> deleted_episode <-- start_next
 				# start next is the only one that actually needs updated
-				next.start = next.start + (next.start - this.start)/2
+				nxt.start = nxt.start + (nxt.start - this.start)/2
 				self.episodes.pop(i)
 		else: # is at either end of the sequence
 			self.episodes.pop(i)

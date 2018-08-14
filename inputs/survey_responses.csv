@@ -2,3 +2,4 @@ id,created_at,created_at_epoch,uuid,model,itinerum_version,os,os_version,member_
 1,2017-09-08 16:50:46-04:00,1504875046,A,SM-G550T,3.3.0-vanilla,Android,6.0.1,A student and a worker,Bike,Public Transit,Walk,Public Transit,43.6454980466,-79.4366079569,43.6625622939,-79.3983083591,43.6627078207,-79.3982218578
 2,2018-05-23 07:21:29-04:00,1527045689,B,iPhone 7,6.1.1.2.1.6,iOS,11.3.1,A full-time worker,Walk,Public Transit,,,43.646343,-79.393651,43.66249,-79.398794,,
 3,2018-05-22 19:41:23-04:00,1527003683,C,iPhone 6s,6.1.1.2.1.6,iOS,11.3.1,A full-time worker,Public Transit,Bicycle,,,43.668959,-79.348712,43.662416,-79.398609,,
+1,2017-09-08 16:50:46-04:00,1504875046,D,SM-G550T,3.3.0-vanilla,Android,6.0.1,A student and a worker,Bike,Public Transit,Walk,Public Transit,43.6454980466,-79.4366079569,43.6625622939,-79.3983083591,43.6627078207,-79.3982218578

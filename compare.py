@@ -4,7 +4,7 @@ from misc_funcs import distance
 from statistics import median
 from datetime import timedelta, datetime
 from misc_funcs import read_headers
-
+import editdistance
 # Location comparison functions
 
 def compare_locations(truth, compd):
@@ -34,7 +34,8 @@ def compare_locations(truth, compd):
 			min_distances = compare_user_locations(users_to_matrix[user], num_to_match)
 			mean_min_dis = sum(min_distances) / len(min_distances)
 			med = median(min_distances)
-			results.append((user, num_locations, mean_min_dis, med))
+			percent_excess = num_locations / len(true_locations[user])
+			results.append((user, percent_excess, mean_min_dis, med))
 	return results
 
 def compare_user_locations(distances, num_to_match):
@@ -152,11 +153,15 @@ def compare_user_episodes(true, computed, h):
 	values = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 	# Iterate over episodes incrementally so that they always overlap
 	# TODO minor bug when an episode has duration 0
+	comp_str = ""
+	true_str = ""
 	while true[i][-1] < end_time and computed[j][-1] < end_time:  # TODO
 		duration = compare_single_episode((true[i], true[i+1]), (computed[j], computed[j+1]), h, values)
-		if true[i+1][-1] <= computed[j+1][-1]:  # TODO
+		if true[i+1][-1] <= computed[j+1][-1]:
+			true_str = true_str + update_ep_str(true[i])
 			i = i + 1
 		else:
+			comp_str = comp_str + update_ep_str(computed[j])
 			j = j + 1
 	# percent correct or incorrect unknown, travelling, or at_location time
 	p_corr_ut = values[0] / values[3]
@@ -165,7 +170,7 @@ def compare_user_episodes(true, computed, h):
 	p_inc_ut = values[6] / (total_time - values[0])
 	p_inc_trav = values[7] / (total_time - values[1])
 	p_inc_loc = values[8] / (total_time - values[2])
-	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav, p_inc_loc)
+	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav, p_inc_loc,true_str, comp_str)
 
 def compare_single_episode(true_pair, computed_pair, h, values):
 	overlapping_time = float(min(true_pair[1][-1], computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
@@ -199,13 +204,21 @@ def compare_single_episode(true_pair, computed_pair, h, values):
 
 	return overlapping_time
 
+def update_ep_str(episode):
+	if episode[4] == "True":
+		return "u"
+	elif episode[2] != "":
+		return "a"
+	else: # travel
+		return "t"
+
 # Data writing functions:
         
 def write_data(data):
-	rs = ("user,excess_locations,mean_distance,median_distance,"+
+	rs = ("user,percent_excess_locations,mean_distance,median_distance,"+
 		"percent_identified_unknown,percent_identified_travel,"+
 		"percent_identified_location,percent_misidentified_unknown,"+
-		"percent_misidentified_travel,percent_misidentified_location\n")
+		"percent_misidentified_travel,percent_misidentified_location,true_eps,comp_eps,edit_distance,record_length,computed_length\n")
 	for tup in data:
 		user = tup[0]
 		excess = round(tup[1], 2)
@@ -217,9 +230,12 @@ def write_data(data):
 		p_m_ut = round(tup[7], 2)
 		p_m_tt = round(tup[8], 2)
 		p_m_lt = round(tup[9], 2)
-		rs = rs + "{},{},{},{},{},{},{},{},{},{}\n".format(user,
-		                                                   excess, mean, median, p_i_ut,
-		                                                   p_i_tt, p_i_lt, p_m_ut, p_m_tt, p_m_lt)
+		comp_string = tup[11]
+		true_string = tup[10]
+		edit_distance = editdistance.eval(comp_string, true_string)
+		record_len = len(true_string)
+		computed_len = len(comp_string)
+		rs = rs + "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(user, excess, mean, median, p_i_ut, p_i_tt, p_i_lt, p_m_ut, p_m_tt, p_m_lt, true_string, comp_string, edit_distance, record_len, computed_len)
 	fd = open(output_compare_file, "w")
 	fd.write(rs)
 

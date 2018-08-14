@@ -66,13 +66,16 @@ def analyze_user(user_data_list):
 		user.make_known_subsets()
 		if config.db_out and user.identical > 0:
 			print("\t{} identical timestamps found.".format(user.identical))
-		# find locations with the cleaned data
-		user.get_activity_locations()
-		# allocate time
-		user.break_trips()
-		user.identify_named_locations()
-		# write the output
-		user.flush()
+		if len(user.known_subsets) > 0:
+			# find locations with the cleaned data
+			user.get_activity_locations()
+			# allocate time
+			user.break_trips()
+			user.identify_named_locations()
+			# write the output
+			user.flush()
+		else: # not enough subsets of appropriate length
+			print("\tinsufficient data for {}".format(user_id))
 
 
 if __name__ == "__main__":
