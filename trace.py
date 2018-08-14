@@ -69,7 +69,36 @@ class Trace(object):
 		This function interpolates linearly in spacetime where the temporal 
 		gap between two points is sufficiently large. 
 		"""
-		pass
+		max_time_gap = 600 # seconds
+		new_points = []
+		# For each segment (pair of points)
+		for i in range(1,len(segment)):
+			p1, p2 = segment[i-1], segment[i]
+			delta_t = p2.unix_time - p1.unix_time
+			if delta_t <= max_time_gap:
+				new_points.append(p1) # no interpolation to do
+				continue
+			# spatial 
+			dist = distance(p1, p2)
+			n_segs = ceil( delta_t / max_time_gap )
+			seg_span = delta_t / n_segs
+			delta_x = (p2.x - p1.x) / n_segs
+			delta_y = (p2.y - p1.y) / n_segs
+			# iteration over new subsegments
+			inter_points = []
+			acc = (p1.accuracy + p2.accuracy) / 2
+			for j in range(1, n_segs):
+				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)				
+				t = p1.unix_time + j * delta_t / n_segs
+				new_point = Point(t, lng, lat, acc)
+				new_point.synthetic = True
+				inter_points.append(new_point)
+			new_points.extend( [p1] + inter_points )	
+		# add the last point
+		new_points.append(segment[-1])
+		return new_points
+			
+
 
 	def spatially_interpolate_points(self, segment):
 		"""
@@ -83,7 +112,7 @@ class Trace(object):
 		weights; those are applied later according to timestamps. 
 		"""
 		new_points = []
-		# For each point but the first
+		# For each segment
 		for i in range(1,len(segment)):
 			p1, p2 = segment[i-1], segment[i]
 			dist = distance(p1, p2)
@@ -97,11 +126,11 @@ class Trace(object):
 			seg_len = dist / n_segs
 			delta_x = (p2.x - p1.x) / n_segs
 			delta_y = (p2.y - p1.y) / n_segs
-			# iteration over segments
+			# iteration over new subsegments
 			inter_points = []
+			acc = (p1.accuracy + p2.accuracy) / 2
 			for j in range(1, n_segs):
 				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)				
-				acc = (p1.accuracy + p2.accuracy) / 2
 				if dist >= delta_t * walk_speed: 
 					# if faster than walking speed, assign time uniformly
 					t = p1.unix_time + j * delta_t / n_segs
@@ -210,6 +239,10 @@ class Trace(object):
 		start_probs = [0.5] + [(0.5/len(states))] * len(states)
 		# list of locations that actually get used
 		used_locations = set()
+		# do temporal interpolation on all known subsets
+		self.known_subsets_interpolated = [
+			self.temporally_interpolate_points(subset) for subset in self.known_subsets_interpolated
+		]
 		# run the viterbi algorithm on each known subset
 		for points in self.known_subsets_interpolated:
 			emission_probs = []
