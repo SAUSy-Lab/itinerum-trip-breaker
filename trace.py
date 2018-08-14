@@ -244,9 +244,7 @@ class Trace(object):
 		]
 		# run the viterbi algorithm on each known subset
 		for points in self.known_subsets_interpolated:
-			emission_probs = []
-			for point in points:
-				emission_probs.append(emission_probabilities(point, self.locations))
+			emission_probs = emission_probabilities(points, self.locations)
 			# run viterbi on each subset
 			state_path = viterbi(states, emission_probs, start_probs,
 					state_transition_matrix(states))

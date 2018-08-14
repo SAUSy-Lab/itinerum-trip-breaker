@@ -186,43 +186,60 @@ def viterbi(states, emission_probs, start_probs, transition_probs):
 	return path[final_state]
 
 
-def emission_probabilities(point, locations):
+def emission_probabilities(points, locations):
 	"""
-		Given a list of locations, provide the probability that the observed point
-		was emitted from none or any. Based on distance and essentially gaussian
-		function. The first value in the returned list is the prob that the point
-		came from some location not in the list. Right now we're using a guassian
-		function that starts 100 meters out from the location.
+	Given lists of points and locations, estimate the probabilities of each point 
+	having been emitted from one of the locations or from a non-location 
+	(i.e. travel). Returns a list of lists per point, e.g.:
+	[
+		[travel_prob,loc1_prob,loc2_prob...], # point1
+		[travel_prob,loc1_prob,loc2_prob...], # point2
+		...
+	]
+	Location emission is based on distance and a gaussian decay function. 
+	The travel emission probability is what remains after the location 
+	probabilities are summed, if anything.
+	In cases of very slow speeds (stationarity) the probability of travel is 
+	decreased.
 	"""
-	# with d < 100 as at location
-	dists = [distance(loc, point) for loc in locations]
-	dists = [0 if d < 0 else d for d in dists]
-	probs = [gaussian(d, 100) for d in dists]
-	# standardize to one if necessary
-	if sum(probs) > 1:
-		probs = [p / sum(probs) for p in probs]
-	# prepend travel probability as the difference from 1 if there is any
-	return [1 - sum(probs)] + probs
-
+	walk_speed = 5*1000/3600  # 5 kmph in mps
+	emission_probs_per_point = []
+	for i, point in enumerate(points):
+		dists = [distance(loc, point) for loc in locations]
+		loc_probs = [gaussian(d, 75) for d in dists]
+		# standardize to one if necessary
+		if sum(loc_probs) > 1:
+			loc_probs = [ p / (sum(loc_probs)+0.01) for p in loc_probs ]
+		# if there are neighboring points
+		if 0 < i < len(points)-1:
+			p_ante, p_post = points[i-1], points[i+1]
+			# meters per second
+			speed1 = distance(point,p_ante) / point.delta_t(p_ante)
+			speed2 = distance(point,p_post) / point.delta_t(p_post)
+			if (speed1+speed2)/2 < walk_speed:
+				loc_probs = [lp*2 for lp in loc_probs]
+		# prepend travel probability as the difference from 1 if there is any
+		emission_probs_per_point.append( [1 - sum(loc_probs)] + loc_probs )
+	return emission_probs_per_point
 
 def state_transition_matrix(states=[]):
 	"""
-		Given a list of potential activity location id's, return a simple
-		transition probability matrix for use in the viterbi function.
-		Transition probs are currently hardcoded and returned as a list of lists.
-		0 is the 'travel' state. E.g.:
-		    0   1   2   3 ...
-		0  .9  .03 .03 .03
-		1  .1  .9  .0  .0
-		2  .1  .0  .9  .0
-		3  .1  .0  .0  .9
+	Given a list of potential activity location id's, return a simple
+	transition probability matrix for use in the viterbi function.
+	Transition probs are currently hardcoded and returned as a list of lists.
+	0 is the 'travel' state. E.g.:
+	    0   1   2   3 ...
+	0  .9  .03 .03 .03
+	1  .2  .8  .0  .0
+	2  .2  .0  .8  .0
+	3  .2  .0  .0  .8
 		...
 	"""
 	# define possible transition probabilities
-	travel_to_travel_prob = 0.8
-	travel_to_place_prob = 0.2 / len(states)
-	place_to_travel_prob = 0.1
-	place_to_itself_prob = 0.9
+	travel_to_travel_prob = 0.95
+	travel_to_place_prob = 0.05 / len(states)
+	place_to_travel_prob = 0.5
+	place_to_itself_prob = 0.5
 	teleport_prob = 0.0  # impossible, in theory at least
 	# make sure travel is an option
 	if 0 not in states:

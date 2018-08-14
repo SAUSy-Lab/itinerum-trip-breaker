@@ -108,3 +108,8 @@ class Point(object):
 		Assigns time-based weight value.
 		"""
 		self.weight += weight
+
+	def delta_t(self,other_point):
+		"""Gives the absolute difference in seconds between two points."""
+		return abs( self.unix_time - other_point.unix_time )
+
