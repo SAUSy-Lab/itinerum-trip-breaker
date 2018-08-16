@@ -39,7 +39,7 @@ kernel_bandwidth = 25
 min_accuracy = 100
 
 # Minimum distance between separate locations
-location_distance = 150  # meters
+location_distance = 100  # meters
 
 # interpolation distance parameter (meters). maximum length of segment to
 # remain uninterpolated for linear spatial interpolations.
