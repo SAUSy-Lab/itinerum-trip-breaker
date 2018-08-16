@@ -172,7 +172,7 @@ class Trace(object):
 		for seg_index, segment in enumerate(self.known_subsets):
 			for point in segment:
 				point.known_subset = seg_index
-		if config.db_out:
+		if config.debug_output:
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def get_activity_locations(self):
@@ -221,7 +221,7 @@ class Trace(object):
 			for location in self.locations:
 				if distance(place, location) <= config.location_distance / 2:
 					location.identify( name )
-					if config.db_out:
+					if config.debug_output:
 						print('\tfound',name)
 
 	def break_trips(self):
@@ -269,7 +269,7 @@ class Trace(object):
 				prev_point = point
 			# unknown time ends every known segment
 			self.episodes.append( Episode(points[-1].time, is_unknown_time=True) )
-		if config.db_out:
+		if config.debug_output:
 			print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):
@@ -278,7 +278,7 @@ class Trace(object):
 		threshold. KDE values are stored in self.points.
 		"""
 		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
-		if config.db_out:
+		if config.debug_output:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
 		#   for every other point within cluster distance:
@@ -333,7 +333,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out and len(to_remove) > 0:
+		if config.debug_output and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
@@ -365,7 +365,7 @@ class Trace(object):
 				locations[key].append(point)
 		for k in locations.keys():
 			if len(locations[k]) > 1:
-				if config.db_out:
+				if config.debug_output:
 					print(k, locations[k])
 
 	def observe_neighbors(self, indices=[]):
@@ -421,7 +421,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out and len(to_remove) > 0:
+		if config.debug_output and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
@@ -435,7 +435,7 @@ class Trace(object):
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
 			self.pop_point(i)
-		if config.db_out and len(to_remove) > 0:
+		if config.debug_output and len(to_remove) > 0:
 			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
@@ -448,7 +448,7 @@ class Trace(object):
 			self.pop_point(i)
 			i = self.find_error_index()
 			count += 1
-		if config.db_out and count > 0:
+		if config.debug_output and count > 0:
 			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):

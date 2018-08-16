@@ -3,7 +3,7 @@
 #
 
 # Flag for toggling debugging print statement on or off
-db_out = True
+debug_output = True
 
 input_dir = './inputs'
 output_dir = './outputs'
@@ -20,7 +20,7 @@ activities_gt = output_dir + '/episodes_ground_truth.csv'
 local_timezone = 'America/Toronto'
 
 # How much time must be spent in one spot for it to be detected as 
-# an activty episode?
+# an activity episode?
 minimum_activity_time = 10*60 # seconds
 
 # Spatial kernel bandwidth in meters (standard deviation of gaussian kernel)

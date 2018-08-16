@@ -53,7 +53,7 @@ def analyze_user(user_data_list):
 	survey = user_data_list[2]
 	user = Trace(user_id, data, survey, locks)
 	if len(user.points) > 100:
-		if config.db_out:
+		if config.debug_output:
 			print("User", user_id, 'starts with', len(user.points), 'coordinates')
 		user.remove_repeated_points()
 		user.remove_known_error(config.min_accuracy)
@@ -64,7 +64,7 @@ def analyze_user(user_data_list):
 		user.remove_sequential_duplicates()
 		# identify gaps in the data
 		user.make_known_subsets()
-		if config.db_out and user.identical > 0:
+		if config.debug_output and user.identical > 0:
 			print("\t{} identical timestamps found.".format(user.identical))
 		if len(user.known_subsets) > 0:
 			# find locations with the cleaned data
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 					row['location_study_lon'], 
 					row['location_study_lat']
 				)
-	if config.db_out:
+	if config.debug_output:
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
 	initialize_output_files()
