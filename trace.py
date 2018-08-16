@@ -73,7 +73,7 @@ class Trace(object):
 		# For each segment (pair of points)
 		for i in range(1,len(segment)):
 			p1, p2 = segment[i-1], segment[i]
-			delta_t = p2.unix_time - p1.unix_time
+			delta_t = p1.delta_t(p2)
 			if delta_t <= max_time_gap:
 				new_points.append(p1) # no interpolation to do
 				continue
@@ -96,8 +96,6 @@ class Trace(object):
 		# add the last point
 		new_points.append(segment[-1])
 		return new_points
-			
-
 
 	def spatially_interpolate_points(self, segment):
 		"""
@@ -119,7 +117,7 @@ class Trace(object):
 				new_points.append(p1) # no interpolation to do
 				continue
 			walk_speed = 5*1000/3600  # 5 kmph in mps
-			delta_t = p2.unix_time - p1.unix_time
+			delta_t = p1.delta_t(p2)
 			# spatial 
 			n_segs = ceil( dist / config.interpolation_distance )
 			seg_len = dist / n_segs
@@ -168,7 +166,7 @@ class Trace(object):
 		self.known_subsets.append(segment)
 		# check these segments for sufficient length
 		self.known_subsets = [ s for s in self.known_subsets if len(s) >=5 ]
-		self.known_subsets = [ s for s in self.known_subsets if s[-1].unix_time - s[0].unix_time > 3600 ]
+		self.known_subsets = [ s for s in self.known_subsets if s[-1].delta_t(s[0]) > 3600 ]
 		for seg_index, segment in enumerate(self.known_subsets):
 			for point in segment:
 				point.known_subset = seg_index
@@ -621,6 +619,7 @@ class Trace(object):
 		prev = self.episodes[i-1] if i-1 >= 0 else None 
 		this = self.episodes[i]
 		nxt = self.episodes[i+1] if i+1 <= len(self.episodes) else None
+		assert this.type not in ['unknown','travel']
 		if nxt and prev:
 			if prev.type == nxt.type: 
 				# these two get dissolved into prev
