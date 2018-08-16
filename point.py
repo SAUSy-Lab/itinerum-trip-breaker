@@ -113,3 +113,7 @@ class Point(object):
 		"""Gives the absolute difference in seconds between two points."""
 		return abs( self.unix_time - other_point.unix_time )
 
+	def mps(self,other_point):
+		"""Gives the speed between two points in meters per second."""
+		return distance(self,other_point) / self.delta_t(other_point) 
+

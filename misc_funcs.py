@@ -185,42 +185,33 @@ def viterbi(states, emission_probs, start_probs, transition_probs):
 	# get the optimal sequence of states
 	return path[final_state]
 
-
 def emission_probabilities(points, locations):
 	"""
 	Given lists of points and locations, estimate the probabilities of each point 
 	having been emitted from one of the locations or from a non-location 
 	(i.e. travel). Returns a list of lists per point, e.g.:
-	[
-		[travel_prob,loc1_prob,loc2_prob...], # point1
-		[travel_prob,loc1_prob,loc2_prob...], # point2
-		...
-	]
+	[ [travel_prob,loc1_prob,loc2_prob...],       # point1
+	  [travel_prob,loc1_prob,loc2_prob...], ... ] # point2, etc.
 	Location emission is based on distance and a gaussian decay function. 
-	The travel emission probability is what remains after the location 
-	probabilities are summed, if anything.
-	In cases of very slow speeds (stationarity) the probability of travel is 
-	decreased.
+	The travel emission probability is based on instantaneous travel speed.
+	These are all later standardized to one.
 	"""
-	walk_speed = 5*1000/3600  # 5 kmph in mps
 	emission_probs_per_point = []
 	for i, point in enumerate(points):
-		dists = [distance(loc, point) for loc in locations]
-		loc_probs = [gaussian(d, 75) for d in dists]
-		# standardize to one if necessary
-		if sum(loc_probs) > 1:
-			loc_probs = [ p / (sum(loc_probs)+0.01) for p in loc_probs ]
-		# if there are neighboring points
+		# location probability is based on distance to locations
+		loc_probs = [ gaussian( distance(loc, point), 75 ) for loc in locations ]
+		# travel probability is based on estimate of momentary speed
 		if 0 < i < len(points)-1:
-			p_ante, p_post = points[i-1], points[i+1]
-			# meters per second
-			speed1 = distance(point,p_ante) / point.delta_t(p_ante)
-			speed2 = distance(point,p_post) / point.delta_t(p_post)
-			if (speed1+speed2)/2 < walk_speed:
-				loc_probs = [lp*2 for lp in loc_probs]
-		# prepend travel probability as the difference from 1 if there is any
-		emission_probs_per_point.append( [1 - sum(loc_probs)] + loc_probs )
+			avg_mps = ( point.mps(points[i-1]) + point.mps(points[i+1]) ) / 2
+			trav_prob = 1 - math.exp(-avg_mps/2)
+		else:
+			trav_prob = 0.25
+		# standardize such that sum(*) = 1
+		point_probs = [trav_prob] + loc_probs
+		point_probs = [ p / sum(point_probs) for p in point_probs ]
+		emission_probs_per_point.append( point_probs )
 	return emission_probs_per_point
+
 
 def state_transition_matrix(states=[]):
 	"""
