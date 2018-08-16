@@ -527,7 +527,7 @@ class Trace(object):
 	def write_locations(self):
 		""" Output activity locations to CSV."""
 		# write potential activity locations to file
-		with open(config.output_locations_file, "a") as f:
+		with open(config.output_dir+'/locations.csv', "a") as f:
 			for location in self.locations:
 				if config.multi_process:
 					self.locks[0].acquire()
@@ -545,7 +545,7 @@ class Trace(object):
 	def write_episodes(self):
 		""" Output episode data to CSV."""
 		# write episodes file
-		with open(config.output_episodes_file, "a") as f:
+		with open(config.output_dir+'/episodes.csv', "a") as f:
 			for i, episode in enumerate(self.episodes):
 				attributes = [
 					self.id, i,                  # activity sequence
@@ -564,7 +564,7 @@ class Trace(object):
 		""" Output point attributes to CSV for debugging."""
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
-		with open(config.output_points_file, 'a') as f:
+		with open(config.output_dir+'/classified_points.csv', 'a') as f:
 			for point in self.all_interpolated_points + self.discarded_points:
 				attributes = [
 					self.id, point.unix_time,
@@ -583,7 +583,7 @@ class Trace(object):
 	def write_day_summary(self):
 		"""Output daily summary to CSV."""
 		days = self.get_days()
-		with open(config.output_days_file, 'a') as f:
+		with open(config.output_dir+'/days.csv', 'a') as f:
 			for date, data in days.items():
 				attributes = [
 					self.id, date, date.weekday(), sum(data['total']), 

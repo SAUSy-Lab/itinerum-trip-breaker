@@ -236,7 +236,7 @@ def write_data(data):
 		record_len = len(true_string)
 		computed_len = len(comp_string)
 		rs = rs + "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(user, excess, mean, median, p_i_ut, p_i_tt, p_i_lt, p_m_ut, p_m_tt, p_m_lt, true_string, comp_string, edit_distance, record_len, computed_len)
-	fd = open(output_compare_file, "w")
+	fd = open(output_dir+'/compare.csv', "w")
 	fd.write(rs)
 
 def merge_lists(t1, t2):
@@ -246,7 +246,7 @@ def merge_lists(t1, t2):
 	return new_data
 
 if __name__ == "__main__":
-	location_data = sorted(compare_locations(locations_gt, output_locations_file))
-	episode_data = sorted(compare_episodes(activities_gt, output_episodes_file))
+	location_data = sorted(compare_locations(locations_gt, output_dir+'/locations.csv'))
+	episode_data = sorted(compare_episodes(activities_gt, output_dir+'/episodes.csv'))
 	data = merge_lists(location_data, episode_data)
 	write_data(data)

@@ -4,13 +4,13 @@ import sys
 import csv
 import math
 import rpy2
+from multiprocessing import Pool, Lock
 # our own classes
+import config
+import misc_funcs
 from point import Point
 from trace import Trace
 from location import Location
-from multiprocessing import Pool, Lock
-import config
-import misc_funcs
 
 def init_pool():
 	global LOCKS
@@ -21,20 +21,20 @@ def initialize_output_files():
 	Open files for accepting output through script execution.
 	"""
 	# episodes file
-	f = open(config.output_episodes_file, "w")
+	f = open(config.output_dir+'/episodes.csv', "w")
 	f.write('user_id,sequence,location_id,mode,unknown,local_start_time,unix_start_time\n')
 	f.close()
 	# locations file
-	f = open(config.output_locations_file, "w")
+	f = open(config.output_dir+'/locations.csv', "w")
 	f.write('user_id,location_id,lon,lat,description,used\n')
 	f.close()
 	# points file
-	f = open(config.output_points_file, "w")
+	f = open(config.output_dir+'/classified_points.csv', "w")
 	f.write('user_id,unix_time,known_subset,lon,lat,x,y,weight,removed,')
 	f.write('timestamp,interpolated,state,kde\n')
 	f.close()
 	# days file
-	f = open(config.output_days_file, "w")
+	f = open(config.output_dir+'/days.csv', "w")
 	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,')
 	f.write('unknown_time,home_time,work_time,school_time,home_count,')
 	f.write('work_count,school_count\n')
