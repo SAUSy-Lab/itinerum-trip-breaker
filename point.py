@@ -93,16 +93,6 @@ class Point(object):
 	def copy(self):
 		return Point(self.unix_time, self.longitude, self.latitude, self.accuracy)
 
-
-	def weight_decimal(self, param):
-		"""
-		Retuns a value varying from 0.5 to 1 as param varies from 0 to infinity.
-		Allows weight to be distributed between points according to
-		a exponential function in the ratio of their distance and 
-		time difference
-		"""
-		return (-1) / (param + 2) + 1
-
 	def add_weight(self, weight):
 		"""
 		Assigns time-based weight value.

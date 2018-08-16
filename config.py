@@ -41,19 +41,11 @@ min_accuracy = 100
 # Minimum distance between separate locations
 location_distance = 100  # meters
 
-# interpolation distance parameter (meters). maximum length of segment to
-# remain uninterpolated for linear spatial interpolations.
-# For reasonable results, this must be < cluster_distance
+# spatial interpolation distance parameter (meters). This is the maximum length 
+# of a segment to remain uninterpolated for spatial interpolations.
+# For reasonable results, this must be < location_distance 
 interpolation_distance = 30
 assert location_distance > interpolation_distance
-
-# weight coefficient:
-# Affects the input to the weight distribution function,
-# which varies from 0.5 to 1 as the ratio of distance over time difference
-# increases. Increasing this value over 1 scales up this ratio
-# while decreasing under 1 scales increases it.
-weight_coef = 1
-assert (weight_coef > 0)
 
 # Flag for toggling different denominators in calculating episode detection
 # Metrics. If on, the denominator consists of the total time for that user,

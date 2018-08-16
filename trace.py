@@ -302,29 +302,18 @@ class Trace(object):
 	def weight_points(self,segment):
 		"""
 		Assign time-based weights to a series of sequential points.
-		Values are in seconds, and are split between neighboring points.
-		e.g.  |--p2-time---|
-		p1----|----p2------|------p3
-
+		Values are in seconds, and split evenly between neighboring points, e.g.:
+		 |-p1-time-|--p2-time-|...etc
+	 	p1---------|---------p2------|------p3
+		           ^midpoint
 		"""
 		assert len(segment) > 1
-		# iterate over all points except terminal.
+		# iterate over all sub-segments
 		for i in range(len(segment)-1):
-			this_point = segment[i]
-			next_point = segment[i+1]
-
-			d = distance(this_point, next_point)
-			t = (next_point.time - this_point.time).total_seconds()
-			if t == 0:  # occurs when there are identical timestamps
-				self.identical += 1  # for accounting 
-				# there is no time weight between these points
-				w1 = 0
-				w2 = 0
-			else:
-				w1 = this_point.weight_decimal( config.weight_coef * d / t ) * t
-				w2 = ( 1 - this_point.weight_decimal( config.weight_coef * d / t) ) * t
-			this_point.add_weight(w1)
-			next_point.add_weight(w2)
+			p1, p2 = segment[i], segment[i+1]
+			time_diff = p1.delta_t(p2) # time in seconds
+			p1.add_weight(time_diff/2)
+			p2.add_weight(time_diff/2)
 
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply
