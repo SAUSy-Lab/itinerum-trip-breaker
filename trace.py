@@ -157,6 +157,8 @@ class Trace(object):
 		# whether we add it to the current segment or the one after.
 		for i in range(1, len(self.points)):
 			if distance(self.points[i], self.points[i-1]) > 1000:
+				# remove longer interpolated segments
+				self.partial_interpolation_removal(segment, 4)
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [self.points[i]]
@@ -172,6 +174,11 @@ class Trace(object):
 				point.known_subset = seg_index
 		if config.debug_output:
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
+
+	def partial_interpolation_removal(self, segment, cutoff):
+		non_synth = [point for point in segment if point.synthetic]
+		print("non synth indices: {}".format(non_synth))
+				
 
 	def get_activity_locations(self):
 		"""

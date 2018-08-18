@@ -199,18 +199,16 @@ def compare_single_episode(true_pair, computed_pair, h, values):
 		values[7] += overlapping_time
 	if not true_at_loc and comp_at_loc:
 		values[8] += overlapping_time
-        
-		
 
 	return overlapping_time
 
 def update_ep_str(episode):
 	if episode[4] == "True":
-		return "u"
+		return "U"
 	elif episode[2] != "":
-		return "a"
+		return "A"
 	else: # travel
-		return "t"
+		return "T"
 
 # Data writing functions:
         

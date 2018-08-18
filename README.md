@@ -13,6 +13,9 @@ This is an application for parsing [Itinerum](https://github.com/TRIP-Lab/itiner
 6. If you have ground truth data, run "python3 compare.py" to generate quality metrics.
 7. Other settings can be modified in config.py at your own discretion.
 
+## Testing data
+3 users have generously contributed their personal itinerum and ground truth data for testing. User D is a copy of user A using a repeating subset of points for edge case error detection.
+
 ## Algorithm
 For each user:
 
@@ -65,5 +68,6 @@ This file summarizes the episodes file per calendar day. Since many people may s
     - Rpy2 
     - pyproj
     - scipy
+    - editdistance
 * R 3.3+
     - ks package
