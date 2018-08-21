@@ -211,16 +211,16 @@ class Trace(object):
 	def identify_named_locations(self):
 		"""
 		Take user supplied (named) places and apply the labels to discovered 
-		locations if possible. This function is called after time has been 
-		allocated, so we could prefer locations with more time. 
+		locations if possible. This is based simply on distance, though this 
+		function is called after time has been allocated, so we could in theory 
+		base it on a function of distance and time spent. 
 		"""
 		# for each named place, check distance to other locations
 		for name, place in self.named_places.items():
-			for location in self.locations:
-				if distance(place, location) <= config.location_distance / 2:
-					location.identify( name )
-					if config.debug_output:
-						print('\tfound',name)
+			dists = [ distance(place, loc) for loc in self.locations ]
+			if min(dists) <= 200: # meters
+				i = dists.index(min(dists))
+				self.locations[i].identify( name )
 
 	def break_trips(self):
 		"""
