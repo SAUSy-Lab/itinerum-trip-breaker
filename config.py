@@ -19,9 +19,9 @@ activities_gt = output_dir + '/episodes_ground_truth.csv'
 # timezone to use (until efficient timezone lookups can be implemented)
 local_timezone = 'America/Toronto'
 
-# How much time must be spent in one spot for it to be detected as 
+# How much time must be spent in one spot for it to be detected as
 # an activity episode?
-minimum_activity_time = 10*60 # seconds
+minimum_activity_time = 10*60  # seconds
 
 # Spatial kernel bandwidth in meters (standard deviation of gaussian kernel)
 # Used for location detection.
@@ -34,9 +34,9 @@ min_accuracy = 100
 # Minimum distance between separate locations
 location_distance = 100  # meters
 
-# spatial interpolation distance parameter (meters). This is the maximum length 
+# spatial interpolation distance parameter (meters). This is the maximum length
 # of a segment to remain uninterpolated for spatial interpolations.
-# For reasonable results, this must be < location_distance 
+# For reasonable results, this must be < location_distance
 interpolation_distance = 30
 assert location_distance > interpolation_distance
 

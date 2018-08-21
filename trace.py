@@ -5,9 +5,10 @@ import re
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
+from misc_funcs import (distance, inner_angle_sphere, kde, min_peak,
 	state_transition_matrix, viterbi, emission_probabilities, project, unproject)
 from math import sqrt, ceil
+
 
 class Trace(object):
 	"""
@@ -17,14 +18,14 @@ class Trace(object):
 
 	def __init__(self, user_id, raw_data, named_places, locks):
 		"""
-		Construct the user object by pulling all data pertaining to this user, 
+		Construct the user object by pulling all data pertaining to this user,
 		identified by ID.
 		"""
 		self.locks = locks
 		self.id = user_id
 		self.raw = raw_data
 		self.named_places = named_places
-		# the set of original input points, minus any that get cleaned out. 
+		# the set of original input points, minus any that get cleaned out.
 		self.points = []
 		# points removed during cleaning
 		self.discarded_points = []
@@ -47,11 +48,8 @@ class Trace(object):
 		# read in all time and location data for points
 		# right now only using a few fields
 		for row in raw_data:
-			self.points.append( Point(
-				int(row['timestamp_epoch']),
-				float(row['longitude']), float(row['latitude']), 
-				float(row['h_accuracy'])
-			))
+			self.points.append(Point(int(row['timestamp_epoch']),
+			float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
 		# sort the list by time
 		self.points.sort(key=lambda x: x.unix_time)
 		# measure to and from neighbors
@@ -61,25 +59,25 @@ class Trace(object):
 	@property
 	def all_interpolated_points(self):
 		"""Get all (real & interpolated) points in one big list"""
-		return [ p for s in self.known_subsets_interpolated for p in s ]
+		return [p for s in self.known_subsets_interpolated for p in s]
 
 	def temporally_interpolate_points(self, segment):
 		"""
-		This function interpolates linearly in spacetime where the temporal 
-		gap between two points is sufficiently large. 
+		This function interpolates linearly in spacetime where the temporal
+		gap between two points is sufficiently large.
 		"""
-		max_time_gap = 600 # seconds
+		max_time_gap = 600  # seconds
 		new_points = []
 		# For each segment (pair of points)
-		for i in range(1,len(segment)):
+		for i in range(1, len(segment)):
 			p1, p2 = segment[i-1], segment[i]
 			delta_t = p1.delta_t(p2)
 			if delta_t <= max_time_gap:
-				new_points.append(p1) # no interpolation to do
+				new_points.append(p1)  # no interpolation to do
 				continue
-			# spatial 
+			# spatial
 			dist = distance(p1, p2)
-			n_segs = ceil( delta_t / max_time_gap )
+			n_segs = ceil(delta_t / max_time_gap)
 			seg_span = delta_t / n_segs
 			delta_x = (p2.x - p1.x) / n_segs
 			delta_y = (p2.y - p1.y) / n_segs
@@ -87,39 +85,39 @@ class Trace(object):
 			inter_points = []
 			acc = (p1.accuracy + p2.accuracy) / 2
 			for j in range(1, n_segs):
-				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)				
+				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)
 				t = p1.unix_time + j * delta_t / n_segs
 				new_point = Point(t, lng, lat, acc)
 				new_point.synthetic = True
 				inter_points.append(new_point)
-			new_points.extend( [p1] + inter_points )	
+			new_points.extend([p1] + inter_points)
 		# add the last point
 		new_points.append(segment[-1])
 		return new_points
 
 	def spatially_interpolate_points(self, segment):
 		"""
-		Takes a list of ordered points and interpolates spatially between them 
-		such that the distance between the returned list of points is never 
+		Takes a list of ordered points and interpolates spatially between them
+		such that the distance between the returned list of points is never
 		greater than a value specified in config, e.g. 30m.
-		Temporally, there are two paradigms. For segments faster than walking 
-		speed, time is allocated uniformly. For those slower, it is assumed that 
-		walking-speed travel begins at the last possible moment, allowing time to 
-		accumulate at the preceding point. This function does NOT assign temporal 
-		weights; those are applied later according to timestamps. 
+		Temporally, there are two paradigms. For segments faster than walking
+		speed, time is allocated uniformly. For those slower, it is assumed that
+		walking-speed travel begins at the last possible moment, allowing time to
+		accumulate at the preceding point. This function does NOT assign temporal
+		weights; those are applied later according to timestamps.
 		"""
 		new_points = []
 		# For each segment
-		for i in range(1,len(segment)):
+		for i in range(1, len(segment)):
 			p1, p2 = segment[i-1], segment[i]
 			dist = distance(p1, p2)
 			if dist <= config.interpolation_distance:
-				new_points.append(p1) # no interpolation to do
+				new_points.append(p1)  # no interpolation to do
 				continue
 			walk_speed = 5*1000/3600  # 5 kmph in mps
 			delta_t = p1.delta_t(p2)
-			# spatial 
-			n_segs = ceil( dist / config.interpolation_distance )
+			# spatial
+			n_segs = ceil(dist / config.interpolation_distance)
 			seg_len = dist / n_segs
 			delta_x = (p2.x - p1.x) / n_segs
 			delta_y = (p2.y - p1.y) / n_segs
@@ -127,28 +125,27 @@ class Trace(object):
 			inter_points = []
 			acc = (p1.accuracy + p2.accuracy) / 2
 			for j in range(1, n_segs):
-				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)				
-				if dist >= delta_t * walk_speed: 
+				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)
+				if dist >= delta_t * walk_speed:
 					# if faster than walking speed, assign time uniformly
 					t = p1.unix_time + j * delta_t / n_segs
-				else: 
-					# slower than walking speed, so assign time backwards from last 
-					# point at walking speed 
+				else:
+					# slower than walking speed, so assign time backwards from last
+					# point at walking speed
 					t = p2.unix_time - (dist/n_segs)/walk_speed*(n_segs-j)
 				new_point = Point(t, lng, lat, acc)
 				new_point.synthetic = True
 				inter_points.append(new_point)
-			new_points.extend( [p1] + inter_points )	
+			new_points.extend([p1] + inter_points)
 		# add the last point
 		new_points.append(segment[-1])
 		return new_points
 
-
 	def make_known_subsets(self):
 		"""
 		Partition the trace points into contiguous sets for which we're confident
-		we don't have substantial missing data. That is, exclude segments where it 
-		seems like we have no data, but substantial movement; for which trip and 
+		we don't have substantial missing data. That is, exclude segments where it
+		seems like we have no data, but substantial movement; for which trip and
 		activity reconstruction would be impossible.
 		TODO: Eventually we will need to check for subway trips.
 		"""
@@ -158,7 +155,6 @@ class Trace(object):
 		for i in range(1, len(self.points)):
 			if distance(self.points[i], self.points[i-1]) > 1000:
 				# remove longer interpolated segments
-				self.partial_interpolation_removal(segment, 4)
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [self.points[i]]
@@ -167,8 +163,9 @@ class Trace(object):
 				segment.append(self.points[i])
 		self.known_subsets.append(segment)
 		# check these segments for sufficient length
-		self.known_subsets = [ s for s in self.known_subsets if len(s) >=5 ]
-		self.known_subsets = [ s for s in self.known_subsets if s[-1].delta_t(s[0]) > 3600 ]
+		self.known_subsets = [s for s in self.known_subsets if len(s) >= 5]
+		self.known_subsets = [s for s in self.known_subsets if
+					s[-1].delta_t(s[0]) > 3600]
 		for seg_index, segment in enumerate(self.known_subsets):
 			for point in segment:
 				point.known_subset = seg_index
@@ -177,8 +174,7 @@ class Trace(object):
 
 	def partial_interpolation_removal(self, segment, cutoff):
 		non_synth = [point for point in segment if point.synthetic]
-		print("non synth indices: {}".format(non_synth))
-				
+		#print("non synth indices: {}".format(non_synth))
 
 	def get_activity_locations(self):
 		"""
@@ -203,12 +199,11 @@ class Trace(object):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points]) / len(self.points))
+		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points]) /
+			len(self.points))
 		# estimate peak threshold value
-		threshold = min_peak(
-			mean_accuracy,  # mean sd of GPS accuracy for user
-			sum(Wvector)  # total seconds entering KDE
-		) 
+		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
+				sum(Wvector))  # total seconds entering KDE
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
@@ -217,17 +212,17 @@ class Trace(object):
 
 	def identify_named_locations(self):
 		"""
-		Take user supplied (named) places and apply the labels to discovered 
-		locations if possible. This function is called after time has been 
-		allocated, so we could prefer locations with more time. 
+		Take user supplied (named) places and apply the labels to discovered
+		locations if possible. This function is called after time has been
+		allocated, so we could prefer locations with more time.
 		"""
 		# for each named place, check distance to other locations
 		for name, place in self.named_places.items():
 			for location in self.locations:
 				if distance(place, location) <= config.location_distance / 2:
-					location.identify( name )
+					location.identify(name)
 					if config.debug_output:
-						print('\tfound',name)
+						print('\tfound', name)
 
 	def break_trips(self):
 		"""
@@ -244,9 +239,8 @@ class Trace(object):
 		# list of locations that actually get used
 		used_locations = set()
 		# do temporal interpolation on all known subsets
-		self.known_subsets_interpolated = [
-			self.temporally_interpolate_points(subset) for subset in self.known_subsets_interpolated
-		]
+		self.known_subsets_interpolated = [self.temporally_interpolate_points(subset)
+			for subset in self.known_subsets_interpolated]
 		# run the viterbi algorithm on each known subset
 		for points in self.known_subsets_interpolated:
 			emission_probs = emission_probabilities(points, self.locations)
@@ -264,16 +258,16 @@ class Trace(object):
 			for i, point in enumerate(points):
 				if i == 0:
 					# record first episode
-					self.episodes.append( Episode(point.time, point.location) )
+					self.episodes.append(Episode(point.time, point.location))
 				else:
 					# look for state changes
 					if prev_point.state != point.state:
 						# assume the transition happens halfway between points
 						transition_time = prev_point.time+(point.time-prev_point.time)/2
-						self.episodes.append( Episode(transition_time, point.location) )
+						self.episodes.append(Episode(transition_time, point.location))
 				prev_point = point
 			# unknown time ends every known segment
-			self.episodes.append( Episode(points[-1].time, is_unknown_time=True) )
+			self.episodes.append(Episode(points[-1].time, is_unknown_time=True))
 		if config.debug_output:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -282,7 +276,8 @@ class Trace(object):
 		Detect peaks in the KDE surface which are above the time-spent
 		threshold. KDE values are stored in self.points.
 		"""
-		points = [point for point in self.all_interpolated_points if point.kde_p >= threshold]
+		points = [point for point in self.all_interpolated_points
+			if point.kde_p >= threshold]
 		if config.debug_output:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
 		# For each point:
@@ -304,19 +299,19 @@ class Trace(object):
 				loc_num += 1
 		return potential_activity_locations
 
-	def weight_points(self,segment):
+	def weight_points(self, segment):
 		"""
 		Assign time-based weights to a series of sequential points.
 		Values are in seconds, and split evenly between neighboring points, e.g.:
 		 |-p1-time-|--p2-time-|...etc
-	 	p1---------|---------p2------|------p3
-		           ^midpoint
+		p1---------|---------p2------|------p3
+				     ^midpoint
 		"""
 		assert len(segment) > 1
 		# iterate over all sub-segments
 		for i in range(len(segment)-1):
 			p1, p2 = segment[i], segment[i+1]
-			time_diff = p1.delta_t(p2) # time in seconds
+			time_diff = p1.delta_t(p2)  # time in seconds
 			p1.add_weight(time_diff/2)
 			p2.add_weight(time_diff/2)
 
@@ -333,7 +328,7 @@ class Trace(object):
 			# if this is the first we've seen this exact record
 			if uid not in unique_points:
 				unique_points.append(uid)
-			else: # we've already seen this exact point
+			else:  # we've already seen this exact point
 				to_remove.append(i)
 		# remove the points from the main list to the recycling bin
 		for i in reversed(to_remove):
@@ -500,11 +495,12 @@ class Trace(object):
 					'other': [], 'travel': [], 'unknown': [], 'total': []}
 				# how much of this activity occured on this date?
 				# first limit start_time to start of this day
-				slicer1 = dt.datetime.combine(date, dt.time(0,0,0,0,tzinfo=tz) )
+				slicer1 = dt.datetime.combine(date, dt.time(0, 0, 0, 0, tzinfo=tz))
 				st1 = slicer1 if self.episodes[i].start < slicer1 else\
 					self.episodes[i].start
 				# now limit end time to end of this day
-				slicer2 = dt.datetime.combine(date + dt.timedelta(days=1), dt.time(0,0,0,0,tzinfo=tz) )
+				slicer2 = dt.datetime.combine(date + dt.timedelta(days=1),
+					dt.time(0, 0, 0, 0, tzinfo=tz))
 				st2 = slicer2 if self.episodes[i+1].start > slicer2 else\
 					self.episodes[i+1].start
 				# get duration in minutes from timedelta obj
@@ -517,13 +513,14 @@ class Trace(object):
 
 	def flush(self):
 		"""
-		After everything is finished, write all the output from this trace to CSV 
-		files defined in config. All writing to files should be done here if 
-		possible. Any data that needs to ultimately find it's way here should be 
-		stored as a property. All Trace objects call this at the end, and the 
+		After everything is finished, write all the output from this trace to CSV
+		files defined in config. All writing to files should be done here if
+		possible. Any data that needs to ultimately find it's way here should be
+		stored as a property. All Trace objects call this at the end, and the
 		files are initialized in main, so we only append rows here.
 		"""
-		while self.remove_short_stationary_episodes(): pass
+		while self.remove_short_stationary_episodes():
+			pass
 		self.write_locations()
 		self.write_episodes()
 		self.write_points()
@@ -536,14 +533,12 @@ class Trace(object):
 			for location in self.locations:
 				if config.multi_process:
 					self.locks[0].acquire()
-				f.write("{},{},{},{},{},{}\n".format(
-					self.id,           # user_id
+				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
 					location.id,       # location_id
 					location.longitude,
 					location.latitude,
 					location.name,     # description
-					location.visited   # whether location was used or not
-				))
+					location.visited))   # whether location was used or not
 				if config.multi_process:
 					self.locks[0].release()
 
@@ -552,13 +547,12 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_dir+'/episodes.csv', "a") as f:
 			for i, episode in enumerate(self.episodes):
-				attributes = [
-					self.id, i,                  # activity sequence
-					episode.location_id if episode.location else '',
-					'',                          # mode (not currently used)
+				attributes = [self.id, i,  # activity sequence
+					episode.location_id if episode.location else '', '',
+					# mode (not currently used)
 					True if episode.unknown else '',
 					episode.start,               # timestamp
-					episode.start.timestamp() ]  # unix time
+					episode.start.timestamp()]  # unix time
 				if config.multi_process:
 					self.locks[1].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
@@ -571,14 +565,13 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_dir+'/classified_points.csv', 'a') as f:
 			for point in self.all_interpolated_points + self.discarded_points:
-				attributes = [
-					self.id, point.unix_time,
+				attributes = [self.id, point.unix_time,
 					point.known_subset if point.known_subset is not None else '',
-					point.longitude, point.latitude, point.x, point.y, 
+					point.longitude, point.latitude, point.x, point.y,
 					point.weight, point.discarded,
 					point.human_timestamp, point.synthetic,
 					point.state if point.state is not None else '',
-					point.kde_p if point.kde_p is not None else '' ]
+					point.kde_p if point.kde_p is not None else '']
 				if config.multi_process:
 					self.locks[2].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
@@ -590,11 +583,11 @@ class Trace(object):
 		days = self.get_days()
 		with open(config.output_dir+'/days.csv', 'a') as f:
 			for date, data in days.items():
-				attributes = [
-					self.id, date, date.weekday(), sum(data['total']), 
-					len(data['travel']), sum(data['travel']), sum(data['unknown']),
-					sum(data['home']), sum(data['work']), sum(data['school']),
-					len(data['home']), len(data['work']), len(data['school']) ]
+				attributes = [self.id, date, date.weekday(), sum(data['total']),
+				len(data['travel']), sum(data['travel']),
+				sum(data['unknown']), sum(data['home']),
+				sum(data['work']), sum(data['school']),
+				len(data['home']), len(data['work']), len(data['school'])]
 				if config.multi_process:
 					self.locks[3].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
@@ -609,7 +602,8 @@ class Trace(object):
 		for i in range(0, len(self.episodes)-1):
 			cur, nxt = self.episodes[i], self.episodes[i+1]
 			# we don't care how short travel and unknown episodes are
-			if cur.type in ['unknown','travel']: continue
+			if cur.type in ['unknown', 'travel']:
+				continue
 			delta_seconds = (nxt.start - cur.start).total_seconds()
 			# if too short
 			if delta_seconds < config.minimum_activity_time:
@@ -617,20 +611,20 @@ class Trace(object):
 				return True
 		return False
 
-	def remove_episode(self,i):
+	def remove_episode(self, i):
 		"""
-		Given a stationary episode, identified by index position, remove the 
-		episode and dissolve its time into surrounding episodes as appropriate. 
+		Given a stationary episode, identified by index position, remove the
+		episode and dissolve its time into surrounding episodes as appropriate.
 		"""
 		assert 0 <= i <= len(self.episodes)
-		prev = self.episodes[i-1] if i-1 >= 0 else None 
+		prev = self.episodes[i-1] if i-1 >= 0 else None
 		this = self.episodes[i]
 		nxt = self.episodes[i+1] if i+1 <= len(self.episodes) else None
-		assert this.type not in ['unknown','travel']
+		assert this.type not in ['unknown', 'travel']
 		if nxt and prev:
-			if prev.type == nxt.type: 
+			if prev.type == nxt.type:
 				# these two get dissolved into prev
-				self.episodes.pop(i+1) # pop next
+				self.episodes.pop(i+1)  # pop next
 				self.episodes.pop(i)   # pop this
 			else:
 				# draw the times from the surrounding episodes into the middle
@@ -638,6 +632,5 @@ class Trace(object):
 				# start next is the only one that actually needs updated
 				nxt.start = nxt.start + (nxt.start - this.start)/2
 				self.episodes.pop(i)
-		else: # is at either end of the sequence
+		else:  # is at either end of the sequence
 			self.episodes.pop(i)
-

@@ -7,6 +7,7 @@ from misc_funcs import read_headers
 import editdistance
 # Location comparison functions
 
+
 def compare_locations(truth, compd):
 	""" (str, str) -> [(str, int, float, float)]
 	Compare ground truth locations to the computed locations,
@@ -14,7 +15,6 @@ def compare_locations(truth, compd):
 	"""
 	true_locations = get_locations(truth)
 	computed_locations = get_locations(compd)
-	
 	users_to_matrix = {}
 	results = []
 	for user in true_locations:
@@ -38,6 +38,7 @@ def compare_locations(truth, compd):
 			results.append((user, percent_excess, mean_min_dis, med))
 	return results
 
+
 def compare_user_locations(distances, num_to_match):
 	min_distances = []
 	dist_list = []
@@ -52,7 +53,7 @@ def compare_user_locations(distances, num_to_match):
 		truth = best[2]  # the true location
 		for entry in dist_list:
 			# if the computed or true location match
-                        # remove the rest of the entries with those locations
+			# remove the rest of the entries with those locations
 			if entry[1] == compd or entry[2] == truth:
 				dist_list.remove(entry)
 	return min_distances
@@ -63,17 +64,19 @@ def distance_matrix(h, matrix, truths, compds):
 	Update matrix for user with a 2d matrix mapping true
 	locations and computed locations to their respective distances.
 	"""
+	lid = h["location_id"]
 	for location in truths:
-		matrix[location[h["location_id"]]] = {}
+		matrix[location[lid]] = {}
 		for guess in compds:
 			p1 = Point("0", guess[h["lon"]], guess[h["lat"]], 0)
 			p2 = Point("0", location[h["lon"]], location[h["lat"]], 0)
-			# Felipevh forgets if these need to be projected first
-			matrix[location[h["location_id"]]][guess[h["location_id"]]] = distance(p1, p2)
+			# project first?
+			matrix[location[lid]][guess[lid]] = distance(p1, p2)
+
 
 def get_locations(location_file):
 	""" (str) -> dict
-	Return a dictionary mapping users to the location described in 
+	Return a dictionary mapping users to the location described in
 	location_file
 	"""
 	utl = {}  # users to locations dictionary
@@ -90,6 +93,7 @@ def get_locations(location_file):
 
 # Episode comparison functions below
 
+
 def compare_episodes(truth, compd):
 	"""
 	"""
@@ -98,14 +102,15 @@ def compare_episodes(truth, compd):
 	# get the headers, both files should match
 	h = read_headers(truth)
 	metrics = []
-        
 	for user in true_users_to_eps:
 		if user in computed_users_to_eps:
-			user_metrics = (user,) + compare_user_episodes(true_users_to_eps[user], computed_users_to_eps[user], h)
+			user_metrics = (user,) + compare_user_episodes(true_users_to_eps[user],
+				computed_users_to_eps[user], h)
 			metrics.append(user_metrics)
 		else:
 			print("{} not in computed episodes".format(user))
 	return metrics
+
 
 def read_episodes(file_name):
 	"""
@@ -125,8 +130,9 @@ def read_episodes(file_name):
 	# Sort the lists of episodes by unix time
 	for u in users_to_eps:
 		# the lambda expression sorts the episode entries by their unix time
-		users_to_eps[u].sort(key=lambda x: x[-1])	
+		users_to_eps[u].sort(key=lambda x: x[-1])
 	return users_to_eps
+
 
 def compare_user_episodes(true, computed, h):
 	# TODO replace hardcoded unix time indices with header mapping
@@ -156,7 +162,8 @@ def compare_user_episodes(true, computed, h):
 	comp_str = ""
 	true_str = ""
 	while true[i][-1] < end_time and computed[j][-1] < end_time:  # TODO
-		duration = compare_single_episode((true[i], true[i+1]), (computed[j], computed[j+1]), h, values)
+		duration = compare_single_episode((true[i], true[i+1]),
+			(computed[j], computed[j+1]), h, values)
 		if true[i+1][-1] <= computed[j+1][-1]:
 			true_str = true_str + update_ep_str(true[i])
 			i = i + 1
@@ -170,16 +177,19 @@ def compare_user_episodes(true, computed, h):
 	p_inc_ut = values[6] / (total_time - values[0])
 	p_inc_trav = values[7] / (total_time - values[1])
 	p_inc_loc = values[8] / (total_time - values[2])
-	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav, p_inc_loc,true_str, comp_str)
+	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav,
+		p_inc_loc, true_str, comp_str)
+
 
 def compare_single_episode(true_pair, computed_pair, h, values):
-	overlapping_time = float(min(true_pair[1][-1], computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
+	overlapping_time = float(min(true_pair[1][-1],
+		computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
 	true_unknown = False if true_pair[0][h["unknown"]] == "" else True
 	true_at_loc = False if (true_pair[0][h["location_id"]] == "" or
-		                true_pair[0][h["location_id"]] == "None") else True
+		true_pair[0][h["location_id"]] == "None") else True
 	comp_unknown = False if computed_pair[0][h["unknown"]] == "" else True
 	comp_at_loc = False if (computed_pair[0][h["location_id"]] == "" or
-		                computed_pair[0][h["location_id"]] == "None")else True
+		computed_pair[0][h["location_id"]] == "None")else True
 
 	if true_unknown and comp_unknown:
 		values[0] += overlapping_time
@@ -202,21 +212,24 @@ def compare_single_episode(true_pair, computed_pair, h, values):
 
 	return overlapping_time
 
+
 def update_ep_str(episode):
 	if episode[4] == "True":
 		return "U"
 	elif episode[2] != "":
 		return "A"
-	else: # travel
+	else:  # travel
 		return "T"
 
 # Data writing functions:
-        
+
+
 def write_data(data):
-	rs = ("user,percent_excess_locations,mean_distance,median_distance,"+
-		"percent_identified_unknown,percent_identified_travel,"+
-		"percent_identified_location,percent_misidentified_unknown,"+
-		"percent_misidentified_travel,percent_misidentified_location,true_eps,comp_eps,edit_distance,record_length,computed_length\n")
+	rs = ("user,percent_excess_locations,mean_distance,median_distance," +
+		"percent_identified_unknown,percent_identified_travel," +
+		"percent_identified_location,percent_misidentified_unknown," +
+		"percent_misidentified_travel,percent_misidentified_location," +
+		"true_eps,comp_eps,edit_distance,record_length,computed_length\n")
 	for tup in data:
 		user = tup[0]
 		excess = round(tup[1], 2)
@@ -233,9 +246,12 @@ def write_data(data):
 		edit_distance = editdistance.eval(comp_string, true_string)
 		record_len = len(true_string)
 		computed_len = len(comp_string)
-		rs = rs + "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(user, excess, mean, median, p_i_ut, p_i_tt, p_i_lt, p_m_ut, p_m_tt, p_m_lt, true_string, comp_string, edit_distance, record_len, computed_len)
+		rs = rs + "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}\n".format(user,
+			excess, mean, median, p_i_ut, p_i_tt, p_i_lt, p_m_ut, p_m_tt,
+			p_m_lt, true_string, comp_string, edit_distance, record_len, computed_len)
 	fd = open(output_dir+'/compare.csv', "w")
 	fd.write(rs)
+
 
 def merge_lists(t1, t2):
 	new_data = []
@@ -244,7 +260,9 @@ def merge_lists(t1, t2):
 	return new_data
 
 if __name__ == "__main__":
-	location_data = sorted(compare_locations(locations_gt, output_dir+'/locations.csv'))
-	episode_data = sorted(compare_episodes(activities_gt, output_dir+'/episodes.csv'))
+	location_data = sorted(compare_locations(locations_gt,
+		output_dir+'/locations.csv'))
+	episode_data = sorted(compare_episodes(activities_gt,
+		output_dir+'/episodes.csv'))
 	data = merge_lists(location_data, episode_data)
 	write_data(data)

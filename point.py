@@ -2,9 +2,11 @@ from misc_funcs import ts_str, distance, project, unproject
 from datetime import timedelta, datetime
 from pytz import timezone
 from math import ceil
-import config, re
+import config
+import re
 
 localTime = timezone(config.local_timezone)
+
 
 class Point(object):
 	"""
@@ -17,7 +19,7 @@ class Point(object):
 		self.longitude = float(longitude)
 		self.accuracy = float(accuracy_meters)
 		# timezone aware datetime object
-		self.time = localTime.localize( datetime.fromtimestamp(float(time)) )
+		self.time = localTime.localize(datetime.fromtimestamp(float(time)))
 		# these get set later; just defining them here for clarity
 		self.X = None           # do not access this directly
 		self.Y = None           # do not access this directly
@@ -32,7 +34,7 @@ class Point(object):
 		self.location = None    # reference to location object point is at per state
 		self.kde_p = None       # estimated PDF at this point
 		# for diagnostic output
-		self.known_subset = None # known subset to which this belongs if any
+		self.known_subset = None  # known subset to which this belongs if any
 		self.discarded = False   # will be true if point tossed in cleaning
 		self.synthetic = False   # was this point synthesized e.g. by interpolation?
 
@@ -99,11 +101,10 @@ class Point(object):
 		"""
 		self.weight += weight
 
-	def delta_t(self,other_point):
+	def delta_t(self, other_point):
 		"""Gives the absolute difference in seconds between two points."""
-		return abs( self.unix_time - other_point.unix_time )
+		return abs(self.unix_time - other_point.unix_time)
 
-	def mps(self,other_point):
+	def mps(self, other_point):
 		"""Gives the speed between two points in meters per second."""
-		return distance(self,other_point) / self.delta_t(other_point) 
-
+		return distance(self, other_point) / self.delta_t(other_point)

@@ -12,9 +12,11 @@ from point import Point
 from trace import Trace
 from location import Location
 
+
 def init_pool():
 	global LOCKS
 	LOCKS = (Lock(), Lock(), Lock(), Lock())
+
 
 def initialize_output_files():
 	"""
@@ -22,7 +24,8 @@ def initialize_output_files():
 	"""
 	# episodes file
 	f = open(config.output_dir+'/episodes.csv', "w")
-	f.write('user_id,sequence,location_id,mode,unknown,local_start_time,unix_start_time\n')
+	f.write('user_id,sequence,location_id,mode,unknown,' +
+		'local_start_time,unix_start_time\n')
 	f.close()
 	# locations file
 	f = open(config.output_dir+'/locations.csv', "w")
@@ -74,7 +77,7 @@ def analyze_user(user_data_list):
 			user.identify_named_locations()
 			# write the output
 			user.flush()
-		else: # not enough subsets of appropriate length
+		else:  # not enough subsets of appropriate length
 			print("\tinsufficient data for {}".format(user_id))
 
 
@@ -98,20 +101,14 @@ if __name__ == "__main__":
 			user_id = row['uuid']
 			user_locations[user_id] = {}
 			if row['location_home_lon'] != '':
-				user_locations[user_id]['home'] = Location(
-					row['location_home_lon'], 
-					row['location_home_lat']
-				)
+				user_locations[user_id]['home'] = Location(row['location_home_lon'],
+				row['location_home_lat'])
 			if row['location_work_lon'] != '':
-				user_locations[user_id]['work'] = Location(
-					row['location_work_lon'], 
-					row['location_work_lat']
-				)
+				user_locations[user_id]['work'] = Location(row['location_work_lon'],
+					row['location_work_lat'])
 			if row['location_study_lon'] != '':
-				user_locations[user_id]['school'] = Location(
-					row['location_study_lon'], 
-					row['location_study_lat']
-				)
+				user_locations[user_id]['school'] = Location(row['location_study_lon'],
+				row['location_study_lat'])
 	if config.debug_output:
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
@@ -119,10 +116,10 @@ if __name__ == "__main__":
 	# create a list of users' data to work on
 	list_of_users = []
 	for uid, data in user_data.items():
-		list_of_users.append(( uid, data, user_locations[uid] ))
+		list_of_users.append((uid, data, user_locations[uid]))
 	# parallel processing option
 	if config.multi_process:
-		LOCKS=(Lock(), Lock(), Lock(), Lock())
+		LOCKS = (Lock(), Lock(), Lock(), Lock())
 		p = Pool(processes=config.num_pro, initializer=init_pool)
 		p.map(analyze_user, list_of_users)
 	# non-parallel processing

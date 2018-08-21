@@ -1,7 +1,7 @@
 class Episode(object):
 	"""
-	An activity episode, which may be either travel or it may be time spent at 
-	some location. If there is an associated location it should be the latter. 
+	An activity episode, which may be either travel or it may be time spent at
+	some location. If there is an associated location it should be the latter.
 	"""
 
 	def __init__(self, start_time, location=None, is_unknown_time=False):
@@ -24,14 +24,14 @@ class Episode(object):
 	@property
 	def type(self):
 		"""
-		What kind of episode is this? 
+		What kind of episode is this?
 		must be in in ['unknown','travel','home','work','school','other']
 		"""
 		if self.unknown:
 			return 'unknown'
 		elif not self.location:
 			return 'travel'
-		elif self.location.name in ['home','work','school']:
+		elif self.location.name in ['home', 'work', 'school']:
 			return self.location.name
 		else:
 			return 'other'

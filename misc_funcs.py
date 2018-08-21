@@ -3,7 +3,7 @@
 #
 import math
 import config
-from datetime import datetime, timezone,timedelta
+from datetime import datetime, timezone, timedelta
 from geopy.distance import great_circle
 from pyproj import Proj, transform
 from scipy.stats import multivariate_normal
@@ -115,12 +115,12 @@ def distance(point1, point2, euclid=False):
 
 def gaussian(x, bandwidth):
 	"""
-	Evaluate a Gaussian function at x for a distribution centered on zero 
+	Evaluate a Gaussian function at x for a distribution centered on zero
 	with a height of 1 given a bandwidth.
 	Used as a distance decay function.
 	See: https://en.wikipedia.org/wiki/Gaussian_function
-	"""	
-	return math.exp( -( x**2 / ( 2 * bandwidth**2 ) ) )
+	"""
+	return math.exp(-(x**2 / (2 * bandwidth**2)))
 
 
 def inner_angle_sphere(point1, point2, point3):
@@ -185,31 +185,32 @@ def viterbi(states, emission_probs, start_probs, transition_probs):
 	# get the optimal sequence of states
 	return path[final_state]
 
+
 def emission_probabilities(points, locations):
 	"""
-	Given lists of points and locations, estimate the probabilities of each point 
-	having been emitted from one of the locations or from a non-location 
+	Given lists of points and locations, estimate the probabilities of each point
+	having been emitted from one of the locations or from a non-location
 	(i.e. travel). Returns a list of lists per point, e.g.:
 	[ [travel_prob,loc1_prob,loc2_prob...],       # point1
-	  [travel_prob,loc1_prob,loc2_prob...], ... ] # point2, etc.
-	Location emission is based on distance and a gaussian decay function. 
+	[travel_prob,loc1_prob,loc2_prob...], ... ] # point2, etc.
+	Location emission is based on distance and a gaussian decay function.
 	The travel emission probability is based on instantaneous travel speed.
 	These are all later standardized to one.
 	"""
 	emission_probs_per_point = []
 	for i, point in enumerate(points):
 		# location probability is based on distance to locations
-		loc_probs = [ gaussian( distance(loc, point), 75 ) for loc in locations ]
+		loc_probs = [gaussian(distance(loc, point), 75) for loc in locations]
 		# travel probability is based on estimate of momentary speed
 		if 0 < i < len(points)-1:
-			avg_mps = ( point.mps(points[i-1]) + point.mps(points[i+1]) ) / 2
+			avg_mps = (point.mps(points[i-1]) + point.mps(points[i+1])) / 2
 			trav_prob = 1 - math.exp(-avg_mps/2)
 		else:
 			trav_prob = 0.25
 		# standardize such that sum(*) = 1
 		point_probs = [trav_prob] + loc_probs
-		point_probs = [ p / sum(point_probs) for p in point_probs ]
-		emission_probs_per_point.append( point_probs )
+		point_probs = [p / sum(point_probs) for p in point_probs]
+		emission_probs_per_point.append(point_probs)
 	return emission_probs_per_point
 
 
