@@ -1,11 +1,26 @@
 from point import Point
 from config import *
-from misc_funcs import distance
+from spatial_functions import distance
 from statistics import median
 from datetime import timedelta, datetime
-from misc_funcs import read_headers
 import editdistance
 # Location comparison functions
+
+
+def read_headers(fname):
+	""" (str) -> dict
+	Return a dictionary mapping header names to column indices.
+
+	Removes the need to hard coding column numbers when reading files.
+	"""
+	fd = open(fname)
+	d = {}
+	header = fd.readline()
+	titles = header.split(",")
+	for i in range(len(titles)):
+		d[titles[i].strip()] = i
+	fd.close()
+	return d
 
 
 def compare_locations(truth, compd):

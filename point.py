@@ -1,16 +1,15 @@
-from misc_funcs import ts_str, distance, project, unproject
+from spatial_functions import distance, project, unproject
 from datetime import timedelta, datetime
 from pytz import timezone
 from math import ceil
 import config
 import re
-
 localTime = timezone(config.local_timezone)
 
 
 class Point(object):
 	"""
-	A location/time point ie GPS point.
+	A space/time point ie GPS point.
 	"""
 
 	def __init__(self, time, longitude, latitude, accuracy_meters):

@@ -1,12 +1,12 @@
 import config
 import csv
 import datetime as dt
-import re
 from point import Point
 from episode import Episode
 from location import Location
-from misc_funcs import (distance, inner_angle_sphere, kde, min_peak,
-	state_transition_matrix, viterbi, emission_probabilities, project, unproject)
+from HMM import viterbi, state_transition_matrix, emission_probabilities
+from gaussian import kde, min_peak
+from spatial_functions import project, unproject, distance, inner_angle_sphere
 from math import sqrt, ceil
 
 
@@ -173,20 +173,20 @@ class Trace(object):
 
 	def partial_interpolation_removal(self, segment, cutoff):
 		new_segment = []
-		non_synth = [segment.index(point) for point in segment if not point.synthetic]
+		non_synth = [segment.index(point)
+				for point in segment if not point.synthetic]
 		for i in range(len(non_synth) - 1):
 			if non_synth[i+1] - non_synth[i] > cutoff:
-        			# keep first endpoint
-                                # second endpoint appended on next iteration
-        			new_segment.append(segment[non_synth[i]])
+				# keep first endpoint
+				# second endpoint appended on next iteration
+				new_segment.append(segment[non_synth[i]])
 			else:
-        			# keep everything but the last endpoint
-        			sub_segment = [segment[j] for j in range(non_synth[i], non_synth[i+1])]
-        			new_segment.extend(sub_segment)
-                new_segment.append(segment[non_synth[-1]])
+				# keep everything but the last endpoint
+				sub_segment = [segment[j]
+					for j in range(non_synth[i], non_synth[i+1])]
+				new_segment.extend(sub_segment)
+		new_segment.append(segment[non_synth[-1]])
 		return new_segment
-		
-                                        
 
 	def get_activity_locations(self):
 		"""
@@ -226,16 +226,16 @@ class Trace(object):
 	def identify_named_locations(self):
 		"""
 		Take user supplied (named) places and apply the labels to discovered
-		locations if possible. This function is called after time has been
-		allocated, so we could prefer locations with more time.
+		locations if possible. This is based simply on distance, though this
+		function is called after time has been allocated, so we could in theory
+		base it on a function of distance and time spent.
 		"""
 		# for each named place, check distance to other locations
 		for name, place in self.named_places.items():
-			for location in self.locations:
-				if distance(place, location) <= config.location_distance / 2:
-					location.identify(name)
-					if config.debug_output:
-						print('\tfound', name)
+			dists = [distance(place, loc) for loc in self.locations]
+			if min(dists) <= 200:  # meters
+				i = dists.index(min(dists))
+				self.locations[i].identify(name)
 
 	def break_trips(self):
 		"""
@@ -316,9 +316,9 @@ class Trace(object):
 		"""
 		Assign time-based weights to a series of sequential points.
 		Values are in seconds, and split evenly between neighboring points, e.g.:
-		 |-p1-time-|--p2-time-|...etc
+		 |-p1-time-|--p2-time-|...etc
 		p1---------|---------p2------|------p3
-				     ^midpoint
+				      ^midpoint
 		"""
 		assert len(segment) > 1
 		# iterate over all sub-segments
@@ -596,11 +596,17 @@ class Trace(object):
 		days = self.get_days()
 		with open(config.output_dir+'/days.csv', 'a') as f:
 			for date, data in days.items():
-				attributes = [self.id, date, date.weekday(), sum(data['total']),
-				len(data['travel']), sum(data['travel']),
-				sum(data['unknown']), sum(data['home']),
-				sum(data['work']), sum(data['school']),
-				len(data['home']), len(data['work']), len(data['school'])]
+				attributes = [self.id, date, date.weekday(),
+					      sum(data['total']),
+					      len(data['travel']),
+					      sum(data['travel']),
+					      sum(data['unknown']),
+					      sum(data['home']),
+					      sum(data['work']),
+					      sum(data['school']),
+					      len(data['home']),
+					      len(data['work']),
+					      len(data['school'])]
 				if config.multi_process:
 					self.locks[3].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
