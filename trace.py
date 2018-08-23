@@ -154,7 +154,6 @@ class Trace(object):
 		# whether we add it to the current segment or the one after.
 		for i in range(1, len(self.points)):
 			if distance(self.points[i], self.points[i-1]) > 1000:
-				# remove longer interpolated segments
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [self.points[i]]
@@ -173,8 +172,21 @@ class Trace(object):
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def partial_interpolation_removal(self, segment, cutoff):
-		non_synth = [point for point in segment if point.synthetic]
-		#print("non synth indices: {}".format(non_synth))
+		new_segment = []
+		non_synth = [segment.index(point) for point in segment if not point.synthetic]
+		for i in range(len(non_synth) - 1):
+			if non_synth[i+1] - non_synth[i] > cutoff:
+        			# keep first endpoint
+                                # second endpoint appended on next iteration
+        			new_segment.append(segment[non_synth[i]])
+			else:
+        			# keep everything but the last endpoint
+        			sub_segment = [segment[j] for j in range(non_synth[i], non_synth[i+1])]
+        			new_segment.extend(sub_segment)
+                new_segment.append(segment[non_synth[-1]])
+		return new_segment
+		
+                                        
 
 	def get_activity_locations(self):
 		"""
@@ -184,8 +196,9 @@ class Trace(object):
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
 			interpolated_subset = self.spatially_interpolate_points(subset)
-			self.known_subsets_interpolated.append(interpolated_subset)
-			self.weight_points(interpolated_subset)
+			partial_subset = self.partial_interpolation_removal(interpolated_subset, 2)
+			self.known_subsets_interpolated.append(partial_subset)
+			self.weight_points(partial_subset)
 		if len(self.all_interpolated_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
