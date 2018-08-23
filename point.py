@@ -2,7 +2,7 @@ from misc_funcs import ts_str, distance, project, unproject
 from datetime import timedelta, datetime
 from pytz import timezone
 from math import ceil
-import config, re
+import config
 
 localTime = timezone(config.local_timezone)
 

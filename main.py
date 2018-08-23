@@ -1,9 +1,5 @@
 # standard modules
-import datetime
-import sys
-import csv
-import math
-import rpy2
+import sys, csv
 from multiprocessing import Pool, Lock
 # our own classes
 import config

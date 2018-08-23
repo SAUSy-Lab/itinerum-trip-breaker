@@ -3,10 +3,9 @@
 #
 import math
 import config
-from datetime import datetime, timezone,timedelta
+from datetime import datetime, timezone, timedelta
 from geopy.distance import great_circle
 from pyproj import Proj, transform
-from scipy.stats import multivariate_normal
 from scipy.stats import multivariate_normal
 
 

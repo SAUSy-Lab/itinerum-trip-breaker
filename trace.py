@@ -1,7 +1,6 @@
 import config
 import csv
 import datetime as dt
-import re
 from point import Point
 from episode import Episode
 from location import Location
