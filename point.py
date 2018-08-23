@@ -1,4 +1,3 @@
-from misc_funcs import ts_str
 from spatial_functions import distance, project, unproject
 from datetime import timedelta, datetime
 from pytz import timezone
