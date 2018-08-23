@@ -4,8 +4,9 @@ import datetime as dt
 from point import Point
 from episode import Episode
 from location import Location
+from HMM import viterbi, state_transition_matrix, emission_probabilities
 from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
-	state_transition_matrix, viterbi, emission_probabilities, project, unproject)
+	project, unproject)
 from math import sqrt, ceil
 
 class Trace(object):
