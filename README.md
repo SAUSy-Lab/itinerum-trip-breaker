@@ -69,5 +69,6 @@ This file summarizes the episodes file per calendar day. Since many people may s
     - pyproj
     - scipy
     - editdistance
+    - osmnx
 * R 3.3+
     - ks package
