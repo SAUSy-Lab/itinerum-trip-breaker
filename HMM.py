@@ -1,5 +1,5 @@
 from math import exp
-from misc_funcs import gaussian
+from gaussian import gaussian
 from spatial_functions import distance
 
 def viterbi(states, emission_probs, start_probs, transition_probs):
