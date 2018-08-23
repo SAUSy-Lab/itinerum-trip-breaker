@@ -1,3 +1,5 @@
+# Hidden Markov Models and related functions
+
 from math import exp
 from gaussian import gaussian
 from spatial_functions import distance

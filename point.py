@@ -8,7 +8,7 @@ localTime = timezone(config.local_timezone)
 
 class Point(object):
 	"""
-	A location/time point ie GPS point.
+	A space/time point ie GPS point.
 	"""
 
 	def __init__(self, time, longitude, latitude, accuracy_meters):

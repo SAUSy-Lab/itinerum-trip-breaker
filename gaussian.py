@@ -1,3 +1,5 @@
+# functions related to Guassian kernel functions or normal distributions
+
 from math import exp
 import config
 from scipy.stats import multivariate_normal

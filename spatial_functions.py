@@ -1,3 +1,5 @@
+# functions dealing with geometry, space, projectsions, etc
+
 from geopy.distance import great_circle
 from pyproj import Proj, transform
 from math import radians, sin, cos, atan2, degrees

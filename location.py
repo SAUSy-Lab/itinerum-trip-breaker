@@ -1,6 +1,6 @@
 class Location(object):
 	"""
-	A location point
+	An activity location, defined as a point, possibly with a name
 	"""
 
 	def __init__(self, longitude, latitude, id_num=None):
