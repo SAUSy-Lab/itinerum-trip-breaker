@@ -3,7 +3,6 @@ import sys, csv
 from multiprocessing import Pool, Lock
 # our own classes
 import config
-import misc_funcs
 from point import Point
 from trace import Trace
 from location import Location

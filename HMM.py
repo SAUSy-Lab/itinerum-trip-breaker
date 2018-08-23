@@ -1,3 +1,7 @@
+from math import exp
+from misc_funcs import gaussian
+from spatial_functions import distance
+
 def viterbi(states, emission_probs, start_probs, transition_probs):
 	"""
 		'states' is a list of integer ID's for the possible states with length 'S'
@@ -45,7 +49,7 @@ def emission_probabilities(points, locations):
 		# travel probability is based on estimate of momentary speed
 		if 0 < i < len(points)-1:
 			avg_mps = ( point.mps(points[i-1]) + point.mps(points[i+1]) ) / 2
-			trav_prob = 1 - math.exp(-avg_mps/2)
+			trav_prob = 1 - exp(-avg_mps/2)
 		else:
 			trav_prob = 0.25
 		# standardize such that sum(*) = 1

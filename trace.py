@@ -5,8 +5,8 @@ from point import Point
 from episode import Episode
 from location import Location
 from HMM import viterbi, state_transition_matrix, emission_probabilities
-from misc_funcs import (distance, inner_angle_sphere, kde, min_peak, 
-	project, unproject)
+from misc_funcs import kde, min_peak 
+from spatial_functions import project, unproject, distance, inner_angle_sphere
 from math import sqrt, ceil
 
 class Trace(object):
