@@ -596,17 +596,10 @@ class Trace(object):
 		days = self.get_days()
 		with open(config.output_dir+'/days.csv', 'a') as f:
 			for date, data in days.items():
-				attributes = [self.id, date, date.weekday(),
-					sum(data['total']),
-					len(data['travel']),
-					sum(data['travel']),
-					sum(data['unknown']),
-					sum(data['home']),
-					sum(data['work']),
-					sum(data['school']),
-					len(data['home']),
-					len(data['work']),
-					len(data['school'])]
+				attributes = [self.id, date, date.weekday(), sum(data['total']),
+len(data['travel']), sum(data['travel']), sum(data['unknown']),
+sum(data['home']), sum(data['work']), sum(data['school']),
+len(data['home']), len(data['work']), len(data['school'])]
 				if config.multi_process:
 					self.locks[3].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
