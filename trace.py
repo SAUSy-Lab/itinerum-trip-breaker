@@ -172,6 +172,8 @@ class Trace(object):
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
 
 	def partial_interpolation_removal(self, segment, cutoff):
+		# TODO this function causes an error (sequential locations for user A)
+		# TODO needs documentation
 		new_segment = []
 		non_synth = [segment.index(point)
 				for point in segment if not point.synthetic]
@@ -196,9 +198,8 @@ class Trace(object):
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
 			interpolated_subset = self.spatially_interpolate_points(subset)
-			partial_subset = self.partial_interpolation_removal(interpolated_subset, 2)
-			self.known_subsets_interpolated.append(partial_subset)
-			self.weight_points(partial_subset)
+			self.known_subsets_interpolated.append(interpolated_subset)
+			self.weight_points(interpolated_subset)
 		if len(self.all_interpolated_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
