@@ -83,7 +83,6 @@ def distance_matrix(h, matrix, truths, compds):
 		for guess in compds:
 			p1 = Location( guess[h["lon"]], guess[h["lat"]] )
 			p2 = Location( location[h["lon"]], location[h["lat"]] )
-			# project first?
 			matrix[location[lid]][guess[lid]] = distance(p1, p2)
 
 

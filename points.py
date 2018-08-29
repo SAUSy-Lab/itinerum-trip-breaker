@@ -1,6 +1,7 @@
 # these are classes representing spatial points
 
-from spatial_functions import distance, project, unproject
+from pyproj import Proj, transform
+from spatial_functions import distance
 from datetime import timedelta, datetime
 from pytz import timezone
 import config
@@ -8,14 +9,23 @@ localTime = timezone(config.local_timezone)
 
 
 class Point:
-	"""Base class for spatial point types."""
+	"""Base class for spatial point types. Can be instantiated with either
+	unprojected lat/lon (preferred) or x,y in the default projection"""
 
-	def __init__( self, longitude, latitude ):
-		# set initially:
-		self.latitude = float(latitude)
-		self.longitude = float(longitude)
-		self.X = None  # do not access this directly
-		self.Y = None  # do not access this directly
+	def __init__( self, longitude=None, latitude=None, X=None, Y=None ):
+		# set the location from either lat/lon
+		if longitude and latitude:
+			self.latitude = float(latitude)
+			self.longitude = float(longitude)
+			self.project() # sets self.X,self.Y
+		# or X,Y
+		elif X and Y:
+			self.X = X
+			self.Y = Y
+			self.unproject()
+		else:
+			assert False # we should never be here. Not enough coordinates supplied
+		
 
 	@property
 	def geom(self):
@@ -25,20 +35,29 @@ class Point:
 	@property
 	def x(self):
 		"""Return the projected X value."""
-		if not self.X:
-			self.project()
+		#if not self.X:
+		#	self.project()
 		return self.X
 
 	@property
 	def y(self):
 		"""Return the projected Y value."""
-		if not self.Y:
-			self.project()
+		#if not self.Y:
+		#	self.project()
 		return self.Y
 
-	def project(self):
-		"""Set projected x,y values from lon,lat."""
-		self.X, self.Y = project(self.longitude, self.latitude)
+	def project(self,projection_string='epsg:3347'):
+		"""Set projected x,y values from lon,lat. 
+		Default of 3347 is StatsCan Lambert, units in meters."""
+		inProj = Proj(init='epsg:4326')
+		outProj = Proj(init=projection_string)
+		self.X, self.Y = transform(inProj, outProj, self.longitude, self.latitude)
+
+	def unproject(self,from_projection_string='epsg:3347'):
+		"""Unproject to lat-lon values. Default of 3347 is StatsCan Lambert."""
+		inProj = Proj(init=from_projection_string)
+		outProj = Proj(init='epsg:4326')
+		self.longitude, self.latitude = transform(inProj, outProj, self.X, self.Y)
 
 	def __repr__(self):
 		return "{}, {}".format(self.latitude, self.longitude)
@@ -58,8 +77,8 @@ class Point:
 class GPSpoint(Point):
 	"""A space/time point ie GPS point."""
 
-	def __init__(self, time, longitude, latitude, accuracy_meters):
-		Point.__init__(self,longitude, latitude)
+	def __init__(self,time,accuracy_meters,lon=None,lat=None,X=None,Y=None):
+		Point.__init__(self,lon,lat,X,Y)
 		# immediate assignments
 		self.accuracy = float(accuracy_meters)
 		self.time = localTime.localize(datetime.fromtimestamp(float(time)))
