@@ -1,10 +1,9 @@
-from point import Point
+from points import Location
 from config import *
 from spatial_functions import distance
 from statistics import median
 from datetime import timedelta, datetime
 import editdistance
-# Location comparison functions
 
 
 def read_headers(fname):
@@ -83,8 +82,8 @@ def distance_matrix(h, matrix, truths, compds):
 	for location in truths:
 		matrix[location[lid]] = {}
 		for guess in compds:
-			p1 = Point("0", guess[h["lon"]], guess[h["lat"]], 0)
-			p2 = Point("0", location[h["lon"]], location[h["lat"]], 0)
+			p1 = Location( guess[h["lon"]], guess[h["lat"]] )
+			p2 = Location( location[h["lon"]], location[h["lat"]] )
 			# project first?
 			matrix[location[lid]][guess[lid]] = distance(p1, p2)
 

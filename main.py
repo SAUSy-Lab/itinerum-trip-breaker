@@ -1,12 +1,10 @@
 # standard modules
-import sys
-import csv
+import sys, csv
 from multiprocessing import Pool, Lock
 # our own classes
 import config
-from point import Point
+from points import Location
 from trace import Trace
-from location import Location
 
 
 def init_pool():

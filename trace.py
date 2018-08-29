@@ -1,9 +1,8 @@
 import config
 import csv
 import datetime as dt
-from point import Point
+from points import GPSpoint, Location
 from episode import Episode
-from location import Location
 from HMM import viterbi, state_transition_matrix, emission_probabilities
 from gaussian import kde, min_peak
 from spatial_functions import project, unproject, distance, inner_angle_sphere
@@ -48,7 +47,7 @@ class Trace(object):
 		# read in all time and location data for points
 		# right now only using a few fields
 		for row in raw_data:
-			self.points.append(Point(int(row['timestamp_epoch']),
+			self.points.append(GPSpoint(int(row['timestamp_epoch']),
 			float(row['longitude']), float(row['latitude']), float(row['h_accuracy'])))
 		# sort the list by time
 		self.points.sort(key=lambda x: x.unix_time)
@@ -87,7 +86,7 @@ class Trace(object):
 			for j in range(1, n_segs):
 				lng, lat = unproject(p1.x + j * delta_x, p1.y + j * delta_y)
 				t = p1.unix_time + j * delta_t / n_segs
-				new_point = Point(t, lng, lat, acc)
+				new_point = GPSpoint(t, lng, lat, acc)
 				new_point.synthetic = True
 				inter_points.append(new_point)
 			new_points.extend([p1] + inter_points)
@@ -133,7 +132,7 @@ class Trace(object):
 					# slower than walking speed, so assign time backwards from last
 					# point at walking speed
 					t = p2.unix_time - (dist/n_segs)/walk_speed*(n_segs-j)
-				new_point = Point(t, lng, lat, acc)
+				new_point = GPSpoint(t, lng, lat, acc)
 				new_point.synthetic = True
 				inter_points.append(new_point)
 			new_points.extend([p1] + inter_points)
