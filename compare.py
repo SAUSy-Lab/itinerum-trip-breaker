@@ -9,7 +9,6 @@ import editdistance
 def read_headers(fname):
 	""" (str) -> dict
 	Return a dictionary mapping header names to column indices.
-
 	Removes the need to hard coding column numbers when reading files.
 	"""
 	fd = open(fname)
@@ -109,8 +108,7 @@ def get_locations(location_file):
 
 
 def compare_episodes(truth, compd):
-	"""
-	"""
+	"""TODO: Docs needed"""
 	true_users_to_eps = read_episodes(truth)
 	computed_users_to_eps = read_episodes(compd)
 	# get the headers, both files should match
@@ -127,8 +125,7 @@ def compare_episodes(truth, compd):
 
 
 def read_episodes(file_name):
-	"""
-	"""
+	"""TODO: Docs needed"""
 	h = read_headers(file_name)
 	fd = open(file_name)
 	users_to_eps = {}
@@ -196,6 +193,7 @@ def compare_user_episodes(true, computed, h):
 
 
 def compare_single_episode(true_pair, computed_pair, h, values):
+	"""TODO: Docs needed"""
 	overlapping_time = float(min(true_pair[1][-1],
 		computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
 	true_unknown = False if true_pair[0][h["unknown"]] == "" else True
@@ -228,6 +226,7 @@ def compare_single_episode(true_pair, computed_pair, h, values):
 
 
 def update_ep_str(episode):
+	"""TODO: Docs needed"""
 	if episode[4] == "True":
 		return "U"
 	elif episode[2] != "":
@@ -239,6 +238,7 @@ def update_ep_str(episode):
 
 
 def write_data(data):
+	"""TODO: Docs needed"""
 	rs = ("user,percent_excess_locations,mean_distance,median_distance," +
 		"percent_identified_unknown,percent_identified_travel," +
 		"percent_identified_location,percent_misidentified_unknown," +
@@ -268,12 +268,14 @@ def write_data(data):
 
 
 def merge_lists(t1, t2):
+	"""TODO: Docs needed"""
 	new_data = []
 	for i in range(len(t1)):
 		new_data.append(t1[i] + t2[i][1:])
 	return new_data
 
 if __name__ == "__main__":
+	"""TODO: Docs needed"""
 	location_data = sorted(compare_locations(locations_gt,
 		output_dir+'/locations.csv'))
 	episode_data = sorted(compare_episodes(activities_gt,

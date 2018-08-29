@@ -364,9 +364,7 @@ class Trace(object):
 		self.observe_neighbors([i_ante, i_post])
 
 	def find_duplicates(self):
-		"""
-		Find any repeated point locations.
-		"""
+		"""Find any repeated point locations."""
 		# dictionary of unique locations, with a coordinate string as key
 		# containing a list of points with that exact location
 		locations = {}
@@ -423,9 +421,7 @@ class Trace(object):
 				point.inter = True
 
 	def remove_sequential_duplicates(self):
-		"""
-		Remove points where both neighbors have identical locations.
-		"""
+		"""Remove points where both neighbors have identical locations."""
 		to_remove = []
 		for i, point in enumerate(self.points):
 			# if there is no distance between this and neighboring points
@@ -452,9 +448,7 @@ class Trace(object):
 			print('\t', len(to_remove), 'points removed as high stated error')
 
 	def remove_positional_error(self):
-		"""
-		Use angle/distance based cleaning rules.
-		"""
+		"""Use angle/distance based cleaning rules."""
 		i = self.find_error_index()
 		count = 0
 		while i:
@@ -465,9 +459,7 @@ class Trace(object):
 			print('\t', count, 'points removed by positional cleaning')
 
 	def find_error_index(self):
-		"""
-		Returns the index of the craziest point.
-		"""
+		"""Returns the index of the craziest point."""
 		# check first for angle == 0, as these are all obviously crazy
 		for i, point in enumerate(self.points):
 			if point.angle == 0:
@@ -488,9 +480,7 @@ class Trace(object):
 		return False
 
 	def get_days(self):
-		"""
-		Slice episodes by day.
-		"""
+		"""Slice episodes by day."""
 		days = {}
 		# for each episode except the last (always compare to next)
 		for i in range(0, len(self.episodes) - 1):
@@ -573,7 +563,7 @@ class Trace(object):
 					self.locks[1].release()
 
 	def write_points(self):
-		""" Output point attributes to CSV for debugging."""
+		"""Output point attributes to CSV for debugging."""
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_dir+'/classified_points.csv', 'a') as f:
@@ -607,9 +597,7 @@ len(data['home']), len(data['work']), len(data['school'])]
 					self.locks[3].release()
 
 	def remove_short_stationary_episodes(self):
-		"""
-		Identify and remove stationary episodes shorter than a given time.
-		"""
+		"""Identify and remove stationary episodes shorter than a given time."""
 		self.episodes.sort()
 		for i in range(0, len(self.episodes)-1):
 			cur, nxt = self.episodes[i], self.episodes[i+1]

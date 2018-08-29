@@ -41,16 +41,13 @@ class Point:
 		self.X, self.Y = project(self.longitude, self.latitude)
 
 	def __repr__(self):
-		return str(project(self.longitude, self.latitude))
+		return "{}, {}".format(self.latitude, self.longitude)
 
 	def __hash__(self):
 		return id(self)
 
 	def copy(self):
 		return Point(self.unix_time, self.longitude, self.latitude, self.accuracy)
-
-	def __str__(self):
-		return "{}, {}".format(self.latitude, self.longitude)
 
 	def __eq__(self, other):
 		return (type(other) == type(self) and
@@ -106,9 +103,7 @@ class GPSpoint(Point):
 
 
 class Location(Point):
-	"""
-	An activity location, defined as a point, possibly with a name
-	"""
+	"""An activity location, defined as a point, possibly with a name."""
 
 	def __init__( self, longitude, latitude, id_num=None ):
 		Point.__init__(self,longitude, latitude)
@@ -121,16 +116,11 @@ class Location(Point):
 		self.name = ''
 
 	def add_time(self, seconds):
-		"""
-		Add seconds spent at this location.
-		"""
+		"""Add seconds spent at this location."""
 		assert seconds >= 0
 		self.total_time_at += seconds
 
 	def identify(self, name):
-		"""
-		Name this location e.g. ['home','work','school'].
-		"""
+		"""Name this location e.g. ['home','work','school']."""
 		self.name = name
-
 
