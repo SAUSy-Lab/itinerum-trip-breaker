@@ -5,7 +5,6 @@ from points import GPSpoint, Location
 from episode import Episode
 from HMM import viterbi, state_transition_matrix, emission_probabilities
 from gaussian import kde, min_peak
-from spatial_functions import inner_angle_sphere
 from math import sqrt, ceil
 
 
@@ -417,8 +416,10 @@ class Trace(object):
 				point.angle = 180
 			else:
 				# calculate the inner angle
-				point.angle = inner_angle_sphere(self.points[i_ante],
-					point, self.points[i_post])
+				point.angle = point.inner_angle_sphere(
+					self.points[i_ante],
+					self.points[i_post]
+				)
 			# is point is identical with both neighbors?
 			if (point.geom == self.points[i-1].geom and
 				point.geom == self.points[i+1].geom):

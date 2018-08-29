@@ -2,6 +2,8 @@
 
 from pyproj import Proj, transform
 from geopy.distance import great_circle
+from geopy.distance import great_circle
+from math import radians, sin, cos, atan2, degrees
 from datetime import timedelta, datetime
 from pytz import timezone
 import config
@@ -25,7 +27,6 @@ class Point:
 			self.unproject()
 		else:
 			assert False # we should never be here. Not enough coordinates supplied
-		
 
 	@property
 	def geom(self):
@@ -68,6 +69,34 @@ class Point:
 		inProj = Proj(init=from_projection_string)
 		outProj = Proj(init='epsg:4326')
 		self.longitude, self.latitude = transform(inProj, outProj, self.X, self.Y)
+
+	def inner_angle_sphere(self, point1, point2):
+		"""Calculate the smaller of the two angles  p1    A
+		formed between three unprojected points.     \ 
+		Returns degrees.                            Self----p2
+		"""
+		# be sure there is an angle to measure
+		assert self != point1 and self != point2
+		# first compass bearing from 2 -> 1
+		lat1 = radians(point1.latitude)
+		lat2 = radians(self.latitude)
+		diffLong = radians(point1.longitude - self.longitude)
+		x = sin(diffLong) * cos(lat1)
+		y = cos(lat2) * sin(lat1) - (sin(lat2) *
+			cos(lat1) * cos(diffLong))
+		bearing1 = (degrees(atan2(x, y))+360) % 360
+		# second compass bearing from 2 -> 3
+		#lat2 = radians(self.latitude)
+		lat3 = radians(point2.latitude)
+		diffLong = radians(point2.longitude - self.longitude)
+		x = sin(diffLong) * cos(lat3)
+		y = cos(lat2) * sin(lat3) - (sin(lat2) * cos(lat3) * cos(diffLong))
+		bearing2 = (degrees(atan2(x, y))+360) % 360
+		# we want the smaller of the two angles
+		degree_difference = min(abs(bearing1-bearing2),
+					(360 - abs(bearing1-bearing2)))
+		assert degree_difference <= 180
+		return degree_difference
 
 	def __repr__(self):
 		return "{}, {}".format(self.latitude, self.longitude)
