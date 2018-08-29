@@ -4,20 +4,6 @@ from geopy.distance import great_circle
 from math import radians, sin, cos, atan2, degrees
 
 
-def distance(point1, point2, euclid=False):
-	"""
-	Gives the great circle distance between two point objects.
-	Returns meters.
-	"""
-	if euclid:
-		return sqrt((point1.X-point2.X)**2 + (point1.Y-point2.Y)**2)
-	else:
-		# format the inputs
-		p1 = (point1.latitude, point1.longitude)
-		p2 = (point2.latitude, point2.longitude)
-		return great_circle(p1, p2).meters
-
-
 def inner_angle_sphere(point1, point2, point3):
 	"""
 	Given three point objects, calculate      p1

@@ -2,7 +2,6 @@
 
 from pyproj import Proj, transform
 from geopy.distance import great_circle
-from spatial_functions import distance
 from datetime import timedelta, datetime
 from pytz import timezone
 import config
@@ -129,7 +128,7 @@ class GPSpoint(Point):
 
 	def mps(self, other_point):
 		"""Gives the speed between two points in meters per second."""
-		return distance(self, other_point) / self.delta_t(other_point)
+		return self.distance(other_point) / self.delta_t(other_point)
 
 
 class Location(Point):
