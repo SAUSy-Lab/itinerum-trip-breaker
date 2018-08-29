@@ -1,6 +1,5 @@
 from points import Location
 from config import *
-from spatial_functions import distance
 from statistics import median
 from datetime import timedelta, datetime
 import editdistance
@@ -81,9 +80,9 @@ def distance_matrix(h, matrix, truths, compds):
 	for location in truths:
 		matrix[location[lid]] = {}
 		for guess in compds:
-			p1 = Location( guess[h["lon"]], guess[h["lat"]] )
-			p2 = Location( location[h["lon"]], location[h["lat"]] )
-			matrix[location[lid]][guess[lid]] = distance(p1, p2)
+			loc1 = Location( guess[h["lon"]], guess[h["lat"]] )
+			loc2 = Location( location[h["lon"]], location[h["lat"]] )
+			matrix[location[lid]][guess[lid]] = loc1.distance(loc2)
 
 
 def get_locations(location_file):

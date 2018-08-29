@@ -1,6 +1,7 @@
 # these are classes representing spatial points
 
 from pyproj import Proj, transform
+from geopy.distance import great_circle
 from spatial_functions import distance
 from datetime import timedelta, datetime
 from pytz import timezone
@@ -45,6 +46,16 @@ class Point:
 		#if not self.Y:
 		#	self.project()
 		return self.Y
+
+	def distance(self, point2, euclid=False):
+		"""
+		Gives the great circle distance between two point objects.
+		Returns meters.
+		"""
+		if euclid:
+			return sqrt((self.x-point2.x)**2 + (self.y-point2.y)**2)
+		else:
+			return great_circle(self.geom, point2.geom).meters
 
 	def project(self,projection_string='epsg:3347'):
 		"""Set projected x,y values from lon,lat. 

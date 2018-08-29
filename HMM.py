@@ -2,7 +2,6 @@
 
 from math import exp
 from gaussian import gaussian
-from spatial_functions import distance
 
 
 def viterbi(states, emission_probs, start_probs, transition_probs):
@@ -49,7 +48,7 @@ def emission_probabilities(points, locations):
 	emission_probs_per_point = []
 	for i, point in enumerate(points):
 		# location probability is based on distance to locations
-		loc_probs = [gaussian(distance(loc, point), 75) for loc in locations]
+		loc_probs = [gaussian(loc.distance(point), 75) for loc in locations]
 		# travel probability is based on estimate of momentary speed
 		if 0 < i < len(points)-1:
 			avg_mps = (point.mps(points[i-1]) + point.mps(points[i+1])) / 2

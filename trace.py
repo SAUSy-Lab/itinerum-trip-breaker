@@ -5,7 +5,7 @@ from points import GPSpoint, Location
 from episode import Episode
 from HMM import viterbi, state_transition_matrix, emission_probabilities
 from gaussian import kde, min_peak
-from spatial_functions import distance, inner_angle_sphere
+from spatial_functions import inner_angle_sphere
 from math import sqrt, ceil
 
 
@@ -77,7 +77,7 @@ class Trace(object):
 				new_points.append(p1)  # no interpolation to do
 				continue
 			# spatial
-			dist = distance(p1, p2)
+			dist = p1.distance(p2)
 			n_segs = ceil(delta_t / max_time_gap)
 			seg_span = delta_t / n_segs
 			delta_x = (p2.x - p1.x) / n_segs
@@ -112,7 +112,7 @@ class Trace(object):
 		# For each segment
 		for i in range(1, len(segment)):
 			p1, p2 = segment[i-1], segment[i]
-			dist = distance(p1, p2)
+			dist = p1.distance(p2)
 			if dist <= config.interpolation_distance:
 				new_points.append(p1)  # no interpolation to do
 				continue
@@ -156,7 +156,7 @@ class Trace(object):
 		# iterate over all points (except the first). Test each point to see
 		# whether we add it to the current segment or the one after.
 		for i in range(1, len(self.points)):
-			if distance(self.points[i], self.points[i-1]) > 1000:
+			if self.points[i].distance( self.points[i-1] ) > 1000:
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [self.points[i]]
@@ -236,7 +236,7 @@ class Trace(object):
 		"""
 		# for each named place, check distance to other locations
 		for name, place in self.named_places.items():
-			dists = [distance(place, loc) for loc in self.locations]
+			dists = [place.distance(loc) for loc in self.locations]
 			if min(dists) <= 200:  # meters
 				i = dists.index(min(dists))
 				self.locations[i].identify(name)
@@ -305,7 +305,7 @@ class Trace(object):
 		for point in points:
 			is_peak = True  # starting assumption
 			for neighbor in points:
-				if distance(point, neighbor) > config.location_distance:
+				if point.distance(neighbor) > config.location_distance:
 					continue
 				if point.kde_p < neighbor.kde_p:
 					is_peak = False  # assumption proven false if anything else higher
@@ -409,9 +409,9 @@ class Trace(object):
 					break
 				i_post += 1
 			# distance to previous point
-			point.d_ante = distance(point, self.points[i_ante])
+			point.d_ante = point.distance(self.points[i_ante])
 			# distance to next point
-			point.d_post = distance(point, self.points[i_post])
+			point.d_post = point.distance(self.points[i_post])
 			# if either distance is zero, this is an end point and has no angle
 			if point.d_ante * point.d_post == 0:
 				point.angle = 180
