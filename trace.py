@@ -575,13 +575,17 @@ class Trace(object):
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_dir+'/classified_points.csv', 'a') as f:
 			for point in self.all_interpolated_points + self.discarded_points:
-				attributes = [self.id, point.unix_time,
+				assert type(point) is GPSpoint 
+				attributes = [
+					self.id, point.unix_time,
 					point.known_subset if point.known_subset is not None else '',
 					point.longitude, point.latitude, point.x, point.y,
 					point.weight, point.discarded,
 					point.human_timestamp, point.synthetic,
 					point.state if point.state is not None else '',
-					point.kde_p if point.kde_p is not None else '']
+					point.kde_p if point.kde_p is not None else '',
+					point.emit_p[0] if len(point.emit_p) > 0 else ''
+				]
 				if config.multi_process:
 					self.locks[2].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')
@@ -593,10 +597,12 @@ class Trace(object):
 		days = self.get_days()
 		with open(config.output_dir+'/days.csv', 'a') as f:
 			for date, data in days.items():
-				attributes = [self.id, date, date.weekday(), sum(data['total']),
-len(data['travel']), sum(data['travel']), sum(data['unknown']),
-sum(data['home']), sum(data['work']), sum(data['school']),
-len(data['home']), len(data['work']), len(data['school'])]
+				attributes = [
+					self.id, date, date.weekday(), sum(data['total']),
+					len(data['travel']), sum(data['travel']), sum(data['unknown']),
+					sum(data['home']), sum(data['work']), sum(data['school']),
+					len(data['home']), len(data['work']), len(data['school'])
+				]
 				if config.multi_process:
 					self.locks[3].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')

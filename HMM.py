@@ -59,6 +59,8 @@ def emission_probabilities(points, locations):
 		point_probs = [trav_prob] + loc_probs
 		point_probs = [p / sum(point_probs) for p in point_probs]
 		emission_probs_per_point.append(point_probs)
+		# store the probabilities with the points for debugging
+		point.emit_p.extend(point_probs)
 	return emission_probs_per_point
 
 

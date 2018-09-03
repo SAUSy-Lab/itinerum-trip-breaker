@@ -26,7 +26,7 @@ def initialize_output_files():
 	# points file
 	f = open(config.output_dir+'/classified_points.csv', "w")
 	f.write('user_id,unix_time,known_subset,lon,lat,x,y,weight,removed,')
-	f.write('timestamp,interpolated,state,kde\n')
+	f.write('timestamp,interpolated,state,kde,travel_emit_prob\n')
 	f.close()
 	# days file
 	f = open(config.output_dir+'/days.csv', "w")
