@@ -6,12 +6,13 @@ from gaussian import gaussian_log_prob
 
 def viterbi(states, emission_probs, start_probs, transition_probs):
 	"""
+	Returns the optimal path determined by the viterbi function.
+	All probability values are logged.
 	'states' is a list of integer ID's for the possible states with length 'S'
-	'emission_probs' is a list of length O (number of observations) by S
-	each sublist should ~ sum to one.
-	'start_probs' length S list summing to one defining prop of initial state
+	'emission_probs' is a list of length O (number of observations) by S.
+	'start_probs' length S list summing to one defining prob of initial state
 	'transition_probs' is an SxS matrix of state transition probabilities
-	first index is from state, second index is to state
+	i.e. transition_probs[from_state][to_state]
 	See https://en.wikipedia.org/wiki/Viterbi_algorithm for background
 	"""
 	V = [{}]
