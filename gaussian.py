@@ -5,14 +5,14 @@ import config
 from scipy.stats import multivariate_normal
 
 
-def gaussian(x, bandwidth):
-	"""
-	Evaluate a Gaussian function at x for a distribution centered on zero
-	with a height of 1 given a bandwidth.
-	Used as a distance decay function.
+def gaussian_log_prob(x, bandwidth):
+	""" Evaluate a Gaussian function at x for a distribution centered on zero
+	with a height of 1 given a bandwidth. Return the natural log of the 
+	probability. Used as a distance decay function.
 	See: https://en.wikipedia.org/wiki/Gaussian_function
 	"""
-	return exp(-(x**2 / (2 * bandwidth**2)))
+	return -(x**2 / (2 * bandwidth**2))
+	# unlogged: return exp(-(x**2 / (2 * bandwidth**2)))
 
 
 def min_peak(GPS_error_sd, total_time):

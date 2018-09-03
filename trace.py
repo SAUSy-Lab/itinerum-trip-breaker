@@ -7,6 +7,7 @@ from HMM import viterbi, state_transition_matrix, emission_probabilities
 from gaussian import kde, min_peak
 from math import sqrt, ceil
 from OSM import tube_map
+from math import log
 
 
 class Trace(object):
@@ -253,7 +254,7 @@ class Trace(object):
 		# 0 is travel, others are then +1 from their list location
 		states = range(0, len(self.locations) + 1)
 		# initial_state probabilities: 50/50 travelling or stationary
-		start_probs = [0.5] + [(0.5/len(states))] * len(states)
+		start_probs = [log(0.5)] + [log(0.5/len(states))] * len(states)
 		# list of locations that actually get used
 		used_locations = set()
 		# do temporal interpolation on all known subsets
