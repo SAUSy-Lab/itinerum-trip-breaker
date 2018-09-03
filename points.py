@@ -99,7 +99,7 @@ class Point:
 		return degree_difference
 
 	def __repr__(self):
-		return "{}, {}".format(self.latitude, self.longitude)
+		return "Point at lat:{},lon:{}".format(self.latitude, self.longitude)
 
 	def __hash__(self):
 		return id(self)

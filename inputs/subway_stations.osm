@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API 0.7.55.4 3079d8ea">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2018-08-25T15:34:02Z"/>
+
+  <node id="25991314" lat="43.6701851" lon="-79.3902694">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Bay"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="subway" v="yes"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q812059"/>
+    <tag k="wikipedia" v="en:Bay (TTC)"/>
+  </node>
+  <node id="26240971" lat="43.6548199" lon="-79.3882736">
+    <tag k="name" v="St. Patrick"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041132"/>
+    <tag k="wikipedia" v="en:St. Patrick (TTC)"/>
+  </node>
+  <node id="26240972" lat="43.6565367" lon="-79.3810223">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="3"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Dundas Street East"/>
+    <tag k="name" v="Dundas"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1074565"/>
+    <tag k="wikipedia" v="en:Dundas (TTC)"/>
+  </node>
+  <node id="34710071" lat="43.6684465" lon="-79.3988440">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="St. George"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="note" v="TTC subway"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="subway" v="yes"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040713"/>
+    <tag k="wikipedia" v="en:St. George (TTC)"/>
+  </node>
+  <node id="34710072" lat="43.6508016" lon="-79.3865409">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Osgoode"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="no"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040650"/>
+    <tag k="wikipedia" v="en:Osgoode (TTC)"/>
+  </node>
+  <node id="34710073" lat="43.6477917" lon="-79.3848711">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="St. Andrew"/>
+    <tag k="note" v="TTC subway"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040644"/>
+    <tag k="wikipedia" v="en:St. Andrew (TTC)"/>
+  </node>
+  <node id="34710076" lat="43.6489494" lon="-79.3777538">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="King"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="note" v="TTC subway"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q389687"/>
+    <tag k="wikipedia" v="en:King (TTC)"/>
+  </node>
+  <node id="34710077" lat="43.6529083" lon="-79.3794575">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Queen"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q289280"/>
+    <tag k="wikipedia" v="en:Queen (TTC)"/>
+  </node>
+  <node id="34710078" lat="43.6606617" lon="-79.3827952">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="addr:housenumber" v="448"/>
+    <tag k="addr:postcode" v="M4Y 1X4"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Yonge Street"/>
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="College"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q728520"/>
+    <tag k="wikipedia" v="en:College (TTC)"/>
+  </node>
+  <node id="34710079" lat="43.6655242" lon="-79.3838011">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Wellesley"/>
+    <tag k="note" v="TTC subway; Wheelchair access to buses only (NOT to subway)"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="transfer" v="no, except for 97B Yonge"/>
+    <tag k="wheelchair" v="limited"/>
+    <tag k="wikidata" v="Q1041179"/>
+    <tag k="wikipedia" v="en:Wellesley (TTC)"/>
+  </node>
+  <node id="55493312" lat="43.6879512" lon="-79.3936947">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="15"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Saint Clair Avenue East"/>
+    <tag k="name" v="St. Clair"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041215"/>
+    <tag k="wikipedia" v="en:St. Clair (TTC)"/>
+  </node>
+  <node id="55493345" lat="43.7061229" lon="-79.3985300">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="2190"/>
+    <tag k="addr:postcode" v="M4S 2C3"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Yonge Street"/>
+    <tag k="name" v="Eglinton"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="opening_hours" v="Mo-Fr 5:40-2:05; Sa 5:50-2:05; Su 8:05-2:05"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040637"/>
+    <tag k="wikipedia" v="en:Eglinton (TTC)"/>
+  </node>
+  <node id="55786835" lat="43.7263483" lon="-79.4024743">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="name" v="Lawrence"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q681961"/>
+    <tag k="wikipedia" v="en:Lawrence (TTC)"/>
+  </node>
+  <node id="56922357" lat="43.7440391" lon="-79.4066570">
+    <tag k="name" v="York Mills"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q964935"/>
+    <tag k="wikipedia" v="en:York Mills (TTC)"/>
+  </node>
+  <node id="56922363" lat="43.7812974" lon="-79.4158993">
+    <tag k="name" v="Finch"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="vending" v="public_transport_tickets"/>
+    <tag k="washroom" v="yes"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041196"/>
+    <tag k="wikipedia" v="en:Finch (TTC)"/>
+  </node>
+  <node id="59980039" lat="43.6498260" lon="-79.4943338">
+    <tag k="name" v="Old Mill"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="subway" v="yes"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041612"/>
+    <tag k="wikipedia" v="en:Old Mill (TTC)"/>
+  </node>
+  <node id="60355167" lat="43.7686787" lon="-79.4126298">
+    <tag k="name" v="North York Centre"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q773799"/>
+    <tag k="wikipedia" v="en:North York Centre (TTC)"/>
+  </node>
+  <node id="70363937" lat="43.6816776" lon="-79.3905037">
+    <tag k="name" v="Summerhill"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1040659"/>
+    <tag k="wikipedia" v="en:Summerhill (TTC)"/>
+  </node>
+  <node id="280372903" lat="43.6596590" lon="-79.3903399">
+    <tag k="name" v="Queen's Park"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040665"/>
+    <tag k="wikipedia" v="en:Queen's Park (TTC)"/>
+  </node>
+  <node id="420561530" lat="43.7492988" lon="-79.4622480">
+    <tag k="name" v="Sheppard West"/>
+    <tag k="old_name" v="Downsview"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041478"/>
+    <tag k="wikipedia" v="en:Downsview (TTC)"/>
+  </node>
+  <node id="424028617" lat="43.6555690" lon="-79.4595795">
+    <tag k="name" v="Keele"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041869"/>
+    <tag k="wikipedia" v="en:Keele (TTC)"/>
+  </node>
+  <node id="424028625" lat="43.6538668" lon="-79.4668644">
+    <tag k="name" v="High Park"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041368"/>
+    <tag k="wikipedia" v="en:High Park (TTC)"/>
+  </node>
+  <node id="432805453" lat="43.6375928" lon="-79.5354943">
+    <tag k="addr:city" v="Etobicoke"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="27"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Saint Albans Road"/>
+    <tag k="name" v="Kipling"/>
+    <tag k="opendata:type" v="115001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041596"/>
+    <tag k="wikipedia" v="en:Kipling (TTC)"/>
+  </node>
+  <node id="560192986" lat="43.7087117" lon="-79.4406853">
+    <tag k="name" v="Glencairn"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041497"/>
+    <tag k="wikipedia" v="en:Glencairn (TTC)"/>
+  </node>
+  <node id="1157217363" lat="43.6707855" lon="-79.3856867">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Bloor-Yonge"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q885413"/>
+    <tag k="wikipedia" v="en:Bloor-Yonge (TTC)"/>
+  </node>
+  <node id="2249683136" lat="43.6517026" lon="-79.4759978">
+    <tag k="name" v="Runnymede"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041796"/>
+    <tag k="wikipedia" v="en:Runnymede (TTC)"/>
+  </node>
+  <node id="2481423750" lat="43.6722828" lon="-79.3763940">
+    <tag k="name" v="Sherbourne"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1042227"/>
+    <tag k="wikipedia" v="en:Sherbourne (TTC)"/>
+  </node>
+  <node id="2707352285" lat="43.6737856" lon="-79.3686490">
+    <tag k="name" v="Castle Frank"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q653615"/>
+    <tag k="wikipedia" v="en:Castle Frank (TTC)"/>
+  </node>
+  <node id="4357782894" lat="43.7951464" lon="-79.5277624">
+    <tag k="name" v="Vaughan Metropolitan Centre"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="4875013046" lat="43.7324290" lon="-79.2637529">
+    <tag k="name" v="Kennedy"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1042126"/>
+    <tag k="wikipedia" v="en:Kennedy (TTC)"/>
+  </node>
+  <node id="5061304513" lat="43.7535973" lon="-79.4784129">
+    <tag k="name" v="Downsview Park"/>
+    <tag k="network" v="GO Transit"/>
+    <tag k="network_1" v="subway"/>
+    <tag k="operator" v="Metrolinx"/>
+    <tag k="operator_1" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="5061304514" lat="43.7646530" lon="-79.4912790">
+    <tag k="name" v="Finch West"/>
+    <tag k="network" v="subway"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="5262888213" lat="43.6641106" lon="-79.4184051">
+    <tag k="name" v="Christie"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="toilets:wheelchair" v="no"/>
+    <tag k="wheelchair" v="no"/>
+  </node>
+  <node id="5318480902" lat="43.7614518" lon="-79.4109148">
+    <tag k="addr:city" v="North York"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="20"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Sheppard Avenue West"/>
+    <tag k="name" v="Sheppard-Yonge"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041444"/>
+    <tag k="wikipedia" v="en:Sheppard–Yonge (TTC)"/>
+  </node>
+  <node id="5318480907" lat="43.7667987" lon="-79.3873787">
+    <tag k="addr:city" v="North York"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="550"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Sheppard Avenue East"/>
+    <tag k="name" v="Bayview"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q812633"/>
+    <tag k="wikipedia" v="en:Bayview (TTC)"/>
+  </node>
+  <node id="5318484724" lat="43.7691308" lon="-79.3765761">
+    <tag k="name" v="Bessarion"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q830078"/>
+    <tag k="wikipedia" v="en:Bessarion (TTC)"/>
+  </node>
+  <node id="5318484736" lat="43.7753470" lon="-79.3459439">
+    <tag k="name" v="Don Mills"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1042199"/>
+    <tag k="wikipedia" v="en:Don Mills (TTC)"/>
+  </node>
+  <node id="5318484741" lat="43.7710725" lon="-79.3656340">
+    <tag k="addr:city" v="North York"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="2774"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Old Leslie Street"/>
+    <tag k="name" v="Leslie"/>
+    <tag k="next_train" v="no"/>
+    <tag k="onestop_screen" v="no"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1042178"/>
+    <tag k="wikipedia" v="en:Leslie (TTC)"/>
+  </node>
+  <node id="5319182778" lat="43.6979360" lon="-79.3972908">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="1900"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Yonge Street"/>
+    <tag k="name" v="Davisville"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="no"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1040671"/>
+    <tag k="wikipedia" v="en:Davisville (TTC)"/>
+  </node>
+  <node id="5319198159" lat="43.6764534" lon="-79.3884341">
+    <tag k="name" v="Rosedale"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1040680"/>
+    <tag k="wikipedia" v="en:Rosedale (TTC)"/>
+  </node>
+  <node id="5320067932" lat="43.6456424" lon="-79.3802085">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Union"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="note" v="TTC subway"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q850811"/>
+    <tag k="wikipedia" v="en:Union (TTC)"/>
+  </node>
+  <node id="5320293105" lat="43.6685404" lon="-79.4047039">
+    <tag k="name" v="Spadina"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041160"/>
+    <tag k="wikipedia" v="en:Spadina (TTC)"/>
+  </node>
+  <node id="5320293827" lat="43.6668462" lon="-79.3933506">
+    <tag k="name" v="Museum"/>
+    <tag k="next_train" v="no"/>
+    <tag k="note" v="Pedestrians can cross Queen's Park through the subway station"/>
+    <tag k="onestop_screen" v="no"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041205"/>
+    <tag k="wikipedia" v="en:Museum (TTC)"/>
+  </node>
+  <node id="5320349308" lat="43.6849986" lon="-79.4157296">
+    <tag k="name" v="St. Clair West"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041505"/>
+    <tag k="wikipedia" v="en:St. Clair West (TTC)"/>
+  </node>
+  <node id="5320349317" lat="43.6747046" lon="-79.4069830">
+    <tag k="name" v="Dupont"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041606"/>
+    <tag k="wikipedia" v="en:Dupont (TTC)"/>
+  </node>
+  <node id="5320359169" lat="43.7000172" lon="-79.4363964">
+    <tag k="addr:city" v="Toronto"/>
+    <tag k="name" v="Eglinton West"/>
+    <tag k="next_train" v="yes"/>
+    <tag k="onestop_screen" v="yes"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041600"/>
+    <tag k="wikipedia" v="en:Eglinton West (TTC)"/>
+  </node>
+  <node id="5321922638" lat="43.7344762" lon="-79.4500619">
+    <tag k="name" v="Wilson"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041488"/>
+    <tag k="wikipedia" v="en:Wilson (TTC)"/>
+  </node>
+  <node id="5321922639" lat="43.7246418" lon="-79.4475031">
+    <tag k="addr:city" v="North York"/>
+    <tag k="addr:country" v="CA"/>
+    <tag k="addr:housenumber" v="50"/>
+    <tag k="addr:province" v="ON"/>
+    <tag k="addr:street" v="Yorkdale Road"/>
+    <tag k="name" v="Yorkdale"/>
+    <tag k="opendata:type" v="108001"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="presto" v="yes"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q586583"/>
+    <tag k="wikipedia" v="en:Yorkdale (TTC)"/>
+  </node>
+  <node id="5321922640" lat="43.7152827" lon="-79.4439143">
+    <tag k="name" v="Lawrence West"/>
+    <tag k="operator" v="Toronto Transit Commission"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikidata" v="Q1041636"/>
+    <tag k="wikipedia" v="en:Lawrence West (TTC)"/>
+  </node>
+  <node id="5321964774" lat="43.7833141" lon="-79.5230877">
+    <tag k="name" v="Highway 407"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="5321964779" lat="43.7768576" lon="-79.5092475">
+    <tag k="name" v="Pioneer Village"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="5325069221" lat="43.6782532" lon="-79.3525049">
+    <tag k="name" v="Chester"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Chester (TTC"/>
+  </node>
+  <node id="5325069223" lat="43.6768799" lon="-79.3583752">
+    <tag k="name" v="Broadview"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikipedia" v="en:Broadview (TTC)"/>
+  </node>
+  <node id="5325077186" lat="43.6799137" lon="-79.3448532">
+    <tag k="name" v="Pape"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Pape (TTC)"/>
+  </node>
+  <node id="5326455477" lat="43.6481827" lon="-79.5112961">
+    <tag k="name" v="Royal York"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Royal York (TTC)"/>
+  </node>
+  <node id="5326471419" lat="43.6453350" lon="-79.5248163">
+    <tag k="addr:housenumber" v="1240"/>
+    <tag k="addr:street" v="Islington Avenue"/>
+    <tag k="name" v="Islington"/>
+    <tag k="presto" v="yes"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041874"/>
+    <tag k="wikipedia" v="en:Islington station (Toronto)"/>
+  </node>
+  <node id="5326476228" lat="43.6588892" lon="-79.4431556">
+    <tag k="name" v="Lansdowne"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1041863"/>
+    <tag k="wikipedia" v="en:Lansdowne station (Toronto)"/>
+  </node>
+  <node id="5326479603" lat="43.6602019" lon="-79.4357191">
+    <tag k="name" v="Dufferin"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikipedia" v="en:Dufferin (TTC)"/>
+  </node>
+  <node id="5326487199" lat="43.6623839" lon="-79.4261128">
+    <tag k="addr:housenumber" v="746"/>
+    <tag k="addr:street" v="Ossington Avenue"/>
+    <tag k="name" v="Ossington"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikipedia" v="en:Ossington (TTC)"/>
+  </node>
+  <node id="5326501680" lat="43.6655189" lon="-79.4119373">
+    <tag k="name" v="Bathurst"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+  </node>
+  <node id="5326530554" lat="43.7111204" lon="-79.2790432">
+    <tag k="name" v="Warden"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="toilets:wheelchair" v="no"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikidata" v="Q1042170"/>
+    <tag k="wikipedia" v="en:Warden station"/>
+  </node>
+  <node id="5326535707" lat="43.6948696" lon="-79.2887970">
+    <tag k="internet_access" v="wlan"/>
+    <tag k="internet_access:fee" v="no"/>
+    <tag k="name" v="Victoria Park"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikipedia" v="en:Victoria Park (TTC)"/>
+  </node>
+  <node id="5326541297" lat="43.6890021" lon="-79.3017097">
+    <tag k="name" v="Main Street"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="yes"/>
+    <tag k="wikipedia" v="en:Main Street (TTC)"/>
+  </node>
+  <node id="5326548040" lat="43.6865254" lon="-79.3128596">
+    <tag k="name" v="Woodbine"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Woodbine (TTC)"/>
+  </node>
+  <node id="5326551838" lat="43.6841946" lon="-79.3230472">
+    <tag k="name" v="Coxwell"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Coxwell (TTC)"/>
+  </node>
+  <node id="5326558129" lat="43.6826052" lon="-79.3303004">
+    <tag k="name" v="Greenwood"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Greenwood (TTC)"/>
+  </node>
+  <node id="5326559427" lat="43.6810265" lon="-79.3377871">
+    <tag k="name" v="Donlands"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="wheelchair" v="no"/>
+    <tag k="wikipedia" v="en:Donlands (TTC)"/>
+  </node>
+  <node id="5409164979" lat="43.7740965" lon="-79.4995213">
+    <tag k="name" v="York University"/>
+    <tag k="public_transport" v="station"/>
+    <tag k="railway" v="station"/>
+    <tag k="station" v="subway"/>
+    <tag k="subway" v="yes"/>
+  </node>
+
+</osm>
