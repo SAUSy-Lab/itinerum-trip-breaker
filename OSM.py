@@ -17,7 +17,7 @@ class Map(object):
 
 	def near_subway(self,point):
 		for st_uid, st in self.subway_stations.items():
-			if st.distance(point) < 100: # meters
+			if st.distance(point) < 200: # meters
 				return True
 		return False
 

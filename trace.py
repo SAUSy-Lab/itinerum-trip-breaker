@@ -156,9 +156,7 @@ class Trace(object):
 			if i == 0:
 				segment = [ point ]
 			# distance to previous point
-			elif point.distance( self.points[i-1] ) > 1000:
-				if tube_map.near_subway(point) and tube_map.near_subway(self.points[i-1]):
-					print('\tpotential subway segment classified as gap')
+			elif point.distance( self.points[i-1] ) > 1000 and not ( tube_map.near_subway(point) and tube_map.near_subway(self.points[i-1]) ):
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [point]
