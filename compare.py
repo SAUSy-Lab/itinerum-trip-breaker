@@ -8,7 +8,9 @@ import editdistance
 def read_headers(fname):
 	""" (str) -> dict
 	Return a dictionary mapping header names to column indices.
-	Removes the need to hard coding column numbers when reading files.
+	Removes the need to hard code column numbers when reading files.
+	
+	See read_episodes for intended use.
 	"""
 	fd = open(fname)
 	d = {}
@@ -52,6 +54,14 @@ def compare_locations(truth, compd):
 
 
 def compare_user_locations(distances, num_to_match):
+	""" (list, int) -> list
+	Return a list of length num_to_match of the shortest distances
+	between pairs of points represented by the list distances.
+
+	This process, including parts of compare_locations where it is called,
+	can be rewritenn to in O(n^2 log n) instead of O(n^3)
+	using a recursive divide and conquer algorithm, standard for the closest pair problem. 
+	"""
 	min_distances = []
 	dist_list = []
 	for loc in distances:
@@ -64,8 +74,7 @@ def compare_user_locations(distances, num_to_match):
 		compd = best[1]  # the computed location
 		truth = best[2]  # the true location
 		for entry in dist_list:
-			# if the computed or true location match
-			# remove the rest of the entries with those locations
+			# Remove any entries in which the computed or true location match
 			if entry[1] == compd or entry[2] == truth:
 				dist_list.remove(entry)
 	return min_distances
@@ -106,7 +115,13 @@ def get_locations(location_file):
 
 
 def compare_episodes(truth, compd):
-	"""TODO: Docs needed"""
+	""" (str, str) -> list
+	Return a list of episode comparison metrics by user found in the 
+	files truth and compd.
+
+	A complete detailing of the metrics included is found
+	in compare_user_episodes.
+	"""
 	true_users_to_eps = read_episodes(truth)
 	computed_users_to_eps = read_episodes(compd)
 	# get the headers, both files should match
@@ -123,13 +138,19 @@ def compare_episodes(truth, compd):
 
 
 def read_episodes(file_name):
-	"""TODO: Docs needed"""
+	""" (str) -> dict
+	Return a dictionary mapping each user
+	in file_name to a list of the episodes for that user.
+
+	Episodes here are represented by a line from the episodes file,
+	"""
 	h = read_headers(file_name)
 	fd = open(file_name)
 	users_to_eps = {}
 	fd.readline()
 	for l in fd:
 		line = l.strip().split(",")
+		# use read_headers to avoid hard coding the column number
 		user = line[h["user_id"]]
 		if user in users_to_eps:
 			users_to_eps[user].append(line)
@@ -144,6 +165,13 @@ def read_episodes(file_name):
 
 
 def compare_user_episodes(true, computed, h):
+	""" (list, list, dict) -> tuple
+	Return a tuple of episode comparison metrics for
+	a particular user.
+
+	The list values holds the intermediate values for
+	directly computing the metrics.
+	"""
 	# TODO replace hardcoded unix time indices with header mapping
 	end_time = min(true[-1][-1], computed[-1][-1])  # TODO
 	start_time = max(true[0][-1], computed[0][-1])  # TODO
@@ -170,7 +198,7 @@ def compare_user_episodes(true, computed, h):
 	# TODO minor bug when an episode has duration 0
 	comp_str = ""
 	true_str = ""
-	while true[i][-1] < end_time and computed[j][-1] < end_time:  # TODO
+	while true[i][-1] < end_time and computed[j][-1] < end_time:
 		duration = compare_single_episode((true[i], true[i+1]),
 			(computed[j], computed[j+1]), h, values)
 		if true[i+1][-1] <= computed[j+1][-1]:
@@ -180,18 +208,22 @@ def compare_user_episodes(true, computed, h):
 			comp_str = comp_str + update_ep_str(computed[j])
 			j = j + 1
 	# percent correct or incorrect unknown, travelling, or at_location time
-	p_corr_ut = values[0] / values[3]
-	p_corr_trav = values[1] / values[4]
-	p_corr_loc = values[2] / values[5]
-	p_inc_ut = values[6] / (total_time - values[0])
-	p_inc_trav = values[7] / (total_time - values[1])
-	p_inc_loc = values[8] / (total_time - values[2])
+	p_corr_ut = values[0] / values[3]  # percent correctly identified unknown time
+	p_corr_trav = values[1] / values[4]  # percent correctly identified travelling time
+	p_corr_loc = values[2] / values[5]  # percent correctly identified time at a location
+	p_inc_ut = values[6] / (total_time - values[0])  # percent incorrectly identified unknown time
+	p_inc_trav = values[7] / (total_time - values[1])  # percent incorrectly identified travelling time
+	p_inc_loc = values[8] / (total_time - values[2])  # percent incorrectly identified time spent at location
 	return (p_corr_ut, p_corr_trav, p_corr_loc, p_inc_ut, p_inc_trav,
 		p_inc_loc, true_str, comp_str)
 
 
 def compare_single_episode(true_pair, computed_pair, h, values):
-	"""TODO: Docs needed"""
+	"""
+	Update the appropriate episode comparison metrics in values,
+	and return the amount of time the episodes true_pair and computed_pair
+	overlap.
+	"""
 	overlapping_time = float(min(true_pair[1][-1],
 		computed_pair[1][-1])) - float(max(true_pair[0][-1], computed_pair[0][-1]))
 	true_unknown = False if true_pair[0][h["unknown"]] == "" else True
@@ -224,7 +256,11 @@ def compare_single_episode(true_pair, computed_pair, h, values):
 
 
 def update_ep_str(episode):
-	"""TODO: Docs needed"""
+	"""
+	Return a letter representing whether
+	this episode is classified as unknown time,
+	travelling time, or activity time (time spent at a location)
+	"""
 	if episode[4] == "True":
 		return "U"
 	elif episode[2] != "":
@@ -236,7 +272,10 @@ def update_ep_str(episode):
 
 
 def write_data(data):
-	"""TODO: Docs needed"""
+	""" (tuple) -> NoneType
+	Write out the contents of data to the .csv file
+	specified in config.py
+	"""
 	rs = ("user,percent_excess_locations,mean_distance,median_distance," +
 		"percent_identified_unknown,percent_identified_travel," +
 		"percent_identified_location,percent_misidentified_unknown," +
@@ -266,17 +305,22 @@ def write_data(data):
 
 
 def merge_lists(t1, t2):
-	"""TODO: Docs needed"""
+	""" (tuple, typle) -> List
+	Merge two lists, omitting the user_id from the second
+	in order to facilitate writing to a file.
+	"""
 	new_data = []
 	for i in range(len(t1)):
 		new_data.append(t1[i] + t2[i][1:])
 	return new_data
 
 if __name__ == "__main__":
-	"""TODO: Docs needed"""
+	# Collect location comparison metrics by user
 	location_data = sorted(compare_locations(locations_gt,
 		output_dir+'/locations.csv'))
+	# Collect episode comparison metrics by user
 	episode_data = sorted(compare_episodes(activities_gt,
 		output_dir+'/episodes.csv'))
+	# Merge collected data and write out.
 	data = merge_lists(location_data, episode_data)
 	write_data(data)
