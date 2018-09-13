@@ -11,16 +11,12 @@ from math import log
 
 
 class Trace(object):
-	"""
-	A "trace", a GPS trace, is all the data associated with one itinerum user.
-	It's mainly treated here as a temporal/spatial sequence of points.
-	"""
+	"""A "trace", a GPS trace, is all the data associated with one itinerum user.
+	It's mainly treated here as a temporal/spatial sequence of points."""
 
 	def __init__(self, user_id, raw_data, named_places, locks):
-		"""
-		Construct the user object by pulling all data pertaining to this user,
-		identified by ID.
-		"""
+		"""Construct the user object by pulling all data pertaining to this user,
+		identified by ID."""
 		self.locks = locks
 		self.id = user_id
 		self.raw = raw_data
@@ -64,10 +60,8 @@ class Trace(object):
 		return [p for s in self.known_subsets_interpolated for p in s]
 
 	def temporally_interpolate_points(self, segment):
-		"""
-		This function interpolates linearly in spacetime where the temporal
-		gap between two points is sufficiently large.
-		"""
+		"""This function interpolates linearly in spacetime where the temporal
+		gap between two points is sufficiently large."""
 		max_time_gap = 600  # seconds
 		new_points = []
 		# For each segment (pair of points)
@@ -99,16 +93,14 @@ class Trace(object):
 		return new_points
 
 	def spatially_interpolate_points(self, segment):
-		"""
-		Takes a list of ordered points and interpolates spatially between them
+		"""Takes a list of ordered points and interpolates spatially between them
 		such that the distance between the returned list of points is never
 		greater than a value specified in config, e.g. 30m.
 		Temporally, there are two paradigms. For segments faster than walking
 		speed, time is allocated uniformly. For those slower, it is assumed that
 		walking-speed travel begins at the last possible moment, allowing time to
 		accumulate at the preceding point. This function does NOT assign temporal
-		weights; those are applied later according to timestamps.
-		"""
+		weights; those are applied later according to timestamps."""
 		new_points = []
 		# For each segment
 		for i in range(1, len(segment)):
@@ -146,17 +138,20 @@ class Trace(object):
 		return new_points
 
 	def make_known_subsets(self):
-		"""
-		Partition the trace points into contiguous sets for which we're confident
+		"""Partition the trace points into contiguous sets for which we're confident
 		we don't have substantial missing data. That is, exclude segments where it
 		seems like we have no data, but substantial movement; for which trip and
-		activity reconstruction would be impossible.
-		"""
+		activity reconstruction would be impossible."""
 		for i, point in enumerate(self.points):
 			if i == 0:
 				segment = [ point ]
 			# distance to previous point
-			elif point.distance( self.points[i-1] ) > 1000 and not ( tube_map.near_subway(point) and tube_map.near_subway(self.points[i-1]) ):
+			elif (
+				point.distance( self.points[i-1] ) > 1000 and not ( 
+					tube_map.near_subway(point) and 
+					tube_map.near_subway(self.points[i-1]
+				) 
+			):
 				# append point to next segment
 				self.known_subsets.append(segment)
 				segment = [point]
@@ -194,10 +189,8 @@ class Trace(object):
 #		return new_segment
 
 	def get_activity_locations(self):
-		"""
-		Get activity locations for this trace. (Create inputs for a KDE
-		function and find peaks in the surface.)
-		"""
+		"""Get activity locations for this trace. (Create inputs for a KDE
+		function and find peaks in the surface.)"""
 		for subset in self.known_subsets:
 			# interpolate the subset and weight the points
 			interpolated_subset = self.spatially_interpolate_points(subset)
@@ -228,12 +221,10 @@ class Trace(object):
 		return self.locations
 
 	def identify_named_locations(self):
-		"""
-		Take user supplied (named) places and apply the labels to discovered
+		"""Take user supplied (named) places and apply the labels to discovered
 		locations if possible. This is based simply on distance, though this
 		function is called after time has been allocated, so we could in theory
-		base it on a function of distance and time spent.
-		"""
+		base it on a function of distance and time spent."""
 		# for each named place, check distance to other locations
 		for name, place in self.named_places.items():
 			dists = [place.distance(loc) for loc in self.locations]
@@ -242,12 +233,10 @@ class Trace(object):
 				self.locations[i].identify(name)
 
 	def break_trips(self):
-		"""
-		Use a Hidden Markov Model to classify all points as deriving from
+		"""Use a Hidden Markov Model to classify all points as deriving from
 		either time spent travelling or time spent at one of the potential
 		activity locations. Allocate time to these sequences of activities
-		accordingly.
-		"""
+		accordingly."""
 		# get list of potential state indices
 		# 0 is travel, others are then +1 from their list location
 		states = range(0, len(self.locations) + 1)
@@ -289,10 +278,8 @@ class Trace(object):
 			print('\tFound', len(self.episodes), 'episodes')
 
 	def find_peaks(self, threshold):
-		"""
-		Detect peaks in the KDE surface which are above the time-spent
-		threshold. KDE values are stored in self.points.
-		"""
+		"""Detect peaks in the KDE surface which are above the time-spent
+		threshold. KDE values are stored in self.points."""
 		points = [point for point in self.all_interpolated_points
 			if point.kde_p >= threshold]
 		if config.debug_output:
@@ -317,8 +304,7 @@ class Trace(object):
 		return potential_activity_locations
 
 	def weight_points(self, segment):
-		"""
-		Assign time-based weights to a series of sequential points.
+		"""Assign time-based weights to a series of sequential points.
 		Values are in seconds, and split evenly between neighboring points, e.g.:
 		 |-p1-time-|--p2-time-|...etc
 		p1---------|---------p2------|------p3
@@ -335,8 +321,7 @@ class Trace(object):
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply
 		reapeted verbatim. Points are already sorted by time, so to find
-		these we just need to loop through and compare adjacent points.
-		"""
+		these we just need to loop through and compare adjacent points."""
 		unique_points = []
 		to_remove = []
 		for i, point in enumerate(self.points):
@@ -354,10 +339,8 @@ class Trace(object):
 			print('\t', len(to_remove), 'points removed as exact duplicate')
 
 	def pop_point(self, key):
-		"""
-		Pop a point off the current list and add it to the discard bin.
-		Then update it's former neighbors in the list.
-		"""
+		"""Pop a point off the current list and add it to the discard bin.
+		Then update it's former neighbors in the list."""
 		# pop and append
 		point = self.points.pop(key)
 		point.discarded = True
@@ -384,11 +367,9 @@ class Trace(object):
 					print(k, locations[k])
 
 	def observe_neighbors(self, indices=[]):
-		"""
-		Get angle and distance measurements to and from adjacent points.
+		"""Get angle and distance measurements to and from adjacent points.
 		Store in the point object. Operates on points, the inices of which
-		are given in a list referring to the current point list.
-		"""
+		are given in a list referring to the current point list."""
 		# for each point, except those first and last
 		for i in indices:
 			# skip first and last points
@@ -440,9 +421,8 @@ class Trace(object):
 			print('\t', len(to_remove), 'points removed as duplicate')
 
 	def remove_known_error(self, error_limit):
-		"""
-		Remove points reporting positional error beyond a given limit (meters).
-		"""
+		"""Remove points reporting positional error beyond a given limit 
+		(meters)."""
 		to_remove = []
 		for i, point in enumerate(self.points):
 			if point.accuracy > error_limit:
@@ -521,13 +501,11 @@ class Trace(object):
 		return days
 
 	def flush(self):
-		"""
-		After everything is finished, write all the output from this trace to CSV
-		files defined in config. All writing to files should be done here if
+		"""After everything is finished, write all the output from this trace to 
+		CSV files defined in config. All writing to files should be done here if
 		possible. Any data that needs to ultimately find it's way here should be
 		stored as a property. All Trace objects call this at the end, and the
-		files are initialized in main, so we only append rows here.
-		"""
+		files are initialized in main, so we only append rows here."""
 		while self.remove_short_stationary_episodes():
 			pass
 		self.write_locations()
@@ -624,10 +602,8 @@ class Trace(object):
 		return False
 
 	def remove_episode(self, i):
-		"""
-		Given a stationary episode, identified by index position, remove the
-		episode and dissolve its time into surrounding episodes as appropriate.
-		"""
+		"""Given a stationary episode, identified by index position, remove the
+		episode and dissolve its time into surrounding episodes as appropriate."""
 		assert 0 <= i <= len(self.episodes)
 		prev = self.episodes[i-1] if i-1 >= 0 else None
 		this = self.episodes[i]
