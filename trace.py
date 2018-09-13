@@ -108,7 +108,8 @@ class Trace(object):
 				delta_y = (p2.y - p1.y) / n_segs
 				acc = (p1.accuracy + p2.accuracy) / 2
 				# iteration to create new subsegments
-				for j in range(1, n_segs):
+				npj = [1,2,n_segs-2,n_segs-1] if n_segs > 5 else range(1, n_segs)
+				for j in npj:
 					x = p1.x + j * delta_x
 					y = p1.y + j * delta_y
 					# if faster than walking speed, assign time uniformly
@@ -156,25 +157,6 @@ class Trace(object):
 				point.known_subset = seg_index
 		if config.debug_output:
 			print('\t', len(self.known_subsets) - 1, 'gap(s) found in data')
-
-#	def partial_interpolation_removal(self, segment, cutoff):
-#		# TODO this function causes an error (sequential locations for user A)
-#		# TODO needs documentation
-#		new_segment = []
-#		non_synth = [segment.index(point)
-#				for point in segment if not point.synthetic]
-#		for i in range(len(non_synth) - 1):
-#			if non_synth[i+1] - non_synth[i] > cutoff:
-#				# keep first endpoint
-#				# second endpoint appended on next iteration
-#				new_segment.append(segment[non_synth[i]])
-#			else:
-#				# keep everything but the last endpoint
-#				sub_segment = [segment[j]terpolate
-#					for j in range(non_synth[i], non_synth[i+1])]
-#				new_segment.extend(sub_segment)
-#		new_segment.append(segment[non_synth[-1]])
-#		return new_segment
 
 	def get_activity_locations(self):
 		"""Get activity locations for this trace. (Create inputs for a KDE
