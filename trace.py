@@ -28,19 +28,12 @@ class Trace(object):
 		# "known_subsets" is a list of lists of points partitioned by gaps in
 		# the data where e.g. the phone has turned off inexplicably.
 		self.known_subsets = []
-		# "known_subsets_interpolated" are the subsets with points added in the
-		# middle. "all_interpolated_points" is the flattened version of the
-		# preceding, containing all real and interpolated points in one place.
-		# This one gets used for KDE etc.
+		# "known_subsets_interpolated" are subsets with any interpolated points
 		self.known_subsets_interpolated = []
 		# list of potential activity locations
 		self.locations = []
 		# list of activity episodes (travel, activity, home, work, etc)
 		self.episodes = []
-		# records the number of activity records written so far
-		self.activity_count = 0
-		# number of identical timestamps for this user
-		self.identical = 0
 		# read in all time and location data for points
 		# right now only using a few fields
 		for row in raw_data:
@@ -149,7 +142,7 @@ class Trace(object):
 			elif (
 				point.distance( self.points[i-1] ) > 1000 and not ( 
 					tube_map.near_subway(point) and 
-					tube_map.near_subway(self.points[i-1]
+					tube_map.near_subway(self.points[i-1])
 				) 
 			):
 				# append point to next segment
