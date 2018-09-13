@@ -35,10 +35,10 @@ class Trace(object):
 		# read in all time and location data for points
 		# right now only using a few fields
 		for row in raw_data:
-			self.points.append(GPSpoint(
+			self.points.append( GPSpoint(
 				int(row['timestamp_epoch']), float(row['h_accuracy']),
 				float(row['longitude']), float(row['latitude']), 
-			))
+			) )
 		# sort the list by time
 		self.points.sort(key=lambda x: x.unix_time)
 		# measure to and from neighbors
@@ -80,7 +80,6 @@ class Trace(object):
 		# assign new points into the original list
 		for i in range(0,len(self.known_subsets)):
 			self.known_subsets[i] = sorted( self.known_subsets[i] + new_points[i] )
-
 
 	def do_spatial_interpolation(self):
 		"""Interpolates spatially between points such that the distance between 
@@ -125,6 +124,22 @@ class Trace(object):
 		for i in range(0,len(self.known_subsets)):
 			self.known_subsets[i] = sorted( self.known_subsets[i] + new_points[i] )
 
+	def weight_points(self, segment):
+		"""Assign time-based weights to a series of sequential points.
+		Values are in seconds, and split evenly between neighboring points, e.g.:
+		 |-p1-time-|--p2-time-|...etc
+		p1---------|---------p2------|------p3
+				     ^midpoint                      """
+		assert len(segment) > 1
+		# iterate over all sub-segments
+		for i in range(len(segment)-1):
+			p1, p2 = segment[i], segment[i+1]
+			time_diff = p1.delta_t(p2)  # time in seconds
+			if time_diff < 500 or not p1.synthetic or not p2.synthetic:
+				p1.add_weight(time_diff/2)
+				p2.add_weight(time_diff/2)
+			else: # both synthetic, long gap
+				pass
 
 	def make_known_subsets(self):
 		"""Partition the trace points into contiguous sets for which we're confident
@@ -270,21 +285,6 @@ class Trace(object):
 				potential_activity_locations.append(location)
 				loc_num += 1
 		return potential_activity_locations
-
-	def weight_points(self, segment):
-		"""Assign time-based weights to a series of sequential points.
-		Values are in seconds, and split evenly between neighboring points, e.g.:
-		 |-p1-time-|--p2-time-|...etc
-		p1---------|---------p2------|------p3
-				      ^midpoint
-		"""
-		assert len(segment) > 1
-		# iterate over all sub-segments
-		for i in range(len(segment)-1):
-			p1, p2 = segment[i], segment[i+1]
-			time_diff = p1.delta_t(p2)  # time in seconds
-			p1.add_weight(time_diff/2)
-			p2.add_weight(time_diff/2)
 
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply
