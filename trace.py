@@ -17,7 +17,7 @@ class Trace(object):
 	def __init__(self, user_id, raw_data, named_places, locks):
 		"""Construct the user object by pulling all data pertaining to this user,
 		identified by ID."""
-		self.locks = locks
+		self.locks = locks # four separate locks for writing files
 		self.id = user_id
 		self.raw = raw_data
 		self.named_places = named_places
@@ -28,8 +28,6 @@ class Trace(object):
 		# "known_subsets" is a list of lists of points partitioned by gaps in
 		# the data where e.g. the phone has turned off inexplicably.
 		self.known_subsets = []
-		# "known_subsets_interpolated" are subsets with any interpolated points
-		self.known_subsets_interpolated = []
 		# list of potential activity locations
 		self.locations = []
 		# list of activity episodes (travel, activity, home, work, etc)
@@ -48,87 +46,84 @@ class Trace(object):
 		self.observe_neighbors(all_indices)
 
 	@property
-	def all_interpolated_points(self):
+	def all_points(self):
 		"""Get all (real & interpolated) points in one big list"""
-		return [p for s in self.known_subsets_interpolated for p in s]
+		return [p for s in self.known_subsets for p in s]
 
-	def temporally_interpolate_points(self, segment):
+	def do_temporal_interpolation(self):
 		"""This function interpolates linearly in spacetime where the temporal
-		gap between two points is sufficiently large."""
+		gap between two points is sufficiently large. To be run after spatial 
+		interpolation."""
 		max_time_gap = 600  # seconds
 		new_points = []
-		# For each segment (pair of points)
-		for i in range(1, len(segment)):
-			p1, p2 = segment[i-1], segment[i]
-			delta_t = p1.delta_t(p2)
-			if delta_t <= max_time_gap:
-				new_points.append(p1)  # no interpolation to do
-				continue
-			# spatial
-			dist = p1.distance(p2)
-			n_segs = ceil(delta_t / max_time_gap)
-			seg_span = delta_t / n_segs
-			delta_x = (p2.x - p1.x) / n_segs
-			delta_y = (p2.y - p1.y) / n_segs
-			# iteration over new subsegments
-			inter_points = []
-			acc = (p1.accuracy + p2.accuracy) / 2
-			for j in range(1, n_segs):
-				x = p1.x + j * delta_x 
-				y = p1.y + j * delta_y
-				t = p1.unix_time + j * delta_t / n_segs
-				new_point = GPSpoint(t, acc, X=x, Y=y)
-				new_point.synthetic = True
-				inter_points.append(new_point)
-			new_points.extend([p1] + inter_points)
-		# add the last point
-		new_points.append(segment[-1])
-		return new_points
+		for si, subset in enumerate(self.known_subsets):
+			new_points.append([])
+			for i in range(1, len(subset)):
+				p1, p2 = subset[i-1], subset[i]
+				delta_t = p1.delta_t(p2)
+				if delta_t <= max_time_gap:
+					continue # no interpolation to do
+				# do the interpolation
+				n_segs = ceil(delta_t / max_time_gap)
+				seg_span = delta_t / n_segs
+				delta_x = (p2.x - p1.x) / n_segs
+				delta_y = (p2.y - p1.y) / n_segs
+				acc = (p1.accuracy + p2.accuracy) / 2
+				# iteration over new subsegments
+				for j in range(1, n_segs):
+					x = p1.x + j * delta_x 
+					y = p1.y + j * delta_y
+					t = p1.unix_time + j * delta_t / n_segs
+					new_point = GPSpoint(t, acc, X=x, Y=y)
+					new_point.synthetic = True
+					new_points[si].append(new_point)
+		# assign new points into the original list
+		for i in range(0,len(self.known_subsets)):
+			self.known_subsets[i] = sorted( self.known_subsets[i] + new_points[i] )
 
-	def spatially_interpolate_points(self, segment):
-		"""Takes a list of ordered points and interpolates spatially between them
-		such that the distance between the returned list of points is never
-		greater than a value specified in config, e.g. 30m.
+
+	def do_spatial_interpolation(self):
+		"""Interpolates spatially between points such that the distance between 
+		the returned list of points is never greater than a value specified in 
+		config, e.g. 30m.
 		Temporally, there are two paradigms. For segments faster than walking
 		speed, time is allocated uniformly. For those slower, it is assumed that
 		walking-speed travel begins at the last possible moment, allowing time to
 		accumulate at the preceding point. This function does NOT assign temporal
 		weights; those are applied later according to timestamps."""
+		walk_speed = 5*1000/3600  # 5 kmph in mps
 		new_points = []
-		# For each segment
-		for i in range(1, len(segment)):
-			p1, p2 = segment[i-1], segment[i]
-			dist = p1.distance(p2)
-			if dist <= config.interpolation_distance:
-				new_points.append(p1)  # no interpolation to do
-				continue
-			walk_speed = 5*1000/3600  # 5 kmph in mps
-			delta_t = p1.delta_t(p2)
-			# spatial
-			n_segs = ceil(dist / config.interpolation_distance)
-			seg_len = dist / n_segs
-			delta_x = (p2.x - p1.x) / n_segs
-			delta_y = (p2.y - p1.y) / n_segs
-			# iteration over new subsegments
-			inter_points = []
-			acc = (p1.accuracy + p2.accuracy) / 2
-			for j in range(1, n_segs):
-				x = p1.x + j * delta_x
-				y = p1.y + j * delta_y
-				if dist >= delta_t * walk_speed:
+		for si, subset in enumerate(self.known_subsets):
+			new_points.append([])
+			for i in range(1, len(subset)):
+				p1, p2 = subset[i-1], subset[i]
+				dist = p1.distance(p2)
+				if dist <= config.interpolation_distance: 
+					continue # no interpolation to do
+				# do the interpolation for this segment
+				delta_t = p1.delta_t(p2)
+				n_segs = ceil(dist / config.interpolation_distance)
+				seg_len = dist / n_segs
+				delta_x = (p2.x - p1.x) / n_segs
+				delta_y = (p2.y - p1.y) / n_segs
+				acc = (p1.accuracy + p2.accuracy) / 2
+				# iteration to create new subsegments
+				for j in range(1, n_segs):
+					x = p1.x + j * delta_x
+					y = p1.y + j * delta_y
 					# if faster than walking speed, assign time uniformly
-					t = p1.unix_time + j * delta_t / n_segs
-				else:
-					# slower than walking speed, so assign time backwards from last
-					# point at walking speed
-					t = p2.unix_time - (dist/n_segs)/walk_speed*(n_segs-j)
-				new_point = GPSpoint(t, acc, X=x, Y=y)
-				new_point.synthetic = True
-				inter_points.append(new_point)
-			new_points.extend([p1] + inter_points)
-		# add the last point
-		new_points.append(segment[-1])
-		return new_points
+					if dist >= delta_t * walk_speed:
+						t = p1.unix_time + j * delta_t / n_segs
+					else: # slower than walking speed, so assign time backwards from 
+						# last point at walking speed
+						t = p2.unix_time - (dist/n_segs)/walk_speed*(n_segs-j)
+					new_point = GPSpoint(t, acc, X=x, Y=y)
+					new_point.synthetic = True
+					new_points[si].append(new_point)
+		# assign new points into the original list
+		for i in range(0,len(self.known_subsets)):
+			self.known_subsets[i] = sorted( self.known_subsets[i] + new_points[i] )
+
 
 	def make_known_subsets(self):
 		"""Partition the trace points into contiguous sets for which we're confident
@@ -184,21 +179,20 @@ class Trace(object):
 	def get_activity_locations(self):
 		"""Get activity locations for this trace. (Create inputs for a KDE
 		function and find peaks in the surface.)"""
+		self.do_spatial_interpolation()
 		for subset in self.known_subsets:
-			# interpolate the subset and weight the points
-			interpolated_subset = self.spatially_interpolate_points(subset)
-			self.known_subsets_interpolated.append(interpolated_subset)
-			self.weight_points(interpolated_subset)
-		if len(self.all_interpolated_points) > 75000:
+			self.weight_points(subset)
+
+		if len(self.all_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
 		# format as vectors for KDE function
-		Xvector = [p.x for p in self.all_interpolated_points]
-		Yvector = [p.y for p in self.all_interpolated_points]
-		Wvector = [p.weight for p in self.all_interpolated_points]
+		Xvector = [p.x for p in self.all_points]
+		Yvector = [p.y for p in self.all_points]
+		Wvector = [p.weight for p in self.all_points]
 		# run the KDE, returning density estimates at the input points
 		estimates = kde(Xvector, Yvector, Wvector)
 		# assign probability estimates to points
-		for point, prob in zip(self.all_interpolated_points, estimates):
+		for point, prob in zip(self.all_points, estimates):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
@@ -237,11 +231,10 @@ class Trace(object):
 		start_probs = [log(0.5)] + [log(0.5/len(states))] * len(states)
 		# list of locations that actually get used
 		used_locations = set()
-		# do temporal interpolation on all known subsets
-		self.known_subsets_interpolated = [self.temporally_interpolate_points(subset)
-			for subset in self.known_subsets_interpolated]
+		# do temporal interpolation on all known_subsets
+		self.do_temporal_interpolation()
 		# run the viterbi algorithm on each known subset
-		for points in self.known_subsets_interpolated:
+		for points in self.known_subsets:
 			emission_probs = emission_probabilities(points, self.locations)
 			# run viterbi on each subset
 			state_path = viterbi(states, emission_probs, start_probs,
@@ -273,7 +266,7 @@ class Trace(object):
 	def find_peaks(self, threshold):
 		"""Detect peaks in the KDE surface which are above the time-spent
 		threshold. KDE values are stored in self.points."""
-		points = [point for point in self.all_interpolated_points
+		points = [point for point in self.all_points
 			if point.kde_p >= threshold]
 		if config.debug_output:
 			print('\tClustering', len(points), 'points above', threshold, 'threshold')
@@ -544,7 +537,7 @@ class Trace(object):
 		# write preliminary points file
 		# 'user_id,lon,lat,removed,interpolated,state'
 		with open(config.output_dir+'/classified_points.csv', 'a') as f:
-			for point in self.all_interpolated_points + self.discarded_points:
+			for point in self.all_points + self.discarded_points:
 				assert type(point) is GPSpoint 
 				attributes = [
 					self.id, point.unix_time,

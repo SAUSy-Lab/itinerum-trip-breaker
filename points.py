@@ -159,6 +159,10 @@ class GPSpoint(Point):
 		"""Gives the speed between two points in meters per second."""
 		return self.distance(other_point) / self.delta_t(other_point)
 
+	def __lt__(self,other):
+		"""Default sorting is by time"""
+		return self.unix_time < other.unix_time
+
 
 class Location(Point):
 	"""An activity location, defined as a point, possibly with a name."""
