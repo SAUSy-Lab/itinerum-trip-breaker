@@ -157,7 +157,10 @@ class GPSpoint(Point):
 
 	def mps(self, other_point):
 		"""Gives the speed between two points in meters per second."""
-		return self.distance(other_point) / self.delta_t(other_point)
+		try: # delta_t can be 0
+			return self.distance(other_point) / self.delta_t(other_point)
+		except: 
+			return self.distance(other_point) / 1
 
 	def __lt__(self,other):
 		"""Default sorting is by time"""
