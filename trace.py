@@ -546,7 +546,8 @@ class Trace(object):
 					self.id, date, date.weekday(), sum(data['total']),
 					len(data['travel']), sum(data['travel']), sum(data['unknown']),
 					sum(data['home']), sum(data['work']), sum(data['school']),
-					len(data['home']), len(data['work']), len(data['school'])
+					len(data['home']), len(data['work']), len(data['school']),
+					len(data['other'])
 				]
 				if config.multi_process:
 					self.locks[3].acquire()

@@ -32,7 +32,7 @@ def initialize_output_files():
 	f = open(config.output_dir+'/days.csv', "w")
 	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,')
 	f.write('unknown_time,home_time,work_time,school_time,home_count,')
-	f.write('work_count,school_count\n')
+	f.write('work_count,school_count,other_count\n')
 	f.close()
 
 
