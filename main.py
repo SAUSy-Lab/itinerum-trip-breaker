@@ -16,8 +16,9 @@ def initialize_output_files():
 	"""Open files for accepting output through script execution."""
 	# episodes file
 	f = open(config.output_dir+'/episodes.csv', "w")
-	f.write('user_id,sequence,location_id,mode,unknown,' +
-		'local_start_time,unix_start_time\n')
+	f.write(
+		'user_id,sequence,location_id,mode,unknown,local_start_time,'
+		'unix_start_time\n')
 	f.close()
 	# locations file
 	f = open(config.output_dir+'/locations.csv', "w")
@@ -25,14 +26,21 @@ def initialize_output_files():
 	f.close()
 	# points file
 	f = open(config.output_dir+'/classified_points.csv', "w")
-	f.write('user_id,unix_time,known_subset,lon,lat,x,y,weight,removed,')
-	f.write('timestamp,interpolated,state,kde,travel_emit_prob\n')
+	f.write(
+		'user_id,unix_time,known_subset,lon,lat,x,y,weight,removed,timestamp,
+		'interpolated,state,kde,travel_emit_prob\n')
 	f.close()
 	# days file
 	f = open(config.output_dir+'/days.csv', "w")
-	f.write('user_id,date,DoW,total_minutes,trip_count,travel_time,')
-	f.write('unknown_time,home_time,work_time,school_time,home_count,')
-	f.write('work_count,school_count,other_count\n')
+	f.write(
+		'user_id,date,DoW,'
+		'total_time,total_count,'
+		'unknown_time,unknown_count,'
+		'travel_time,trip_count,'
+		'home_time,home_count,'
+		'work_time,work_count,'
+		'school_time,school_count,'
+		'other_time,other_count\n')
 	f.close()
 
 
