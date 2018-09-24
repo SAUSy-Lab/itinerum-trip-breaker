@@ -15,23 +15,23 @@ def init_pool():
 def initialize_output_files():
 	"""Open files for accepting output through script execution."""
 	# episodes file
-	f = open(config.output_dir+'/episodes.csv', "w")
+	f = open(config.output_dir+'/episodes.csv', "w+")
 	f.write(
 		'user_id,sequence,location_id,mode,unknown,local_start_time,'
 		'unix_start_time\n')
 	f.close()
 	# locations file
-	f = open(config.output_dir+'/locations.csv', "w")
+	f = open(config.output_dir+'/locations.csv', "w+")
 	f.write('user_id,location_id,lon,lat,description,used\n')
 	f.close()
 	# points file
-	f = open(config.output_dir+'/classified_points.csv', "w")
+	f = open(config.output_dir+'/classified_points.csv', "w+")
 	f.write(
 		'user_id,unix_time,known_subset,lon,lat,x,y,weight,removed,timestamp,'
 		'interpolated,state,kde,travel_emit_prob\n')
 	f.close()
 	# days file
-	f = open(config.output_dir+'/days.csv', "w")
+	f = open(config.output_dir+'/days.csv', "w+")
 	f.write(
 		'user_id,date,DoW,'
 		'total_time,total_count,'
