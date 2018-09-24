@@ -1,7 +1,7 @@
 # functions related to Guassian kernel functions or normal distributions
 
-from math import exp
 import config
+from math import exp
 from scipy.stats import multivariate_normal
 
 
@@ -73,11 +73,9 @@ def kde(input_points,eval_points):
 		binned = False
 	)
 	estimates = surface.rx2('estimate')
-	# turn these into more pythonish objects so that the rpy2 syntax doesn't
-	# have to leave this function
-	est = []
-	for i in range(1, len(weights)+1):
-		# insert estimate values
-		est.append(estimates.rx(i)[0])
-	# this is now a vector (python list)
-	return est
+	# assign PDF estimates to the eval_points themselves
+	# We don't want rpy2 syntax leaving this function
+	assert len(estimates) == len(eval_points)
+	for i in range(0, len(estimates)):
+		eval_points[i].kde_p = estimates.rx(i+1)[0]
+		# (the index difference is due to the different styles of R and Python)

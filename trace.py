@@ -50,6 +50,17 @@ class Trace(object):
 		"""Get all (real & interpolated) points in one big list"""
 		return [p for s in self.known_subsets for p in s]
 
+	@property
+	def unique_points_spatial(self):
+		"""Return a list of points representing all unique locations."""
+		locations = set()
+		unique_points = []
+		for point in self.all_points:
+			if point.geom not in locations:
+				locations.add(point.geom)
+				unique_points.append(point)
+		return unique_points
+
 	def do_temporal_interpolation(self):
 		"""This function interpolates linearly in spacetime where the temporal
 		gap between two points is sufficiently large. To be run after spatial 
@@ -181,11 +192,8 @@ class Trace(object):
 			self.weight_points(subset)
 		if len(self.all_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
-		# run the KDE, returning density estimates at the input points
-		estimates = kde(self.all_points,self.all_points)
-		# assign probability estimates to points
-		for point, prob in zip(self.all_points, estimates):
-			point.kde_p = prob
+		# run the KDE, assigning density estimates to the eval points
+		kde( self.all_points, self.unique_points_spatial )
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
 		mean_accuracy = sqrt(
@@ -260,7 +268,7 @@ class Trace(object):
 
 	def find_peaks(self, threshold):
 		"""Detect peaks in the KDE surface which are above the time-spent
-		threshold. KDE values are stored in self.points."""
+		threshold. KDE values are stored in only some points."""
 		points = [point for point in self.all_points
 			if point.kde_p >= threshold]
 		if config.debug_output:
@@ -268,7 +276,8 @@ class Trace(object):
 		# For each point:
 		#   for every other point within cluster distance:
 		#      if comparison point has higher KDE value, this is not the peak
-		potential_activity_locations = []
+		unique_locations = set()
+		peak_locations = []
 		loc_num = 1
 		for point in points:
 			is_peak = True  # starting assumption
@@ -278,11 +287,11 @@ class Trace(object):
 				if point.kde_p < neighbor.kde_p:
 					is_peak = False  # assumption proven false if anything else higher
 					break
-			if is_peak and point not in potential_activity_locations:
-				location = Location(point.longitude, point.latitude, loc_num)
-				potential_activity_locations.append(location)
+			if is_peak and point.geom not in unique_locations:
+				unique_locations.add(point.geom)
+				peak_locations.append( Location(point.lon, point.lat, loc_num) )
 				loc_num += 1
-		return potential_activity_locations
+		return peak_locations
 
 	def remove_repeated_points(self):
 		"""There are some records in the coordinates table that are simply
