@@ -29,23 +29,24 @@ class Point:
 			assert False # we should never be here. Not enough coordinates supplied
 
 	@property
-	def geom(self):
-		"""Used basically to check location uniqueness."""
-		return (self.latitude, self.longitude)
-
-	@property
 	def x(self):
 		"""Return the projected X value."""
-		#if not self.X:
-		#	self.project()
 		return self.X
-
 	@property
 	def y(self):
 		"""Return the projected Y value."""
-		#if not self.Y:
-		#	self.project()
 		return self.Y
+	@property
+	def lat(self):
+		return self.latitude
+	@property
+	def lon(self):
+		return self.longitude
+
+	@property
+	def geom(self):
+		"""Used basically to check location uniqueness."""
+		return (self.latitude, self.longitude)
 
 	def distance(self, point2, euclid=False):
 		"""
@@ -131,7 +132,7 @@ class GPSpoint(Point):
 		self.emit_p = []        # emission probabilities for set of travel+locations
 		self.state = None       # HMM state classification
 		self.location = None    # reference to location object point is at per state
-		self.kde_p = None       # estimated PDF at this point
+		self.kde_p = -1 	      # estimated PDF at this point
 		# for diagnostic output
 		self.known_subset = None  # known subset to which this belongs if any
 		self.discarded = False   # will be true if point tossed in cleaning
