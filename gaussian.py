@@ -33,37 +33,45 @@ def min_peak(GPS_error_sd, total_time):
 	return rv
 
 
-def kde(x_vector, y_vector, weights):
-	"""
-	Do weighted 2d KDE in R KS package, returning python results.
-	Returns two lists: P estimates and estimate locations as x,y tuples.
+def kde(input_points,eval_points):
+	"""Do weighted 2d KDE in R KS package, returning python results.
+	Returns list of P estimates corresponding to estimate_points.
+	input_points should be a list of points with x,y,weight attributes
+	eval_points are points where the PDF will be estimated (not elsewhere).	
 
 	Another possible way of doing KDE (in Python) is with
 	http://pysal.readthedocs.io/en/latest/users/tutorials/
 	smoothing.html#non-parametric-smoothing ?
 	or with http://scikit-learn.org/stable/modules/density.html ?
+
+	But I'm not convinced yet that it's worthwhile to explore these.
+	R is quite fast and works fine. 
 	"""
+	# import R tools
 	from rpy2.robjects.packages import importr  # for importing packages
+	ks = importr('ks') # load the ks package (making kde function available)
 	from rpy2.robjects import r, FloatVector  # variable names
-	# ensure all inputs are vectors of the same length
-	assert len(x_vector) == len(y_vector)
-	assert len(weights) == len(x_vector)
-	# normalize the weights to the sample size
+	cbind, diag = r['cbind'], r['diag'] # get some basic R functions into Python
+	# create the inputs from input_points
+	x_in, y_in = [p.x for p in input_points], [p.y for p in input_points]
+	weights  = [p.weight for p in input_points]
+	# standardize the weights to the sample size
 	if sum(weights) != len(weights):
 		adjust_factor = len(weights) / float(sum(weights))
 		weights = [w * adjust_factor for w in weights]
-	# load the ks package (making kde function available)
-	ks = importr('ks')
-	# get basic R functions into Python
-	cbind, diag = r['cbind'], r['diag']
+	# get eval_points processed for R
+	x_ev, y_ev = [p.x for p in eval_points], [p.y for p in eval_points]
 	# do the KDE
 	if config.debug_output:
-		print('\tRunning KDE on', len(x_vector), 'points')
-	point_matrix = cbind(FloatVector(x_vector), FloatVector(y_vector))
+		print('\tRunning KDE on', len(input_points), 'points')
 	bandwidth = config.kernel_bandwidth
-	surface = ks.kde(x=point_matrix, eval_points=point_matrix,
-			w=FloatVector(weights), H=diag(FloatVector([bandwidth**2, bandwidth**2])),
-binned=False)
+	surface = ks.kde(
+		x = cbind(FloatVector(x_in), FloatVector(y_in)),
+		eval_points = cbind(FloatVector(x_ev), FloatVector(y_ev)),
+		w = FloatVector(weights),
+		H = diag( FloatVector([bandwidth**2, bandwidth**2]) ),
+		binned = False
+	)
 	estimates = surface.rx2('estimate')
 	# turn these into more pythonish objects so that the rpy2 syntax doesn't
 	# have to leave this function

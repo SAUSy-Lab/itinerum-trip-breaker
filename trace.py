@@ -179,25 +179,23 @@ class Trace(object):
 		self.do_spatial_interpolation()
 		for subset in self.known_subsets:
 			self.weight_points(subset)
-
 		if len(self.all_points) > 75000:
 			raise Exception('Too many points for efficient KDE')
-		# format as vectors for KDE function
-		Xvector = [p.x for p in self.all_points]
-		Yvector = [p.y for p in self.all_points]
-		Wvector = [p.weight for p in self.all_points]
 		# run the KDE, returning density estimates at the input points
-		estimates = kde(Xvector, Yvector, Wvector)
+		estimates = kde(self.all_points,self.all_points)
 		# assign probability estimates to points
 		for point, prob in zip(self.all_points, estimates):
 			point.kde_p = prob
 		# determine average GPS accuracy value for this user
 		# (sqrt of the mean variance)
-		mean_accuracy = sqrt(sum([p.accuracy**2 for p in self.points]) /
-			len(self.points))
+		mean_accuracy = sqrt(
+			sum([p.accuracy**2 for p in self.points]) / len(self.points)
+		)
 		# estimate peak threshold value
-		threshold = min_peak(mean_accuracy,  # mean sd of GPS accuracy for user
-				sum(Wvector))  # total seconds entering KDE
+		threshold = min_peak(
+				mean_accuracy,  # mean sd of GPS accuracy for user
+				sum([p.weight for p in self.all_points]) # total seconds entering KDE
+		)  
 		# Find peaks in the density surface
 		locations = self.find_peaks(threshold)
 		# store the result
