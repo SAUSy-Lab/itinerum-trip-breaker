@@ -499,8 +499,8 @@ class Trace(object):
 					location.id,       # location_id
 					location.longitude,
 					location.latitude,
-					location.name,     # description
-					location.visited))   # whether location was used or not
+					'/'.join(location.name),     # description
+					location.visited)) # whether location was used or not
 				if config.multi_process:
 					self.locks[0].release()
 

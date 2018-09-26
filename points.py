@@ -179,7 +179,7 @@ class Location(Point):
 		self.total_time_at = 0
 		# whether or not there is an actual activity recored here
 		self.visited = False
-		self.name = ''
+		self.name = set()
 
 	def add_time(self, seconds):
 		"""Add seconds spent at this location."""
@@ -187,6 +187,7 @@ class Location(Point):
 		self.total_time_at += seconds
 
 	def identify(self, name):
-		"""Name this location e.g. ['home','work','school']."""
-		self.name = name
+		"""Name this location e.g. {'home','work','school'}. Can have multiple
+		names, but priority will be given in that order during time allocation."""
+		self.name.add(name)
 

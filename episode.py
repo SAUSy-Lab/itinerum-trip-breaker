@@ -25,13 +25,16 @@ class Episode(object):
 	def type(self):
 		"""
 		What kind of episode is this?
-		must be in in ['unknown','travel','home','work','school','other']
+		must be in in {'unknown','travel','home','work','school','other'}
 		"""
 		if self.unknown:
 			return 'unknown'
 		elif not self.location:
 			return 'travel'
-		elif self.location.name in ['home', 'work', 'school']:
-			return self.location.name
-		else:
+		elif len(self.location.name) < 1:
 			return 'other'
+		else: # has a named location
+			if 'home' in self.location.name: return 'home'
+			if 'work' in self.location.name: return 'work'
+			if 'school' in self.location.name: return 'school'
+			assert False # must return one of the above options
