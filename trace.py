@@ -263,6 +263,10 @@ class Trace(object):
 				prev_point = point
 			# unknown time ends every known segment
 			self.episodes.append(Episode(points[-1].time, is_unknown_time=True))
+			# link episodes to the following episode
+			for i, e in enumerate(self.episodes):
+				if i > 0:
+					e.link_subsequent_episode(self.episodes[i-1])
 		if config.debug_output:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -492,15 +496,22 @@ class Trace(object):
 		""" Output activity locations to CSV."""
 		# write potential activity locations to file
 		with open(config.output_dir+'/locations.csv', "a") as f:
-			for location in self.locations:
+			for loc in self.locations:
+				attributes = [
+					self.id,            # user_id
+					loc.id,             # location_id
+					loc.lon,            # longitude
+					loc.lat,            # latitude
+					'/'.join(loc.name), # description
+					loc.visited,        # whether location was used or not
+					sum([
+						e.duration for e in self.episodes 
+						if e.location and e.location_id == loc.id
+					])
+				]
 				if config.multi_process:
 					self.locks[0].acquire()
-				f.write("{},{},{},{},{},{}\n".format(self.id,  # user_id
-					location.id,       # location_id
-					location.longitude,
-					location.latitude,
-					'/'.join(location.name),     # description
-					location.visited)) # whether location was used or not
+				f.write(",".join([str(a) for a in attributes])+'\n') 
 				if config.multi_process:
 					self.locks[0].release()
 
@@ -509,12 +520,15 @@ class Trace(object):
 		# write episodes file
 		with open(config.output_dir+'/episodes.csv', "a") as f:
 			for i, episode in enumerate(self.episodes):
-				attributes = [self.id, i,  # activity sequence
-					episode.location_id if episode.location else '', '',
-					# mode (not currently used)
+				attributes = [
+					self.id, i, # activity sequence
+					episode.location_id if episode.location else '', 
+					'', # mode (not currently used)
 					True if episode.unknown else '',
-					episode.start,               # timestamp
-					episode.start.timestamp()]  # unix time
+					episode.start,             # timestamp
+					episode.start.timestamp(), # unix time
+					episode.duration           # duration in seconds
+				]
 				if config.multi_process:
 					self.locks[1].acquire()
 				f.write(','.join([str(a) for a in attributes])+'\n')

@@ -18,11 +18,11 @@ def initialize_output_files():
 	f = open(config.output_dir+'/episodes.csv', "w+")
 	f.write(
 		'user_id,sequence,location_id,mode,unknown,local_start_time,'
-		'unix_start_time\n')
+		'unix_start_time,duration\n')
 	f.close()
 	# locations file
 	f = open(config.output_dir+'/locations.csv', "w+")
-	f.write('user_id,location_id,lon,lat,description,used\n')
+	f.write('user_id,location_id,lon,lat,description,used,duration\n')
 	f.close()
 	# points file
 	f = open(config.output_dir+'/classified_points.csv', "w+")
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 	list_of_users = []
 	for uid, data in user_data.items():
 		# uncomment the following line for testing a single user
-		#if uid = '': continue
+		if uid != '': continue
 		list_of_users.append((uid, data, user_locations[uid]))
 	# parallel processing option
 	if config.multi_process:
