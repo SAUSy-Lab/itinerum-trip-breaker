@@ -89,22 +89,26 @@ if __name__ == "__main__":
 				user_data[row['uuid']] = [row]
 			else:
 				user_data[row['uuid']].append(row)
-	# read in the survey response location data once now and store in a dict
+	# Check for the existence of user provided location data from the survey 
+	# read in once up front and pass as a dict
 	user_locations = {}
 	with open(config.input_survey_responses_file, newline='') as f:
 		reader = csv.DictReader(f)
-		for row in reader:
-			user_id = row['uuid']
+		for record in reader:
+			user_id = record['uuid']
 			user_locations[user_id] = {}
-			if row['location_home_lon'] != '':
-				user_locations[user_id]['home'] = Location(row['location_home_lon'],
-				row['location_home_lat'])
-			if row['location_work_lon'] != '':
-				user_locations[user_id]['work'] = Location(row['location_work_lon'],
-					row['location_work_lat'])
-			if row['location_study_lon'] != '':
-				user_locations[user_id]['school'] = Location(row['location_study_lon'],
-				row['location_study_lat'])
+			if 'location_home_lon' in record and record['location_home_lon'] != '':
+				user_locations[user_id]['home'] = Location(
+					record['location_home_lon'], record['location_home_lat'] 
+				)
+			if 'location_work_lon' in record and record['location_work_lon'] != '':
+				user_locations[user_id]['work'] = Location(
+					record['location_work_lon'], record['location_work_lat']
+				)
+			if 'location_study_lon' in record and record['location_study_lon'] != '':
+				user_locations[user_id]['school'] = Location(
+				record['location_study_lon'], record['location_study_lat']
+			)
 	if config.debug_output:
 		print(len(user_data), 'user(s) to clean')
 	# loop over users calling all the functions for each
