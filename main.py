@@ -117,7 +117,7 @@ if __name__ == "__main__":
 	list_of_users = []
 	for uid, data in user_data.items():
 		# uncomment the following line for testing a single user
-		if uid != '': continue
+		# if uid != '': continue
 		list_of_users.append((uid, data, user_locations[uid]))
 	# parallel processing option
 	if config.multi_process:
