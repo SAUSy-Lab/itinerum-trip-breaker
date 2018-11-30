@@ -28,7 +28,7 @@ This file summarizes `episodes.csv` per day in the dataset. We treat days not as
 Fields include: `user_id,date,DoW,total_minutes,trip_count,travel_time,unknown_time,home_time,work_time,school_time,home_count,work_count,school_count`
 * `DoW` is an integer indicating the day of the week, with Sunday = 0. 
 * The count fields are counts of activities at the known location types. 
-* The time feilds are given in minutes and should sum to 1440, the number of minutes in a day, except for the first and last day in the dataset. 
+* The time fields are given in minutes and should sum to 1440, the number of minutes in a day, except for the first and last day in the dataset. 
 
 
 ### classified_points.csv
