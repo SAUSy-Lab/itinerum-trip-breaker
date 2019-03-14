@@ -45,11 +45,12 @@ class Episode(object):
 	def duration(self):
 		"""Return the duration in seconds if known."""
 		if self.start and self.next_episode:
-			return (self.start - self.next_episode.start).total_seconds()
+			return (self.next_episode.start - self.start).total_seconds()
 		else:
-			return 0
+			return None
 
-	def link_subsequent_episode(self,episode):
+	def link_subsequent_episode(self,next_episode):
 		"""Provide the episode following this episode so we know when it ends."""
-		self.next_episode = episode
+		assert self.start <= next_episode.start
+		self.next_episode = next_episode
 

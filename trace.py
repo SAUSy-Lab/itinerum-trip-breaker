@@ -265,8 +265,8 @@ class Trace(object):
 			self.episodes.append(Episode(points[-1].time, is_unknown_time=True))
 			# link episodes to the following episode
 			for i, e in enumerate(self.episodes):
-				if i > 0:
-					e.link_subsequent_episode(self.episodes[i-1])
+				if i < len(self.episodes)-1:
+					e.link_subsequent_episode(self.episodes[i+1])
 		if config.debug_output:
 			print('\tFound', len(self.episodes), 'episodes')
 
@@ -518,22 +518,24 @@ class Trace(object):
 	def write_episodes(self):
 		""" Output episode data to CSV."""
 		# write episodes file
+		lines = []
 		with open(config.output_dir+'/episodes.csv', "a") as f:
 			for i, episode in enumerate(self.episodes):
-				attributes = [
-					self.id, i, # activity sequence
-					episode.location_id if episode.location else '', 
+				lines.append('{},{},{},{},{},{},{},{}'.format(
+					self.id,
+					i, # activity sequence
+					episode.location_id if episode.location else '',
 					'', # mode (not currently used)
 					True if episode.unknown else '',
 					episode.start,             # timestamp
 					episode.start.timestamp(), # unix time
-					episode.duration           # duration in seconds
-				]
-				if config.multi_process:
-					self.locks[1].acquire()
-				f.write(','.join([str(a) for a in attributes])+'\n')
-				if config.multi_process:
-					self.locks[1].release()
+					episode.duration if episode.duration else '' # duration in seconds
+				))
+			if config.multi_process:
+				self.locks[1].acquire()
+			f.write('\n'.join(lines)+'\n')
+			if config.multi_process:
+				self.locks[1].release()
 
 	def write_points(self):
 		"""Output point attributes to CSV for debugging."""
