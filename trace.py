@@ -264,7 +264,7 @@ class Trace(object):
 			# unknown time ends every known segment
 			self.episodes.append(Episode(points[-1].time, is_unknown_time=True))
 		# link episodes to the following episode
-		self.episodes.sort(key=lambda e: e.start_time)
+		self.episodes.sort(key=lambda e: e.start)
 		for i, e in enumerate(self.episodes):
 			if i < len(self.episodes)-1:
 				e.link_subsequent_episode(self.episodes[i+1])
